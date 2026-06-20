@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{# ── Hero ──────────────────────────────────────────────── #}
+{# Drop your photo at static/images/hero.jpg — tall crop works best (portrait orientation) #}
+<section class="relative min-h-screen flex overflow-hidden">
+
+  {# Text column #}
+  <div class="relative z-10 flex items-center w-full md:w-[58%] px-6 md:px-16 lg:px-24 pt-28 pb-20">
+    <div>
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-6">Fitness · Bodybuilding · Performance</p>
+      <h1 class="hero-title font-heading leading-[0.88] text-white mb-8">
+        BUILT TO<br><span class="text-accent">DOMINATE.</span>
+      </h1>
+      <p class="text-white/60 text-lg max-w-md mb-10 leading-relaxed">
+        Elite training content, trusted supplements, and evidence-based programs — built for athletes who refuse to settle.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="/shop" class="bg-accent text-white text-xs tracking-[0.15em] uppercase px-8 py-4 hover:brightness-90 transition-all">
+          Shop My Picks
+        </a>
+        <a href="/about" class="border border-white/20 text-white text-xs tracking-[0.15em] uppercase px-8 py-4 hover:border-white/50 transition-colors">
+          My Story
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {# Photo column — bleeds to the right edge #}
+  <div class="hidden md:block absolute right-0 top-0 bottom-0 w-[48%]">
+    <img src="{{ url_for('static', filename='images/hero.jpg') }}"
+         alt="FlexFactorX training"
+         class="w-full h-full object-cover object-top">
+    {# Gradient blends photo into background on the left edge #}
+    <div class="hero-photo-fade-x absolute inset-0"></div>
+    <div class="hero-photo-fade-y absolute inset-0"></div>
+  </div>
+
+  {# Subtle orange glow at bottom #}
+  <div class="hero-glow absolute bottom-0 left-0 right-0 pointer-events-none"></div>
+</section>
+
+{# ── Stats ─────────────────────────────────────────────── #}
+{# Update these numbers to match your real stats #}
+{% set stats = [('12K+', 'Instagram Followers'), ('4+', 'Years Training'), ('500+', 'Lives Changed')] %}
+<section class="border-y border-[#1a1a1a] bg-[#0d0d0d]">
+  <div class="max-w-6xl mx-auto px-6 py-16 grid grid-cols-3 gap-8">
+    {% for value, label in stats %}
+    <div class="text-center">
+      <p class="font-heading text-5xl md:text-7xl text-accent">{{ value }}</p>
+      <p class="text-white/40 text-xs tracking-[0.15em] uppercase mt-2">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ── Programs ──────────────────────────────────────────── #}
+{% set programs = [
+  ('Strength Foundation', '12 Weeks', '4 Days / Week',
+   'Powerlifting-based program to build raw strength and perfect your technique on the big three lifts.', false),
+  ('Hypertrophy Blueprint', '16 Weeks', '5 Days / Week',
+   'High-volume muscle-building program focused on progressive overload and evidence-based hypertrophy methods.', false),
+  ('Custom Coaching', 'Ongoing', '1-on-1',
+   'Fully personalized programming built around your goals, schedule, and current level. The fastest path to results.', true),
+] %}
+<section class="max-w-6xl mx-auto px-6 py-24">
+  <div class="flex items-end justify-between mb-12">
+    <div>
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Training</p>
+      <h2 class="font-heading text-5xl md:text-6xl">PROGRAMS</h2>
+    </div>
+    <a href="/contact" class="hidden md:block text-xs tracking-[0.15em] uppercase text-white/40 hover:text-accent transition-colors">
+      Get Custom Plan →
+    </a>
+  </div>
+  <div class="grid md:grid-cols-3 gap-4">
+    {% for title, duration, tag, desc, featured in programs %}
+    <div class="p-8 border transition-colors {{ 'border-accent/40 bg-accent/5' if featured else 'border-[#1a1a1a] bg-[#0d0d0d] hover:border-[#2a2a2a]' }}">
+      <div class="flex justify-between items-start mb-6">
+        <span class="text-xs tracking-[0.15em] uppercase text-white/30">{{ tag }}</span>
+        {% if featured %}
+        <span class="text-xs tracking-[0.15em] uppercase text-accent border border-accent/30 px-2 py-1">Popular</span>
+        {% endif %}
+      </div>
+      <h3 class="font-heading text-3xl mb-2">{{ title }}</h3>
+      <p class="text-accent text-sm mb-4">{{ duration }}</p>
+      <p class="text-white/50 text-sm leading-relaxed mb-8">{{ desc }}</p>
+      <a href="/contact"
+         class="text-xs tracking-[0.15em] uppercase transition-colors {{ 'text-accent' if featured else 'text-white/40 hover:text-accent' }}">
+        Get Started →
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ── Featured Affiliate Picks ───────────────────────────── #}
+<section class="bg-[#0d0d0d] border-y border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="flex items-end justify-between mb-12">
+      <div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Recommended</p>
+        <h2 class="font-heading text-5xl md:text-6xl">MY TOP PICKS</h2>
+      </div>
+      <a href="/shop" class="hidden md:block text-xs tracking-[0.15em] uppercase text-white/40 hover:text-accent transition-colors">
+        View All →
+      </a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {% for product in featured %}
+      <a href="{{ product.url }}" target="_blank" rel="noopener noreferrer sponsored"
+         class="block p-6 border border-[#1a1a1a] bg-[#080808] hover:border-accent/30 transition-colors group">
+        <span class="inline-block text-xs tracking-[0.15em] uppercase text-accent border border-accent/20 px-2 py-1 mb-4">
+          {{ category_labels[product.category] }}
+        </span>
+        <h3 class="font-semibold text-white mb-1 group-hover:text-accent transition-colors">{{ product.name }}</h3>
+        <p class="text-white/30 text-xs mb-3">{{ product.brand }}</p>
+        <p class="text-white/50 text-sm leading-relaxed mb-5">{{ product.description }}</p>
+        <span class="text-xs tracking-[0.15em] uppercase text-accent">View Deal →</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Gallery — auto-populated from static/images/gallery/ ─ #}
+{% if gallery %}
+<section class="py-24">
+  <div class="max-w-6xl mx-auto px-6 mb-10 flex items-end justify-between">
+    <div>
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Behind the Grind</p>
+      <h2 class="font-heading text-5xl md:text-6xl">THE JOURNEY</h2>
+    </div>
+    <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+       class="hidden md:block text-xs tracking-[0.15em] uppercase text-white/40 hover:text-accent transition-colors">
+      Follow on IG →
+    </a>
+  </div>
+
+  {# Horizontal scroll strip — drag on desktop, swipe on mobile #}
+  <div class="relative">
+    <div class="fade-edge-left  absolute left-0  top-0 bottom-0 w-20 z-10 pointer-events-none"></div>
+    <div class="fade-edge-right absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"></div>
+
+    <div id="gallery-scroll"
+         class="gallery-scroll flex gap-2 overflow-x-auto h-[480px] px-6 cursor-grab active:cursor-grabbing">
+      {% for img in gallery %}
+      <div class="flex-shrink-0 h-full min-w-[240px] overflow-hidden snap-start">
+        <img src="{{ url_for('static', filename='images/gallery/' + img) }}"
+             alt="FlexFactorX training"
+             class="h-full w-auto object-cover hover:scale-105 transition-transform duration-700 pointer-events-none">
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const el = document.getElementById('gallery-scroll');
+    let down = false, startX, scrollLeft;
+    el.addEventListener('mousedown',  e => { down = true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; });
+    el.addEventListener('mouseleave', () => down = false);
+    el.addEventListener('mouseup',    () => down = false);
+    el.addEventListener('mousemove',  e => {
+      if (!down) return;
+      e.preventDefault();
+      el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX);
+    });
+  })();
+</script>
+{% endif %}
+
+{# ── Instagram CTA ─────────────────────────────────────── #}
+<section class="max-w-6xl mx-auto px-6 py-24 text-center">
+  <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Stay Connected</p>
+  <h2 class="font-heading text-5xl md:text-7xl mb-6">FOLLOW THE<br><span class="text-accent">JOURNEY.</span></h2>
+  <p class="text-white/50 max-w-sm mx-auto mb-10">
+    Daily training clips, nutrition breakdowns, and behind-the-scenes on Instagram.
+  </p>
+  <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+     class="inline-flex items-center gap-3 bg-accent text-white text-xs tracking-[0.15em] uppercase px-8 py-4 hover:brightness-90 transition-all">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+    </svg>
+    @flexfactorx
+  </a>
+</section>
+
+{# ── Testimonials ──────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-y border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="mb-14 text-center">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Results</p>
+      <h2 class="font-heading text-5xl md:text-6xl">WHAT THEY SAY</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      {% for t in testimonials %}
+      <div class="p-8 border border-[#1a1a1a] bg-[#080808] flex flex-col">
+        {# Large decorative quote mark #}
+        <span class="font-heading text-6xl text-accent/20 leading-none mb-4" aria-hidden="true">"</span>
+        <p class="text-white/70 text-sm leading-relaxed flex-1 mb-8">{{ t.quote }}</p>
+        <div class="border-t border-[#1a1a1a] pt-5">
+          <p class="font-semibold text-white text-sm">{{ t.name }}</p>
+          <p class="text-accent text-xs mt-1">{{ t.handle }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Newsletter ────────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-t border-[#1a1a1a]">
+  <div class="max-w-2xl mx-auto px-6 py-24 text-center">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Free Content</p>
+    <h2 class="font-heading text-4xl md:text-5xl mb-4">GET WEEKLY TRAINING TIPS</h2>
+    <p class="text-white/50 mb-10">Science-backed fitness content straight to your inbox. No spam, unsubscribe anytime.</p>
+    <form name="newsletter" method="POST" data-netlify="true" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+      <input type="hidden" name="form-name" value="newsletter">
+      <input type="email" name="email" placeholder="your@email.com" required
+             class="flex-1 bg-[#111111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+      <button type="submit"
+              class="bg-accent text-white text-xs tracking-[0.15em] uppercase px-6 py-3 hover:brightness-90 transition-all whitespace-nowrap">
+        Subscribe
+      </button>
+    </form>
+  </div>
+</section>
+
+{% endblock %}

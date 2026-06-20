@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FlexFactorX — Train. Build. Dominate.{% endblock %}</title>
+  <meta name="description" content="{% block description %}Science-backed fitness training, trusted supplement picks, and bodybuilding content from FlexFactorX.{% endblock %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#FF4D00' },
+          fontFamily: {
+            heading: ['"Bebas Neue"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="bg-[#080808] text-white font-sans antialiased">
+
+  <!-- Navbar -->
+  <header class="fixed inset-x-0 top-0 z-50 bg-[#080808]/95 backdrop-blur-sm border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+
+      <a href="/" class="font-heading text-2xl tracking-widest">
+        FLEX<span class="text-accent">FACTOR</span>X
+      </a>
+
+      <!-- Desktop -->
+      <nav class="hidden md:flex items-center gap-8">
+        {% for href, label, endpoint in nav_links %}
+        <a href="{{ href }}"
+           class="text-xs tracking-[0.15em] uppercase transition-colors hover:text-accent {{ 'text-accent' if request.endpoint == endpoint else 'text-white/60' }}">
+          {{ label }}
+        </a>
+        {% endfor %}
+        <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+           class="text-xs tracking-[0.15em] uppercase bg-accent text-white px-4 py-2 hover:brightness-90 transition-all">
+          Follow
+        </a>
+      </nav>
+
+      <!-- Mobile toggle -->
+      <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+              class="md:hidden text-white/70 hover:text-white transition-colors" aria-label="Toggle menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <nav id="mobile-menu" class="hidden md:hidden border-t border-[#1a1a1a] px-6 pt-5 pb-6 flex flex-col gap-5">
+      {% for href, label, endpoint in nav_links %}
+      <a href="{{ href }}"
+         class="text-xs tracking-[0.15em] uppercase {{ 'text-accent' if request.endpoint == endpoint else 'text-white/60' }}">
+        {{ label }}
+      </a>
+      {% endfor %}
+      <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+         class="text-xs tracking-[0.15em] uppercase bg-accent text-white px-4 py-3 text-center hover:brightness-90 transition-all">
+        Follow on Instagram
+      </a>
+    </nav>
+  </header>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#1a1a1a] bg-[#080808]">
+    <div class="max-w-6xl mx-auto px-6 py-12">
+      <div class="flex flex-col md:flex-row justify-between gap-10">
+
+        <div>
+          <p class="font-heading text-xl tracking-widest mb-2">FLEX<span class="text-accent">FACTOR</span>X</p>
+          <p class="text-white/30 text-sm max-w-xs leading-relaxed">
+            Science-backed fitness content for athletes who are serious about results.
+          </p>
+        </div>
+
+        <nav class="flex flex-wrap gap-x-8 gap-y-3">
+          {% for href, label, _ in nav_links %}
+          <a href="{{ href }}" class="text-xs tracking-[0.15em] uppercase text-white/40 hover:text-accent transition-colors">
+            {{ label }}
+          </a>
+          {% endfor %}
+        </nav>
+
+        <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+           aria-label="Instagram" class="text-white/40 hover:text-accent transition-colors self-start">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="mt-10 pt-6 border-t border-[#1a1a1a] space-y-2">
+        <p class="text-white/20 text-xs leading-relaxed max-w-2xl">
+          <span class="text-white/40">Affiliate Disclosure:</span> Some links on this site are affiliate links.
+          I may earn a small commission at no extra cost to you. I only recommend products I personally use and trust.
+        </p>
+        <p class="text-white/20 text-xs">© {{ current_year }} FlexFactorX. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
