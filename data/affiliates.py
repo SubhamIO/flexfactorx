@@ -28,4 +28,16 @@ affiliates = [
         'discount': None,
         'featured': True,
     },
+    {
+        'id': 3,
+        'name': 'Shilajit Gold 750mg Effervescent',
+        'brand': 'Carbamide Forte',
+        'category': 'supplement',
+        'description': 'Shilajit Gold in effervescent tablet form — clinically studied for boosting strength, stamina, and power in men. One of the most underrated additions to any serious stack.',
+        'url': 'https://link.amazon/B05j4dz9j',
+        'coupon': None,
+        'coupon_note': None,
+        'discount': None,
+        'featured': True,
+    },
 ]
