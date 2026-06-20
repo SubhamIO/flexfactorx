@@ -6,15 +6,15 @@ from data.testimonials import testimonials
 
 app = Flask(__name__)
 
-GALLERY_DIR = os.path.join('static', 'images', 'gallery')
 IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
 
 
 def get_gallery():
-    if not os.path.isdir(GALLERY_DIR):
+    gallery_dir = os.path.join(app.static_folder, 'images', 'gallery')
+    if not os.path.isdir(gallery_dir):
         return []
     return sorted(
-        f for f in os.listdir(GALLERY_DIR)
+        f for f in os.listdir(gallery_dir)
         if os.path.splitext(f)[1].lower() in IMAGE_EXTS
     )[:9]
 
