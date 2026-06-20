@@ -26,6 +26,7 @@ def inject_globals():
             ('/', 'Home', 'home'),
             ('/about', 'About', 'about'),
             ('/shop', 'Shop', 'shop'),
+            ('/collabs', 'Collabs', 'collabs'),
             ('/contact', 'Contact', 'contact'),
         ],
         'current_year': datetime.now().year,
@@ -52,6 +53,11 @@ def about():
 @app.route('/shop')
 def shop():
     return render_template('shop.html', products=affiliates, category_labels=CATEGORY_LABELS)
+
+
+@app.route('/collabs')
+def collabs():
+    return render_template('collabs.html')
 
 
 @app.route('/contact')

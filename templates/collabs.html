@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Collabs & Partnerships | FlexFactorX{% endblock %}
+{% block description %}Partner with FlexFactorX — authentic fitness content for supplement, equipment, and apparel brands targeting serious athletes.{% endblock %}
+
+{% block content %}
+
+{# ── Header ───────────────────────────────────────────── #}
+<section class="pt-36 pb-16 border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Brand Partnerships</p>
+    <h1 class="page-title font-heading leading-[0.88] mb-6">WORK WITH ME.</h1>
+    <p class="text-white/50 text-lg max-w-xl leading-relaxed">
+      FlexFactorX is a fitness and bodybuilding brand built on honesty, results, and an audience that actually trains.
+      No fluff, no fake endorsements — only products I personally use make it onto this platform.
+    </p>
+  </div>
+</section>
+
+{# ── Audience Snapshot ────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-20">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-12">Audience</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      {% for value, label in [
+        ('12K+',  'Instagram Followers'),
+        ('18–35', 'Core Age Range'),
+        ('High',  'Engagement Rate'),
+        ('100%',  'Organic Growth'),
+      ] %}
+      <div class="border-l-2 border-accent pl-6">
+        <p class="font-heading text-4xl md:text-5xl text-accent mb-1" data-count-up>{{ value }}</p>
+        <p class="text-white/40 text-xs tracking-[0.15em] uppercase">{{ label }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-14 grid md:grid-cols-3 gap-6">
+      {% for title, body in [
+        ('Niche',       'Bodybuilding, powerlifting, and evidence-based fitness. Audience comes for programming and supplement education — not lifestyle fluff.'),
+        ('Platform',    'Primary: Instagram (@flexfactorx). Website growing via organic search. Newsletter in progress.'),
+        ('Brand Fit',   'Supplements, training equipment, apparel, recovery, and health tech. Only brands that serious athletes would actually buy.'),
+      ] %}
+      <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+        <h3 class="font-heading text-xl mb-3 text-accent">{{ title }}</h3>
+        <p class="text-white/50 text-sm leading-relaxed">{{ body }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Content Formats ──────────────────────────────────── #}
+<section class="max-w-6xl mx-auto px-6 py-24">
+  <div class="mb-14">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">What You Get</p>
+    <h2 class="font-heading text-5xl md:text-6xl">CONTENT FORMATS</h2>
+  </div>
+  <div class="grid md:grid-cols-2 gap-4">
+    {% for icon, title, desc in [
+      ('01', 'Sponsored Feed Post',    'A single dedicated Instagram post featuring your product in a real training context. Includes caption, tagging, and story share.'),
+      ('02', 'Reel / Short-Form Video','Training footage with product integrated naturally. High-retention format, ideal for supplements and equipment launches.'),
+      ('03', 'Product Review',         'Honest, detailed review post covering ingredients, performance, and value. The format my audience trusts most.'),
+      ('04', 'Story Series',           'Multi-slide Instagram Stories over 24–72 hours — great for discount codes, launches, and limited-time offers.'),
+      ('05', 'Brand Ambassador',       'Ongoing monthly partnership. Dedicated posts, affiliate code promotion, and first-look content for new products.'),
+      ('06', 'Affiliate Partnership',  'Commission-based long-term arrangement. I promote your product organically across posts, stories, and the website.'),
+    ] %}
+    <div class="flex gap-6 p-7 border border-[#1a1a1a] bg-[#0d0d0d] hover:border-accent/30 transition-colors group">
+      <span class="font-heading text-3xl text-accent/30 group-hover:text-accent/60 transition-colors flex-shrink-0">{{ icon }}</span>
+      <div>
+        <h3 class="font-semibold text-white mb-2 group-hover:text-accent transition-colors">{{ title }}</h3>
+        <p class="text-white/50 text-sm leading-relaxed">{{ desc }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ── Process ──────────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-y border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="mb-14 text-center">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">How It Works</p>
+      <h2 class="font-heading text-5xl md:text-6xl">THE PROCESS</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-1">
+      {% for num, title, body in [
+        ('01', 'Reach Out',  'Send a message via the contact form with your brand, product, and what you have in mind. I respond within 48 hours.'),
+        ('02', 'Align',      'We discuss brand fit, content format, timeline, deliverables, and rates. No hidden fees, no ambiguity.'),
+        ('03', 'Create',     'I produce authentic content that fits your brief and my style. Delivered on time, edited to a professional standard.'),
+      ] %}
+      <div class="p-10 border border-[#1a1a1a] {{ 'bg-accent/5 border-accent/20' if loop.index == 2 else 'bg-[#080808]' }}">
+        <p class="font-heading text-6xl text-accent/20 mb-6">{{ num }}</p>
+        <h3 class="font-heading text-2xl mb-3">{{ title }}</h3>
+        <p class="text-white/50 text-sm leading-relaxed">{{ body }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Past Collabs placeholder ─────────────────────────── #}
+{# Replace this section with real brand logos or case studies when available #}
+<section class="max-w-6xl mx-auto px-6 py-24">
+  <div class="mb-12">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Portfolio</p>
+    <h2 class="font-heading text-5xl md:text-6xl">PAST WORK</h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-4">
+    {% for brand, type, result in [
+      ('Smart Caffeine', 'Affiliate Partnership', 'Active affiliate — link + exclusive discount code for community.'),
+      ('Your Brand Here', 'Sponsored Post', 'Reach out to secure a featured placement with the FlexFactorX audience.'),
+      ('Your Brand Here', 'Brand Ambassador', 'Limited ambassador slots available — get in touch to discuss a long-term deal.'),
+    ] %}
+    <div class="p-8 border border-[#1a1a1a] bg-[#0d0d0d]">
+      <span class="text-xs tracking-[0.15em] uppercase text-accent border border-accent/20 px-2 py-1 mb-5 inline-block">{{ type }}</span>
+      <h3 class="font-semibold text-white text-lg mb-3">{{ brand }}</h3>
+      <p class="text-white/40 text-sm leading-relaxed">{{ result }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ── CTA ──────────────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-t border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-24 text-center">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Let's Talk</p>
+    <h2 class="font-heading text-5xl md:text-7xl mb-6">
+      READY TO<br><span class="text-accent">PARTNER UP?</span>
+    </h2>
+    <p class="text-white/50 max-w-sm mx-auto mb-10 leading-relaxed">
+      Send over your brand details and let's see if we're a good fit.
+      I only take on partnerships I genuinely believe in.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="/contact"
+         class="bg-accent text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:brightness-90 transition-all">
+        Start a Conversation
+      </a>
+      <a href="https://instagram.com/flexfactorx" target="_blank" rel="noopener noreferrer"
+         class="border border-white/20 text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:border-white/50 transition-colors">
+        DM on Instagram
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -52,7 +52,7 @@
   <div class="max-w-6xl mx-auto px-6 py-16 grid grid-cols-3 gap-8">
     {% for value, label in stats %}
     <div class="text-center">
-      <p class="font-heading text-5xl md:text-7xl text-accent">{{ value }}</p>
+      <p class="font-heading text-5xl md:text-7xl text-accent" data-count-up>{{ value }}</p>
       <p class="text-white/40 text-xs tracking-[0.15em] uppercase mt-2">{{ label }}</p>
     </div>
     {% endfor %}
