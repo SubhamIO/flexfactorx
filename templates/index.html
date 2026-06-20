@@ -6,17 +6,17 @@
 {# Drop your photo at static/images/hero.jpg — portrait orientation works best #}
 <section class="relative min-h-screen flex overflow-hidden">
 
-  {# Full-bleed background image — shown on all screen sizes #}
-  <div class="absolute inset-0">
+  {# Mobile: full-bleed bg. Desktop: right-column (50%). Controlled via .hero-img-wrap in main.css #}
+  <div class="hero-img-wrap">
     <img src="{{ url_for('static', filename='images/hero.jpg') }}"
          alt="FlexFactorX training"
          class="w-full h-full object-cover object-top"
          fetchpriority="high">
-    {# Mobile: uniform dark overlay so text stays readable over the photo #}
+    {# Mobile only: dark overlay so text is readable over the full-bleed photo #}
     <div class="absolute inset-0 bg-[#080808]/65 md:hidden"></div>
-    {# Desktop: fade left half dark (text area), let image show on the right #}
+    {# Desktop only: fade left edge of photo into the dark text column #}
     <div class="hero-photo-fade-x absolute inset-0 hidden md:block"></div>
-    {# Both: fade bottom edge into next section #}
+    {# Both: fade bottom of photo into the next section #}
     <div class="hero-photo-fade-y absolute inset-0"></div>
   </div>
 

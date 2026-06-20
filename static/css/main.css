@@ -9,9 +9,15 @@ html { scroll-behavior: smooth; }
 .page-title  { font-size: clamp(4rem, 14vw, 11rem); }
 
 /* Hero photo gradients — blend photo into #080808 background */
-.hero-photo-fade-x { background: linear-gradient(to right, #080808 45%, transparent 75%); }
-.hero-photo-fade-y { background: linear-gradient(to top,  #080808 0%, transparent 25%); }
+.hero-photo-fade-x { background: linear-gradient(to right, #080808 0%, transparent 45%); }
+.hero-photo-fade-y { background: linear-gradient(to top,  #080808 0%, transparent 30%); }
 .hero-glow         { background: radial-gradient(ellipse 60% 30% at 30% 100%, rgba(255,77,0,0.10), transparent); }
+
+/* Hero image wrapper — full bleed on mobile, right column on desktop */
+.hero-img-wrap { position: absolute; inset: 0; }
+@media (min-width: 768px) {
+  .hero-img-wrap { left: auto; width: 50%; }
+}
 
 /* Gallery horizontal scroll */
 .gallery-scroll {
