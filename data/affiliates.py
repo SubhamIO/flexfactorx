@@ -12,6 +12,7 @@ affiliates = [
         'category': 'nootropic',
         'description': 'Caffeine + L-Theanine stack — smooth, jitter-free energy with zero crash. My go-to before every session.',
         'url': 'https://getsmartcaffeine.com/?ref=lnmzvuuy',
+        'image': 'static/images/gallery/photo5.jpg',
         'coupon': '25OFFCAFFEINE',
         'coupon_note': 'Extra 25% off for you',
         'discount': '10% off',
