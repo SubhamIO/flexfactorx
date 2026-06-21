@@ -42,44 +42,48 @@
     {% for product in products %}
     <a href="{{ product.url }}" target="_blank" rel="noopener noreferrer sponsored"
        data-category="{{ product.category }}"
-       class="product-card flex flex-col border border-[#1a1a1a] bg-[#0d0d0d] hover:border-accent/40 transition-all duration-300 group overflow-hidden">
+       class="product-card relative flex flex-col justify-end border border-[#1a1a1a] hover:border-accent/50 transition-all duration-300 group overflow-hidden product-card-height">
 
-      {# Product image #}
+      {# Full-bleed background image #}
       {% if product.image %}
-      <div class="relative bg-[#111] overflow-hidden product-img-wrap">
-        <img src="{{ product.image if product.image.startswith('http') else url_for('static', filename=product.image[7:]) }}"
-             alt="{{ product.name }}"
-             loading="lazy"
-             class="w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-105">
-        <div class="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-transparent opacity-60"></div>
+      <img src="{{ product.image if product.image.startswith('http') else url_for('static', filename=product.image[7:]) }}"
+           alt="{{ product.name }}"
+           loading="lazy"
+           class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+      {% endif %}
+
+      {# Gradient overlay — dark at bottom, subtle at top #}
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/10"></div>
+
+      {# Top badges #}
+      <div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+        <span class="text-[0.6rem] tracking-[0.2em] uppercase text-accent border border-accent/40 bg-black/60 px-2 py-1 backdrop-blur-sm">
+          {{ category_labels[product.category] }}
+        </span>
         {% if product.featured %}
-        <span class="absolute top-3 right-3 text-[0.6rem] tracking-[0.2em] uppercase text-accent border border-accent/30 bg-[#0d0d0d]/80 px-2 py-1 backdrop-blur-sm">
+        <span class="text-[0.6rem] tracking-[0.2em] uppercase text-white/60 border border-white/10 bg-black/60 px-2 py-1 backdrop-blur-sm">
           My Pick
         </span>
         {% endif %}
       </div>
-      {% endif %}
 
-      {# Content #}
-      <div class="flex flex-col flex-1 p-6">
-        <span class="text-[0.6rem] tracking-[0.2em] uppercase text-accent border border-accent/20 px-2 py-1 w-fit mb-4">
-          {{ category_labels[product.category] }}
-        </span>
-        <h2 class="font-semibold text-white text-base leading-snug mb-1 group-hover:text-accent transition-colors">{{ product.name }}</h2>
-        <p class="text-white/30 text-xs mb-3">{{ product.brand }}</p>
-        <p class="text-white/50 text-sm leading-relaxed mb-6 flex-1">{{ product.description }}</p>
+      {# Content pinned to bottom #}
+      <div class="relative z-10 p-6">
+        <h2 class="font-semibold text-white text-base leading-snug mb-1 group-hover:text-accent transition-colors duration-300">{{ product.name }}</h2>
+        <p class="text-white/40 text-xs mb-3">{{ product.brand }}</p>
+        <p class="text-white/60 text-sm leading-relaxed mb-5">{{ product.description }}</p>
         {% if product.coupon %}
         <div class="mb-5 space-y-2">
           {% if product.discount %}
           <p class="text-xs text-white/40">Link gives you <span class="text-white/70">{{ product.discount }}</span></p>
           {% endif %}
           <div class="flex items-center gap-3">
-            <span class="font-mono text-sm tracking-widest text-accent border border-accent/30 px-3 py-1 bg-accent/5">{{ product.coupon }}</span>
+            <span class="font-mono text-sm tracking-widest text-accent border border-accent/30 px-3 py-1 bg-black/40">{{ product.coupon }}</span>
             <span class="text-xs text-white/30">{{ product.coupon_note }}</span>
           </div>
         </div>
         {% endif %}
-        <div class="flex items-center gap-2 text-xs tracking-[0.15em] uppercase text-accent mt-auto">
+        <div class="flex items-center gap-2 text-xs tracking-[0.15em] uppercase text-accent">
           <span>View Deal</span>
           <span class="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </div>

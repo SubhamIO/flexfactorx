@@ -19,8 +19,8 @@ html { scroll-behavior: smooth; }
   .hero-img-wrap { left: auto; width: 50%; }
 }
 
-/* Product card image container */
-.product-img-wrap { height: 220px; }
+/* Product card full-bleed layout */
+.product-card-height { min-height: 420px; }
 
 /* Gallery horizontal scroll */
 .gallery-scroll {
