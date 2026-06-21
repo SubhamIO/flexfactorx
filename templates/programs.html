@@ -142,6 +142,141 @@
 
 </section>
 
+{# ── Support the Grind ────────────────────────────────── #}
+<section class="border-t border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid md:grid-cols-2 gap-16 items-center">
+
+      {# Left — copy #}
+      <div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Support the Creator</p>
+        <h2 class="font-heading text-5xl md:text-6xl leading-[0.9] mb-6">
+          KEEP IT<br><span class="text-accent">FREE.</span>
+        </h2>
+        <p class="text-white/50 leading-relaxed mb-6">
+          Every program on this page is free — no email wall, no paywall, no catch.
+          If a program helped you add weight to the bar or drop body fat,
+          a small contribution goes a long way toward keeping the content coming.
+        </p>
+        <p class="text-white/30 text-sm leading-relaxed mb-10">
+          No pressure. Seriously. But if you want to say thanks — this is how.
+        </p>
+
+        {# Amount selector #}
+        <div class="mb-6">
+          <p class="text-white/25 text-xs tracking-[0.2em] uppercase mb-3">Choose Amount</p>
+          <div class="flex flex-wrap gap-2 mb-3">
+            {% for label, paise in [('₹49', 4900), ('₹99', 9900), ('₹199', 19900)] %}
+            <button type="button"
+                    data-amount="{{ paise }}"
+                    onclick="selectAmount(this)"
+                    class="amount-pill border border-[#2a2a2a] text-white/40 text-xs tracking-[0.15em] uppercase px-4 py-2
+                           hover:border-accent/40 hover:text-accent transition-colors">
+              {{ label }}
+            </button>
+            {% endfor %}
+            <button type="button"
+                    data-amount="custom"
+                    onclick="selectAmount(this)"
+                    class="amount-pill border border-[#2a2a2a] text-white/40 text-xs tracking-[0.15em] uppercase px-4 py-2
+                           hover:border-accent/40 hover:text-accent transition-colors">
+              Your Call
+            </button>
+          </div>
+          {# Custom amount input — revealed when "Your Call" is selected #}
+          <div id="custom-amount-wrap" class="hidden">
+            <div class="flex items-center gap-2 border border-[#2a2a2a] focus-within:border-accent/50 transition-colors w-48">
+              <span class="text-white/40 text-sm pl-3">₹</span>
+              <input id="custom-amount-input" type="number" min="1" placeholder="Enter amount"
+                     class="flex-1 bg-transparent text-white text-sm py-2 pr-3 focus:outline-none placeholder-white/20">
+            </div>
+          </div>
+        </div>
+
+        {# Pay button #}
+        <button type="button"
+                id="rzp-pay-btn"
+                onclick="startPayment()"
+                class="w-full sm:w-auto bg-accent text-white text-xs tracking-[0.2em] uppercase px-10 py-4
+                       hover:brightness-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed mb-8"
+                disabled>
+          Support Now →
+        </button>
+
+        {# Status messages #}
+        <div id="pay-success" class="hidden flex items-center gap-3 mb-6">
+          <div class="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5l2 2 4-4" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="text-green-400 text-sm">Payment received — thank you, this means a lot.</p>
+        </div>
+        <div id="pay-error" class="hidden flex items-center gap-3 mb-6">
+          <div class="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-red-400 text-xs">✕</span>
+          </div>
+          <p id="pay-error-msg" class="text-red-400 text-sm"></p>
+        </div>
+
+        {# Trust line #}
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-px bg-accent"></div>
+          <p class="text-white/25 text-xs tracking-[0.15em] uppercase">
+            100% goes toward creating more free content
+          </p>
+        </div>
+      </div>
+
+      {# Right — Razorpay card #}
+      <div class="flex justify-center md:justify-end">
+        <div class="relative border border-[#1a1a1a] bg-[#0d0d0d] p-8 w-fit">
+
+          {# Orange corner accents #}
+          <span class="absolute top-0 left-0 w-4 h-px bg-accent"></span>
+          <span class="absolute top-0 left-0 w-px h-4 bg-accent"></span>
+          <span class="absolute top-0 right-0 w-4 h-px bg-accent"></span>
+          <span class="absolute top-0 right-0 w-px h-4 bg-accent"></span>
+          <span class="absolute bottom-0 left-0 w-4 h-px bg-accent"></span>
+          <span class="absolute bottom-0 left-0 w-px h-4 bg-accent"></span>
+          <span class="absolute bottom-0 right-0 w-4 h-px bg-accent"></span>
+          <span class="absolute bottom-0 right-0 w-px h-4 bg-accent"></span>
+
+          {# Label #}
+          <p class="text-accent text-[0.6rem] tracking-[0.3em] uppercase text-center mb-5">
+            Pay Online
+          </p>
+
+          {# Icon #}
+          <div class="flex justify-center mb-5">
+            <svg class="w-16 h-16 text-white/20" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 64 64">
+              <rect x="4" y="14" width="56" height="36" rx="4"/>
+              <line x1="4" y1="26" x2="60" y2="26"/>
+              <line x1="14" y1="38" x2="26" y2="38"/>
+              <line x1="30" y1="38" x2="36" y2="38"/>
+            </svg>
+          </div>
+
+          {# Accepted methods #}
+          <div class="text-center mb-5">
+            <p class="text-white/50 text-xs tracking-[0.15em] uppercase mb-2">Accepted payments</p>
+            <p class="text-white/20 text-[0.6rem] tracking-wider">
+              Cards &nbsp;·&nbsp; Netbanking &nbsp;·&nbsp; UPI &nbsp;·&nbsp; Wallets
+            </p>
+          </div>
+
+          {# Razorpay trigger hint #}
+          <p class="text-white/25 text-[0.65rem] tracking-[0.1em] uppercase text-center">
+            Select amount on the left &amp; click support
+          </p>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 {# ── CTA ──────────────────────────────────────────────── #}
 <section class="bg-[#0d0d0d] border-t border-[#1a1a1a]">
   <div class="max-w-6xl mx-auto px-6 py-20 text-center">
@@ -258,6 +393,134 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closePreview();
   });
+}());
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var selectedPaise = null;
+
+  // ── Amount pill selection ─────────────────────────────
+  window.selectAmount = function (btn) {
+    document.querySelectorAll('.amount-pill').forEach(function (b) {
+      b.classList.remove('border-accent', 'text-accent');
+      b.classList.add('border-[#2a2a2a]', 'text-white/40');
+    });
+    btn.classList.add('border-accent', 'text-accent');
+    btn.classList.remove('border-[#2a2a2a]', 'text-white/40');
+
+    var customWrap = document.getElementById('custom-amount-wrap');
+    if (btn.dataset.amount === 'custom') {
+      customWrap.classList.remove('hidden');
+      selectedPaise = null;
+      document.getElementById('rzp-pay-btn').disabled = true;
+      document.getElementById('custom-amount-input').focus();
+    } else {
+      customWrap.classList.add('hidden');
+      selectedPaise = parseInt(btn.dataset.amount, 10);
+      document.getElementById('rzp-pay-btn').disabled = false;
+    }
+  };
+
+  document.getElementById('custom-amount-input').addEventListener('input', function () {
+    var val = parseInt(this.value, 10);
+    if (val >= 1) {
+      selectedPaise = val * 100;
+      document.getElementById('rzp-pay-btn').disabled = false;
+    } else {
+      selectedPaise = null;
+      document.getElementById('rzp-pay-btn').disabled = true;
+    }
+  });
+
+  // ── Razorpay flow ─────────────────────────────────────
+  window.startPayment = function () {
+    if (!selectedPaise || selectedPaise < 100) return;
+
+    var btn = document.getElementById('rzp-pay-btn');
+    btn.textContent = 'Please wait…';
+    btn.disabled = true;
+    hideMessages();
+
+    fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: selectedPaise }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (order) {
+      if (order.error) throw new Error(order.error);
+
+      var options = {
+        key:         '{{ rzp_key_id }}',
+        amount:      order.amount,
+        currency:    order.currency,
+        name:        'FlexFactorX',
+        description: 'Support the Grind',
+        order_id:    order.order_id,
+        theme:       { color: '#FF4D00' },
+        modal: {
+          ondismiss: function () { resetBtn(); },
+        },
+        handler: function (response) {
+          fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(response),
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (result) {
+            if (result.status === 'ok') {
+              showSuccess();
+            } else {
+              showError('Verification failed. Contact us if payment was deducted.');
+            }
+          })
+          .catch(function () {
+            showError('Could not verify payment. Contact us if payment was deducted.');
+          });
+        },
+      };
+
+      var rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        showError(resp.error.description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
+      resetBtn();
+    })
+    .catch(function (err) {
+      showError(err.message || 'Something went wrong. Please try again.');
+      resetBtn();
+    });
+  };
+
+  function resetBtn() {
+    var btn = document.getElementById('rzp-pay-btn');
+    btn.textContent = 'Support Now →';
+    btn.disabled = (selectedPaise === null);
+  }
+
+  function hideMessages() {
+    document.getElementById('pay-success').classList.add('hidden');
+    document.getElementById('pay-error').classList.add('hidden');
+  }
+
+  function showSuccess() {
+    hideMessages();
+    document.getElementById('pay-success').classList.remove('hidden');
+    document.getElementById('rzp-pay-btn').disabled = true;
+  }
+
+  function showError(msg) {
+    hideMessages();
+    document.getElementById('pay-error-msg').textContent = msg;
+    document.getElementById('pay-error').classList.remove('hidden');
+    resetBtn();
+  }
 }());
 </script>
 
