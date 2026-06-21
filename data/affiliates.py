@@ -2,6 +2,7 @@ CATEGORY_LABELS = {
     'nootropic':     'Nootropic',
     'supplement':    'Supplement',
     'gym_equipment': 'Gym Equipment',
+    'nutrition':     'Nutrition',
 }
 
 affiliates = [
@@ -52,6 +53,19 @@ affiliates = [
         'description': 'Adjustable doorway pull up bar — no screws, anti-skid grip. Works on any door frame. The easiest way to add back and bicep work to your home setup.',
         'url': 'https://link.amazon/B06hj9FCU',
         'image': 'https://m.media-amazon.com/images/I/61SU-8MAyiL._SL1500_.jpg',
+        'coupon': None,
+        'coupon_note': None,
+        'discount': None,
+        'featured': True,
+    },
+    {
+        'id': 5,
+        'name': '26g High Protein Oats 1kg — Dark Chocolate',
+        'brand': 'Pintola',
+        'category': 'nutrition',
+        'description': '26g protein per serving, no refined sugar, loaded with almonds, raisins, pumpkin & chia seeds. 9.6g fibre, gluten free — the cleanest breakfast you can eat on a bulk or cut.',
+        'url': 'https://link.amazon/B0fHc1JA7',
+        'image': 'https://m.media-amazon.com/images/I/71XSbFkYmRL._SL1500_.jpg',
         'coupon': None,
         'coupon_note': None,
         'discount': None,
