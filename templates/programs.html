@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Programs | FlexFactorX{% endblock %}
+{% block description %}Free workout programs and nutrition guides from FlexFactorX — evidence-based training for every level.{% endblock %}
+
+{% block content %}
+
+{# ── Header ───────────────────────────────────────────── #}
+<section class="pt-36 pb-16 border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">World of FlexFactorX</p>
+    <h1 class="page-title font-heading leading-[0.88] mb-6">FREE PROGRAMS.</h1>
+    <p class="text-white/50 text-lg max-w-xl leading-relaxed">
+      Every program is free. Every program is evidence-based.
+      Download, follow, and get to work.
+    </p>
+  </div>
+</section>
+
+{# ── Filter Bar ───────────────────────────────────────── #}
+<section class="border-b border-[#1a1a1a] bg-[#0d0d0d] sticky top-[64px] z-30">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex gap-1 overflow-x-auto py-3 scrollbar-none">
+      {% set all_cats = [('all', 'All Programs')] + category_labels.items()|list %}
+      {% for key, label in all_cats %}
+      <button type="button"
+              data-filter="{{ key }}"
+              class="filter-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-5 py-2.5 border transition-colors whitespace-nowrap
+                     {{ 'bg-accent text-white border-accent' if key == 'all' else 'border-[#2a2a2a] text-white/40 hover:text-white hover:border-white/30' }}">
+        {{ label }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Program Grid ─────────────────────────────────────── #}
+<section class="max-w-6xl mx-auto px-6 py-16">
+
+  <p id="result-count" class="text-white/30 text-xs tracking-[0.15em] uppercase mb-8">
+    {{ programs|length }} Programs Available
+  </p>
+
+  <div id="programs-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for prog in programs %}
+    <div class="program-card group relative flex flex-col border border-[#1a1a1a] bg-[#0d0d0d] hover:border-accent/40 transition-all duration-300 overflow-hidden"
+         data-category="{{ prog.category }}">
+
+      {# ── Visual Thumbnail ──────────────────────────── #}
+      <div class="relative h-52 bg-[#080808] flex items-center justify-center overflow-hidden border-b border-[#1a1a1a] group-hover:border-accent/20 transition-colors cursor-pointer"
+           onclick="openPreview('{{ prog.filename }}', '{{ prog.name }}', '/static/pdfs/{{ prog.filename }}')">
+
+        {# Radial glow #}
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_60%,rgba(255,77,0,0.07),transparent)]
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {# Large watermark number #}
+        <span class="absolute -right-2 bottom-0 font-heading leading-none select-none pointer-events-none
+                     text-[8rem] text-white/[0.04] group-hover:text-white/[0.07] transition-colors duration-500">
+          {{ prog.num }}
+        </span>
+
+        {# Corner accent bar #}
+        <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-accent/60 via-accent/20 to-transparent
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        {# Content #}
+        <div class="relative z-10 text-center px-8">
+          <span class="inline-block text-accent text-[0.6rem] tracking-[0.3em] uppercase mb-3 border border-accent/30 px-2.5 py-1">
+            {{ category_labels[prog.category] }}
+          </span>
+          <h3 class="font-heading text-2xl md:text-3xl text-white leading-tight mb-1">{{ prog.name }}</h3>
+          <p class="text-white/30 text-xs tracking-wide">{{ prog.subtitle }}</p>
+        </div>
+
+        {# Preview hint on hover #}
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <span class="absolute bottom-4 right-4 text-[0.6rem] tracking-[0.15em] uppercase text-accent/70">
+            Click to preview →
+          </span>
+        </div>
+
+        {# Bottom accent line #}
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent
+                    scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>
+      </div>
+
+      {# ── Card Body ─────────────────────────────────── #}
+      <div class="flex flex-col flex-1 p-6">
+
+        {# Stats row #}
+        <div class="grid grid-cols-3 gap-0 mb-5 pb-5 border-b border-[#1a1a1a]">
+          <div class="text-center">
+            <p class="font-heading text-sm text-accent leading-tight">{{ prog.duration }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Duration</p>
+          </div>
+          <div class="text-center border-x border-[#1a1a1a]">
+            <p class="font-heading text-sm text-accent leading-tight">{{ prog.frequency }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Frequency</p>
+          </div>
+          <div class="text-center">
+            <p class="font-heading text-sm text-accent leading-tight">{{ prog.level }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Level</p>
+          </div>
+        </div>
+
+        {# Description #}
+        <p class="text-white/50 text-sm leading-relaxed mb-4 flex-1">{{ prog.description }}</p>
+
+        {# Tags #}
+        <div class="flex flex-wrap gap-1.5 mb-5">
+          {% for tag in prog.tags %}
+          <span class="text-[0.58rem] tracking-[0.12em] uppercase text-white/25 border border-[#222] px-2 py-0.5">
+            {{ tag }}
+          </span>
+          {% endfor %}
+        </div>
+
+        {# Actions #}
+        <div class="flex gap-2">
+          <a href="/static/pdfs/{{ prog.filename }}" download="{{ prog.name }}.pdf"
+             class="flex-1 text-center bg-accent text-white text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:brightness-90 transition-all">
+            ↓ Download
+          </a>
+          <button type="button"
+                  onclick="openPreview('{{ prog.filename }}', '{{ prog.name }}', '/static/pdfs/{{ prog.filename }}')"
+                  class="flex-1 border border-white/15 text-white/70 text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:border-accent/50 hover:text-white transition-colors">
+            Preview
+          </button>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Empty state #}
+  <div id="no-results" class="hidden text-center py-24">
+    <p class="font-heading text-4xl text-white/10 mb-3">NO PROGRAMS</p>
+    <p class="text-white/30 text-sm">Nothing matches that filter yet.</p>
+  </div>
+
+</section>
+
+{# ── CTA ──────────────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-t border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-20 text-center">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Custom Coaching</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-5">WANT A PLAN<br><span class="text-accent">BUILT FOR YOU?</span></h2>
+    <p class="text-white/50 max-w-sm mx-auto mb-10 leading-relaxed">
+      Generic programs get generic results. Custom coaching is built around your body,
+      your schedule, and your specific goal.
+    </p>
+    <a href="/contact"
+       class="inline-block bg-accent text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:brightness-90 transition-all">
+      Apply for Coaching
+    </a>
+  </div>
+</section>
+
+{# ── PDF Preview Modal ────────────────────────────────── #}
+<div id="pdf-modal"
+     class="fixed inset-0 z-50 hidden"
+     role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+  {# Backdrop #}
+  <div class="absolute inset-0 bg-black/92 backdrop-blur-sm" onclick="closePreview()"></div>
+
+  {# Modal panel #}
+  <div class="relative z-10 flex flex-col h-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
+
+    {# Modal header #}
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <div>
+        <p class="text-accent text-[0.6rem] tracking-[0.3em] uppercase mb-0.5">World of FlexFactorX</p>
+        <h2 id="modal-title" class="font-heading text-2xl text-white"></h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <a id="modal-download" href="#" download
+           class="bg-accent text-white text-[0.65rem] tracking-[0.15em] uppercase px-6 py-2.5 hover:brightness-90 transition-all">
+          ↓ Download
+        </a>
+        <button type="button" onclick="closePreview()"
+                class="border border-white/20 text-white/60 text-[0.65rem] tracking-[0.15em] uppercase px-5 py-2.5 hover:border-white/50 hover:text-white transition-colors">
+          ✕ Close
+        </button>
+      </div>
+    </div>
+
+    {# iframe container #}
+    <div class="flex-1 border border-[#1a1a1a] overflow-hidden min-h-0">
+      <iframe id="pdf-frame"
+              src=""
+              title="PDF Preview"
+              class="w-full h-full bg-[#111]">
+      </iframe>
+    </div>
+
+    {# Mobile fallback message (shown only on small screens) #}
+    <p class="md:hidden text-white/30 text-xs text-center mt-3">
+      Can't see the PDF? <a id="modal-open" href="#" target="_blank" rel="noopener" class="text-accent underline">Open in browser</a>
+    </p>
+  </div>
+</div>
+
+{# ── Scripts ──────────────────────────────────────────── #}
+<script>
+(function () {
+  'use strict';
+
+  // ── Filter ────────────────────────────────────────────
+  const cards   = document.querySelectorAll('.program-card');
+  const btns    = document.querySelectorAll('.filter-btn');
+  const noRes   = document.getElementById('no-results');
+  const counter = document.getElementById('result-count');
+
+  btns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const filter = this.dataset.filter;
+
+      btns.forEach(function (b) {
+        b.classList.remove('bg-accent', 'text-white', 'border-accent');
+        b.classList.add('border-[#2a2a2a]', 'text-white/40');
+      });
+      this.classList.add('bg-accent', 'text-white', 'border-accent');
+      this.classList.remove('border-[#2a2a2a]', 'text-white/40');
+
+      let visible = 0;
+      cards.forEach(function (card) {
+        const match = filter === 'all' || card.dataset.category === filter;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+
+      noRes.classList.toggle('hidden', visible > 0);
+      counter.textContent = visible + ' Program' + (visible === 1 ? '' : 's') + ' Available';
+    });
+  });
+
+  // ── PDF Preview Modal ────────────────────────────────
+  window.openPreview = function (filename, name, url) {
+    document.getElementById('modal-title').textContent   = name;
+    document.getElementById('modal-download').href       = url;
+    document.getElementById('modal-download').download   = name + '.pdf';
+    document.getElementById('modal-open').href           = url;
+    document.getElementById('pdf-frame').src             = url;
+    const modal = document.getElementById('pdf-modal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePreview = function () {
+    document.getElementById('pdf-modal').classList.add('hidden');
+    document.getElementById('pdf-frame').src = '';
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePreview();
+  });
+}());
+</script>
+
+{% endblock %}

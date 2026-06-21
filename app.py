@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Flask, render_template
 from data.affiliates import affiliates, CATEGORY_LABELS
 from data.testimonials import testimonials
+from data.programs import programs, CATEGORY_LABELS as PROGRAM_CATEGORY_LABELS
 
 app = Flask(__name__)
 
@@ -25,6 +26,7 @@ def inject_globals():
         'nav_links': [
             ('/', 'Home', 'home'),
             ('/about', 'About', 'about'),
+            ('/programs', 'Programs', 'programs'),
             ('/shop', 'Shop', 'shop'),
             ('/collabs', 'Collabs', 'collabs'),
             ('/contact', 'Contact', 'contact'),
@@ -53,6 +55,12 @@ def about():
 @app.route('/shop')
 def shop():
     return render_template('shop.html', products=affiliates, category_labels=CATEGORY_LABELS)
+
+
+@app.route('/programs')
+def programs_page():
+    return render_template('programs.html', programs=programs,
+                           category_labels=PROGRAM_CATEGORY_LABELS)
 
 
 @app.route('/collabs')
