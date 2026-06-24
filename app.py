@@ -15,6 +15,7 @@ from admin import admin_bp
 from data.affiliates import affiliates, CATEGORY_LABELS
 from data.testimonials import testimonials
 from data.programs import programs, CATEGORY_LABELS as PROGRAM_CATEGORY_LABELS
+from data.blogs import blogs, CATEGORY_LABELS as BLOG_CATEGORY_LABELS
 
 load_dotenv()
 
@@ -103,6 +104,7 @@ def inject_globals():
             ('/',         'Home',     'home'),
             ('/about',    'About',    'about'),
             ('/programs', 'Programs', 'programs'),
+            ('/blogs',    'Blogs',    'blogs'),
             ('/shop',     'Shop',     'shop'),
             ('/tools',    'Tools',    'tools'),
             ('/collabs',  'Collabs',  'collabs'),
@@ -140,6 +142,12 @@ def shop():
 def programs_page():
     return render_template('programs.html', programs=programs,
                            category_labels=PROGRAM_CATEGORY_LABELS)
+
+
+@app.route('/blogs', endpoint='blogs')
+def blogs_page():
+    return render_template('blogs.html', blogs=blogs,
+                           category_labels=BLOG_CATEGORY_LABELS)
 
 
 @app.route('/tools')

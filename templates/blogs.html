@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Blogs | FlexFactorX{% endblock %}
+{% block description %}Evidence-based fitness articles from FlexFactorX — training, nutrition, and supplement guides written by athletes, for lifters.{% endblock %}
+
+{% block content %}
+
+{# ── Header ───────────────────────────────────────────── #}
+<section class="pt-36 pb-16 border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">World of FlexFactorX</p>
+    <h1 class="page-title font-heading leading-[0.88] mb-6">THE BLOG.</h1>
+    <p class="text-white/50 text-lg max-w-xl leading-relaxed">
+      No hype. No broscience. Just evidence-based fitness —
+      written, owned, and published by FlexFactorX. Preview or download, free.
+    </p>
+  </div>
+</section>
+
+{# ── Filter Bar ───────────────────────────────────────── #}
+<section class="border-b border-[#1a1a1a] bg-[#0d0d0d] sticky top-[64px] z-30">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex gap-1 overflow-x-auto py-3 scrollbar-none">
+      {% set all_cats = [('all', 'All Posts')] + category_labels.items()|list %}
+      {% for key, label in all_cats %}
+      <button type="button"
+              data-filter="{{ key }}"
+              class="filter-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-5 py-2.5 border transition-colors whitespace-nowrap
+                     {{ 'bg-accent text-white border-accent' if key == 'all' else 'border-[#2a2a2a] text-white/40 hover:text-white hover:border-white/30' }}">
+        {{ label }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ── Blog Grid ────────────────────────────────────────── #}
+<section class="max-w-6xl mx-auto px-6 py-16">
+
+  <p id="result-count" class="text-white/30 text-xs tracking-[0.15em] uppercase mb-8">
+    {{ blogs|length }} Article{{ '' if blogs|length == 1 else 's' }} Published
+  </p>
+
+  <div id="blogs-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for blog in blogs %}
+    <div class="blog-card group relative flex flex-col border border-[#1a1a1a] bg-[#0d0d0d] hover:border-accent/40 transition-all duration-300 overflow-hidden"
+         data-category="{{ blog.category }}">
+
+      {# ── Visual Thumbnail ──────────────────────────── #}
+      <div class="relative h-52 bg-[#080808] flex items-center justify-center overflow-hidden border-b border-[#1a1a1a] group-hover:border-accent/20 transition-colors cursor-pointer"
+           onclick="openPreview('{{ blog.filename }}', '{{ blog.name }}', '/static/pdfs/{{ blog.filename }}')">
+
+        {# Radial glow #}
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_60%,rgba(255,77,0,0.07),transparent)]
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {# Large watermark number #}
+        <span class="absolute -right-2 bottom-0 font-heading leading-none select-none pointer-events-none
+                     text-[8rem] text-white/[0.04] group-hover:text-white/[0.07] transition-colors duration-500">
+          {{ blog.num }}
+        </span>
+
+        {# Corner accent bar #}
+        <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-accent/60 via-accent/20 to-transparent
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        {# Content #}
+        <div class="relative z-10 text-center px-8">
+          <span class="inline-block text-accent text-[0.6rem] tracking-[0.3em] uppercase mb-3 border border-accent/30 px-2.5 py-1">
+            {{ category_labels[blog.category] }}
+          </span>
+          <h3 class="font-heading text-2xl md:text-3xl text-white leading-tight mb-1">{{ blog.name }}</h3>
+          <p class="text-white/30 text-xs tracking-wide">{{ blog.subtitle }}</p>
+        </div>
+
+        {# Preview hint on hover #}
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <span class="absolute bottom-4 right-4 text-[0.6rem] tracking-[0.15em] uppercase text-accent/70">
+            Click to read →
+          </span>
+        </div>
+
+        {# Bottom accent line #}
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent
+                    scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>
+      </div>
+
+      {# ── Card Body ─────────────────────────────────── #}
+      <div class="flex flex-col flex-1 p-6">
+
+        {# Stats row #}
+        <div class="grid grid-cols-3 gap-0 mb-5 pb-5 border-b border-[#1a1a1a]">
+          <div class="text-center">
+            <p class="font-heading text-sm text-accent leading-tight">{{ blog.read_time }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Read</p>
+          </div>
+          <div class="text-center border-x border-[#1a1a1a]">
+            <p class="font-heading text-sm text-accent leading-tight">{{ blog.level }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Level</p>
+          </div>
+          <div class="text-center">
+            <p class="font-heading text-sm text-accent leading-tight">{{ blog.date }}</p>
+            <p class="text-white/25 text-[0.58rem] uppercase tracking-widest mt-1">Published</p>
+          </div>
+        </div>
+
+        {# Author #}
+        <p class="text-white/30 text-[0.6rem] tracking-[0.2em] uppercase mb-3">By {{ blog.author }}</p>
+
+        {# Description #}
+        <p class="text-white/50 text-sm leading-relaxed mb-4 flex-1">{{ blog.description }}</p>
+
+        {# Tags #}
+        <div class="flex flex-wrap gap-1.5 mb-5">
+          {% for tag in blog.tags %}
+          <span class="text-[0.58rem] tracking-[0.12em] uppercase text-white/25 border border-[#222] px-2 py-0.5">
+            {{ tag }}
+          </span>
+          {% endfor %}
+        </div>
+
+        {# Actions #}
+        <div class="flex gap-2">
+          <a href="/static/pdfs/{{ blog.filename }}" download="{{ blog.name }}.pdf"
+             class="flex-1 text-center bg-accent text-white text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:brightness-90 transition-all">
+            ↓ Download
+          </a>
+          <button type="button"
+                  onclick="openPreview('{{ blog.filename }}', '{{ blog.name }}', '/static/pdfs/{{ blog.filename }}')"
+                  class="flex-1 border border-white/15 text-white/70 text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:border-accent/50 hover:text-white transition-colors">
+            Preview
+          </button>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Empty state #}
+  <div id="no-results" class="hidden text-center py-24">
+    <p class="font-heading text-4xl text-white/10 mb-3">NO ARTICLES</p>
+    <p class="text-white/30 text-sm">Nothing matches that filter yet.</p>
+  </div>
+
+</section>
+
+{# ── CTA ──────────────────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-t border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 py-20 text-center">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Train With Intent</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-5">READ IT.<br><span class="text-accent">THEN APPLY IT.</span></h2>
+    <p class="text-white/50 max-w-sm mx-auto mb-10 leading-relaxed">
+      Knowledge is only worth something when it hits the gym floor.
+      Grab a free program and put the theory to work.
+    </p>
+    <a href="/programs"
+       class="inline-block bg-accent text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:brightness-90 transition-all">
+      Browse Free Programs
+    </a>
+  </div>
+</section>
+
+{# ── PDF Preview Modal ────────────────────────────────── #}
+<div id="pdf-modal"
+     class="fixed inset-0 z-50 hidden"
+     role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+  {# Backdrop #}
+  <div class="absolute inset-0 bg-black/92 backdrop-blur-sm" onclick="closePreview()"></div>
+
+  {# Modal panel #}
+  <div class="relative z-10 flex flex-col h-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
+
+    {# Modal header #}
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <div>
+        <p class="text-accent text-[0.6rem] tracking-[0.3em] uppercase mb-0.5">World of FlexFactorX</p>
+        <h2 id="modal-title" class="font-heading text-2xl text-white"></h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <a id="modal-download" href="#" download
+           class="bg-accent text-white text-[0.65rem] tracking-[0.15em] uppercase px-6 py-2.5 hover:brightness-90 transition-all">
+          ↓ Download
+        </a>
+        <button type="button" onclick="closePreview()"
+                class="border border-white/20 text-white/60 text-[0.65rem] tracking-[0.15em] uppercase px-5 py-2.5 hover:border-white/50 hover:text-white transition-colors">
+          ✕ Close
+        </button>
+      </div>
+    </div>
+
+    {# iframe container #}
+    <div class="flex-1 border border-[#1a1a1a] overflow-hidden min-h-0">
+      <iframe id="pdf-frame"
+              src=""
+              title="PDF Preview"
+              class="w-full h-full bg-[#111]">
+      </iframe>
+    </div>
+
+    {# Mobile fallback message (shown only on small screens) #}
+    <p class="md:hidden text-white/30 text-xs text-center mt-3">
+      Can't see the PDF? <a id="modal-open" href="#" target="_blank" rel="noopener" class="text-accent underline">Open in browser</a>
+    </p>
+  </div>
+</div>
+
+{# ── Scripts ──────────────────────────────────────────── #}
+<script>
+(function () {
+  'use strict';
+
+  // ── Filter ────────────────────────────────────────────
+  const cards   = document.querySelectorAll('.blog-card');
+  const btns    = document.querySelectorAll('.filter-btn');
+  const noRes   = document.getElementById('no-results');
+  const counter = document.getElementById('result-count');
+
+  btns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const filter = this.dataset.filter;
+
+      btns.forEach(function (b) {
+        b.classList.remove('bg-accent', 'text-white', 'border-accent');
+        b.classList.add('border-[#2a2a2a]', 'text-white/40');
+      });
+      this.classList.add('bg-accent', 'text-white', 'border-accent');
+      this.classList.remove('border-[#2a2a2a]', 'text-white/40');
+
+      let visible = 0;
+      cards.forEach(function (card) {
+        const match = filter === 'all' || card.dataset.category === filter;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+
+      noRes.classList.toggle('hidden', visible > 0);
+      counter.textContent = visible + ' Article' + (visible === 1 ? '' : 's') + ' Published';
+    });
+  });
+
+  // ── PDF Preview Modal ────────────────────────────────
+  window.openPreview = function (filename, name, url) {
+    document.getElementById('modal-title').textContent   = name;
+    document.getElementById('modal-download').href       = url;
+    document.getElementById('modal-download').download   = name + '.pdf';
+    document.getElementById('modal-open').href           = url;
+    document.getElementById('pdf-frame').src             = url;
+    const modal = document.getElementById('pdf-modal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePreview = function () {
+    document.getElementById('pdf-modal').classList.add('hidden');
+    document.getElementById('pdf-frame').src = '';
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePreview();
+  });
+}());
+</script>
+
+{% endblock %}
