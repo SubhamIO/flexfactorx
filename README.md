@@ -186,146 +186,19 @@ If it's helped you, support it so it stays that way.
 
 <br>
 
-## 🏗️ TECH STACK
+## 🏗️ BUILT WITH
 
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=flat-square&logo=flask&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Render-336791?style=flat-square&logo=postgresql&logoColor=white)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-D71F00?style=flat-square)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CDN-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Google OAuth](https://img.shields.io/badge/Auth-Google_OAuth_2.0-4285F4?style=flat-square&logo=google&logoColor=white)
 ![Razorpay](https://img.shields.io/badge/Payments-Razorpay-02042B?style=flat-square&logo=razorpay&logoColor=white)
 ![Render](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=white)
 
 </div>
-
-<br>
-
----
-
-<br>
-
-## 📁 PROJECT STRUCTURE
-
-```
-flexfactorx/
-│
-├── app.py              ← Flask app, routes, Razorpay integration
-├── models.py           ← DB models — users, food logs, workouts, TDEE snapshots
-├── auth.py             ← Google OAuth 2.0 blueprint
-├── api.py              ← REST API — tracker CRUD, weekly summary, analytics
-├── admin.py            ← Admin dashboard (access-controlled by email)
-│
-├── data/
-│   ├── affiliates.py   ← Affiliate product catalogue
-│   ├── programs.py     ← Training program metadata
-│   └── testimonials.py ← Social proof
-│
-├── templates/
-│   ├── base.html       ← Layout, navbar, footer
-│   ├── tools.html      ← TDEE calculator + tracker (combined, 1300+ lines)
-│   ├── admin.html      ← Admin dashboard
-│   ├── admin_user.html ← Per-user detail view
-│   └── login.html      ← Google sign-in page
-│
-├── static/
-│   ├── css/main.css
-│   ├── js/main.js
-│   └── images/
-│
-├── requirements.txt
-└── render.yaml
-```
-
-<br>
-
----
-
-<br>
-
-## 🗄️ DATABASE SCHEMA
-
-```
-users            → Google profile · created_at · last_login
-user_settings    → calorie goal · macros · body weight (one per user)
-food_logs        → per-meal food entries with full macro breakdown
-workout_logs     → exercise entries with MET-based calorie burn
-weight_history   → daily body weight check-ins
-tdee_snapshots   → every TDEE calculation (goal tracking + analytics)
-```
-
-<br>
-
----
-
-<br>
-
-## 🚀 LOCAL DEVELOPMENT
-
-```bash
-# Clone
-git clone https://github.com/SubhamIO/flexfactorx.git
-cd flexfactorx
-
-# Environment
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-
-# Create .env
-SECRET_KEY=your-secret-key
-DATABASE_URL=sqlite:///dev.db        # or your PostgreSQL URL
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-RAZORPAY_KEY_ID=...
-RAZORPAY_KEY_SECRET=...
-ADMIN_EMAIL=your-email@gmail.com
-
-# Run
-flask run
-# → http://localhost:5000
-```
-
-Tables create automatically on first boot. No migration commands needed.
-
-<br>
-
----
-
-<br>
-
-## ☁️ DEPLOYING ON RENDER
-
-1. Push to GitHub
-2. **New Web Service** → connect repo
-3. **New PostgreSQL** → `DATABASE_URL` auto-injected
-4. Add env vars: `SECRET_KEY` `GOOGLE_CLIENT_ID` `GOOGLE_CLIENT_SECRET` `ADMIN_EMAIL`
-5. Build: `pip install -r requirements.txt`
-6. Start: `gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT`
-7. Add `https://your-app.onrender.com/auth/callback` in Google Cloud Console
-
-<br>
-
----
-
-<br>
-
-## 🔐 ADMIN DASHBOARD
-
-Access at `/admin` — your email must match `ADMIN_EMAIL` in the environment. Everyone else gets a hard 403.
-
-What you can see:
-
-```
-Platform Stats     → total users · active users · food/workout entries · TDEE calcs
-Signup Chart       → 7-day new user trend
-Activity Chart     → 14-day daily active trackers
-Top Foods          → 10 most logged foods across all users
-Top Exercises      → 10 most logged exercises
-User Table         → days tracked · total calories · last log date · click for detail
-Per-User Detail    → current goals · TDEE history · weight trend · 30-day daily log
-```
 
 <br>
 
