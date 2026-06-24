@@ -110,4 +110,17 @@ affiliates = [
         'discount': None,
         'featured': True,
     },
+    {
+        'id': 9,
+        'name': 'MB-Vite Multivitamin + Omega 3 Fish Oil Combo',
+        'brand': 'MuscleBlaze',
+        'category': 'supplement',
+        'description': 'Combo pack with 51 ingredients across 6 blends for complete daily coverage, paired with Omega 3 Fish Oil 1000mg (180mg EPA + 120mg DHA). The foundation stack — cover your micronutrients and essential fatty acids in one go.',
+        'url': 'https://amzn.to/4xN0Ggj',
+        'image': 'https://m.media-amazon.com/images/I/71bD4zvAJmL._SL1500_.jpg',
+        'coupon': None,
+        'coupon_note': None,
+        'discount': None,
+        'featured': True,
+    },
 ]
