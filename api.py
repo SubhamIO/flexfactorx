@@ -198,6 +198,52 @@ def weekly():
     return jsonify(result)
 
 
+@api_bp.route('/tracker/history', methods=['GET'])
+def history():
+    err = _auth_required()
+    if err:
+        return err
+    try:
+        from_date = date.fromisoformat(request.args['from']) if request.args.get('from') else date.today() - timedelta(days=29)
+        to_date   = date.fromisoformat(request.args['to'])   if request.args.get('to')   else date.today()
+    except ValueError:
+        return jsonify({'error': 'Invalid date'}), 400
+    if from_date > to_date:
+        from_date, to_date = to_date, from_date
+    # Cap at 180 days to avoid runaway queries
+    if (to_date - from_date).days > 179:
+        from_date = to_date - timedelta(days=179)
+
+    food_rows    = (db.session.query(FoodLog.log_date,    func.sum(FoodLog.calories).label('cal'))
+                    .filter(FoodLog.user_id    == current_user.id,
+                            FoodLog.log_date   >= from_date, FoodLog.log_date   <= to_date)
+                    .group_by(FoodLog.log_date).all())
+    workout_rows = (db.session.query(WorkoutLog.log_date, func.sum(WorkoutLog.calories_burned).label('cal'))
+                    .filter(WorkoutLog.user_id == current_user.id,
+                            WorkoutLog.log_date >= from_date, WorkoutLog.log_date <= to_date)
+                    .group_by(WorkoutLog.log_date).all())
+
+    food_map    = {r.log_date.isoformat(): int(r.cal) for r in food_rows}
+    workout_map = {r.log_date.isoformat(): int(r.cal) for r in workout_rows}
+
+    result = []
+    d = from_date
+    while d <= to_date:
+        iso = d.isoformat()
+        fc  = food_map.get(iso, 0)
+        wc  = workout_map.get(iso, 0)
+        result.append({
+            'date':        iso,
+            'label':       d.strftime('%-d %b'),
+            'food_cal':    fc,
+            'workout_cal': wc,
+            'net':         fc - wc,
+            'is_today':    d == date.today(),
+        })
+        d += timedelta(days=1)
+    return jsonify(result)
+
+
 # ── TDEE SNAPSHOT ─────────────────────────────────────────────────────────────
 
 @api_bp.route('/tracker/tdee', methods=['POST'])

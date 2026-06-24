@@ -473,6 +473,42 @@
     </div>
   </section>
 
+  {# ── Calorie History Chart ───────────────────────────── #}
+  <section class="max-w-6xl mx-auto px-6 py-10">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-6">
+      <div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-2">Calorie History</p>
+        <h2 class="font-heading text-4xl">INTAKE vs BURN.</h2>
+      </div>
+      <div class="flex flex-wrap gap-1.5 items-center">
+        <button type="button" onclick="loadCalChart(7)"  id="ch-btn-7"  class="ch-rng-btn text-[0.6rem] tracking-widest uppercase px-3 py-2 border border-accent bg-accent/10 text-white transition-all">7D</button>
+        <button type="button" onclick="loadCalChart(14)" id="ch-btn-14" class="ch-rng-btn text-[0.6rem] tracking-widest uppercase px-3 py-2 border border-[#1a1a1a] text-white/30 hover:text-white hover:border-white/20 transition-all">14D</button>
+        <button type="button" onclick="loadCalChart(30)" id="ch-btn-30" class="ch-rng-btn text-[0.6rem] tracking-widest uppercase px-3 py-2 border border-[#1a1a1a] text-white/30 hover:text-white hover:border-white/20 transition-all">30D</button>
+        <button type="button" onclick="loadCalChart(90)" id="ch-btn-90" class="ch-rng-btn text-[0.6rem] tracking-widest uppercase px-3 py-2 border border-[#1a1a1a] text-white/30 hover:text-white hover:border-white/20 transition-all">90D</button>
+        <span class="text-white/15 text-xs">|</span>
+        <input type="date" id="ch-from" title="From date" aria-label="Chart start date" class="bg-[#111] border border-[#1a1a1a] text-white/40 text-[0.65rem] px-2 py-2 focus:outline-none focus:border-accent/50 w-28">
+        <span class="text-white/20 text-[0.6rem]">to</span>
+        <input type="date" id="ch-to"   title="To date"   aria-label="Chart end date"   class="bg-[#111] border border-[#1a1a1a] text-white/40 text-[0.65rem] px-2 py-2 focus:outline-none focus:border-accent/50 w-28">
+        <button type="button" onclick="loadCalChartCustom()" class="text-[0.6rem] tracking-widest uppercase px-3 py-2 border border-[#1a1a1a] text-white/30 hover:text-white hover:border-white/20 transition-all">Go →</button>
+      </div>
+    </div>
+
+    <div class="flex gap-5 mb-4 flex-wrap">
+      <div class="flex items-center gap-2"><span class="inline-block w-6 border-t-2 border-accent"></span><span class="text-[0.6rem] tracking-widest uppercase text-white/30">Intake</span></div>
+      <div class="flex items-center gap-2"><span class="inline-block w-6 border-t-2 border-green-400"></span><span class="text-[0.6rem] tracking-widest uppercase text-white/30">Burned</span></div>
+      <div class="flex items-center gap-2"><span class="inline-block w-6 border-t-2 border-white/40"></span><span class="text-[0.6rem] tracking-widest uppercase text-white/30">Net</span></div>
+      <div class="flex items-center gap-2"><span class="inline-block w-6 border-t border-dashed border-accent/50"></span><span class="text-[0.6rem] tracking-widest uppercase text-white/30">Goal</span></div>
+    </div>
+
+    <div class="relative border border-[#1a1a1a] bg-[#080808] p-2 overflow-hidden">
+      <div id="cal-chart-tip" class="hidden absolute top-3 right-3 bg-[#0d0d0d] border border-[#2a2a2a] px-3 py-2 z-10 pointer-events-none text-left"></div>
+      <svg id="cal-chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none" class="w-full h-52 block"></svg>
+      <p id="cal-chart-empty" class="hidden text-center text-white/20 text-sm py-12">No calorie data in this date range. Start logging to see your history.</p>
+    </div>
+
+    <div id="cal-chart-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4"></div>
+  </section>
+
 </div>{# /tab-tracker #}
 
 
@@ -1611,6 +1647,7 @@ async function initTracker(){
   applyTdietPref(foodPref);
   filterFoods('');
   renderTracker();
+  loadCalChart(7);
   if(!IS_LOGGED_IN && !localStorage.getItem('ffx_settings') && !localStorage.getItem('ffx_goal_cal')){
     setTimeout(function(){ if(!document.getElementById('tab-tracker').classList.contains('hidden')) showSettings(); },800);
   }
@@ -1774,6 +1811,181 @@ async function renderWeekly(){
     if(dc>0){ totalNet+=net; counted++; }
   }
   _renderWeeklyChart(days, counted, counted>0?Math.round(totalNet/counted):0);
+}
+
+// ─── CALORIE HISTORY CHART ───────────────────────────────
+var _calChartActiveDays = 7;
+
+window.loadCalChart = async function(days, fromDate, toDate){
+  _calChartActiveDays = days;
+  // Update range button styles
+  document.querySelectorAll('.ch-rng-btn').forEach(function(b){
+    b.classList.remove('border-accent','bg-accent/10','text-white');
+    b.classList.add('border-[#1a1a1a]','text-white/30');
+  });
+  var activeBtn=$id('ch-btn-'+days);
+  if(activeBtn){ activeBtn.classList.add('border-accent','bg-accent/10','text-white'); activeBtn.classList.remove('border-[#1a1a1a]','text-white/30'); }
+
+  var data=[];
+  if(IS_LOGGED_IN){
+    try{
+      var params=new URLSearchParams();
+      if(fromDate&&toDate){ params.set('from',fromDate); params.set('to',toDate); }
+      else{
+        var td=new Date(), fd=new Date();
+        fd.setDate(td.getDate()-(days-1));
+        params.set('from', fd.getFullYear()+'-'+pad(fd.getMonth()+1)+'-'+pad(fd.getDate()));
+        params.set('to',   td.getFullYear()+'-'+pad(td.getMonth()+1)+'-'+pad(td.getDate()));
+      }
+      var res=await fetch('/api/tracker/history?'+params.toString());
+      if(res.ok) data=await res.json();
+    }catch(e){}
+  }
+  // localStorage fallback (or non-logged-in)
+  if(!data.length){
+    var n=days||7;
+    for(var i=n-1;i>=0;i--){
+      var d2=new Date(); d2.setDate(d2.getDate()-i);
+      var k=d2.getFullYear()+'-'+pad(d2.getMonth()+1)+'-'+pad(d2.getDate());
+      var l2=k===TODAY?foodLog:loadDayLog(k);
+      var w2=k===TODAY?workouts:loadWorkouts_ls(k);
+      var dc=0; ['breakfast','lunch','dinner','snacks'].forEach(function(m){ (l2[m]||[]).forEach(function(e){ dc+=e.cal||0; }); });
+      var dw=0; w2.forEach(function(x){ dw+=x.cal||0; });
+      var label2=d2.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d2.getMonth()];
+      data.push({date:k,label:label2,food_cal:dc,workout_cal:dw,net:dc-dw,is_today:i===0});
+    }
+  }
+  renderCalChart(data);
+};
+
+window.loadCalChartCustom = function(){
+  var from=($id('ch-from').value||'').trim();
+  var to=($id('ch-to').value||'').trim();
+  if(!from||!to||from>to) return;
+  // Deselect preset buttons
+  document.querySelectorAll('.ch-rng-btn').forEach(function(b){
+    b.classList.remove('border-accent','bg-accent/10','text-white');
+    b.classList.add('border-[#1a1a1a]','text-white/30');
+  });
+  window.loadCalChart(0, from, to);
+};
+
+function renderCalChart(data){
+  var svg=$id('cal-chart-svg');
+  var empty=$id('cal-chart-empty');
+  var stats=$id('cal-chart-stats');
+  if(!svg) return;
+
+  var active=data.filter(function(d){ return d.food_cal>0||d.workout_cal>0; });
+  if(!active.length){
+    svg.innerHTML=''; empty.classList.remove('hidden'); stats.innerHTML=''; return;
+  }
+  empty.classList.add('hidden');
+
+  // Fixed viewBox coordinate system
+  var VW=800,VH=200,padL=42,padR=10,padT=16,padB=34;
+  var cW=VW-padL-padR, cH=VH-padT-padB;
+  var n=data.length;
+
+  var maxVal=Math.max(
+    (settings.cal||2000)*1.3,
+    Math.max.apply(null, data.map(function(d){ return Math.max(d.food_cal||0,d.workout_cal||0); })),
+    500
+  );
+  var minVal=Math.min(0, Math.min.apply(null, data.map(function(d){ return d.net||0; })));
+  var vRange=maxVal-minVal||1;
+
+  function xf(i){ return padL+(n===1?cW/2:(i/(n-1))*cW); }
+  function yf(v){ return padT+cH-((v-minVal)/vRange)*cH; }
+
+  function makePath(arr,col,opacity){
+    var d=arr.map(function(v,i){ return (i===0?'M':'L')+xf(i).toFixed(1)+','+yf(v).toFixed(1); }).join(' ');
+    return '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="'+(opacity||1)+'"/>';
+  }
+
+  // Goal dashed line
+  var goal=settings.cal||2000;
+  var gy=yf(goal);
+  var goalLine=(gy>=padT&&gy<=VH-padB)?
+    '<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#FF4D00" stroke-width="1" stroke-dasharray="5 4" opacity="0.35"/>'+
+    '<text x="'+(VW-padR-2)+'" y="'+(gy-4).toFixed(1)+'" text-anchor="end" fill="#FF4D00" font-size="8" opacity="0.45">GOAL</text>':'';
+
+  // Zero line when chart goes negative
+  var zeroLine=minVal<0?'<line x1="'+padL+'" y1="'+yf(0).toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+yf(0).toFixed(1)+'" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>':'';
+
+  // Y-axis ticks
+  var yTicks=[minVal, minVal<0?0:null, Math.round(maxVal/2), maxVal].filter(function(v){ return v!==null; });
+  var yLabels=yTicks.map(function(v){
+    var lbl=Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':String(Math.round(v));
+    return '<text x="'+(padL-3)+'" y="'+(yf(v)+3).toFixed(1)+'" text-anchor="end" fill="#ffffff" font-size="9" opacity="0.2">'+lbl+'</text>';
+  }).join('');
+
+  // X-axis labels
+  var step=n>60?14:n>30?7:n>14?3:n>7?2:1;
+  var xLabels=data.map(function(d,i){
+    if(i%step!==0&&i!==n-1) return '';
+    return '<text x="'+xf(i).toFixed(1)+'" y="'+(VH-6)+'" text-anchor="middle" fill="'+(d.is_today?'#FF4D00':'#ffffff')+'" font-size="9" opacity="'+(d.is_today?'0.7':'0.2')+'">'+d.label+'</text>';
+  }).join('');
+
+  // Hover hit areas + dots
+  var dotW=Math.max(6, cW/n-1);
+  var dotZone=data.map(function(d,i){
+    return '<rect class="ch-hover-zone" x="'+(xf(i)-dotW/2).toFixed(1)+'" y="'+padT+'" width="'+dotW.toFixed(1)+'" height="'+cH+'" fill="transparent" data-i="'+i+'"/>'+
+      '<circle class="chd-f" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.food_cal).toFixed(1)+'" r="3" fill="#FF4D00" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>'+
+      '<circle class="chd-b" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.workout_cal).toFixed(1)+'" r="3" fill="#4ade80" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>'+
+      '<circle class="chd-n" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.net).toFixed(1)+'" r="3" fill="#ffffff" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>';
+  }).join('');
+
+  svg.innerHTML=
+    // Axis lines
+    '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(VH-padB)+'" stroke="#1a1a1a" stroke-width="1"/>'+
+    '<line x1="'+padL+'" y1="'+(VH-padB)+'" x2="'+(VW-padR)+'" y2="'+(VH-padB)+'" stroke="#1a1a1a" stroke-width="1"/>'+
+    // Mid grid
+    '<line x1="'+padL+'" y1="'+(padT+cH/2).toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+(padT+cH/2).toFixed(1)+'" stroke="#ffffff07" stroke-width="1" stroke-dasharray="3 4"/>'+
+    zeroLine+goalLine+
+    // Data lines
+    makePath(data.map(function(d){ return d.food_cal; }),    '#FF4D00')+
+    makePath(data.map(function(d){ return d.workout_cal; }), '#4ade80')+
+    makePath(data.map(function(d){ return d.net; }),         '#ffffff', 0.45)+
+    yLabels+xLabels+dotZone;
+
+  // Hover tooltip
+  var tip=$id('cal-chart-tip');
+  svg.querySelectorAll('.ch-hover-zone').forEach(function(rect){
+    rect.addEventListener('mouseenter',function(){
+      var i=parseInt(this.dataset.i),d=data[i];
+      svg.querySelectorAll('[data-i="'+i+'"]').forEach(function(el){ if(el!==rect) el.setAttribute('opacity','1'); });
+      tip.innerHTML=
+        '<p class="text-white/30 text-[0.6rem] uppercase tracking-widest mb-1">'+d.date+'</p>'+
+        '<p class="text-accent text-[0.6rem]">▲ Intake: '+d.food_cal+' cal</p>'+
+        (d.workout_cal?'<p class="text-green-400 text-[0.6rem]">▼ Burned: '+d.workout_cal+' cal</p>':'')+
+        '<p class="text-white/50 text-[0.6rem]">= Net: '+d.net+' cal</p>';
+      tip.classList.remove('hidden');
+    });
+    rect.addEventListener('mouseleave',function(){
+      var i=parseInt(this.dataset.i);
+      svg.querySelectorAll('[data-i="'+i+'"]').forEach(function(el){ if(el!==rect) el.setAttribute('opacity','0'); });
+      tip.classList.add('hidden');
+    });
+  });
+
+  // Summary stats bar
+  var trackedDays=active.length;
+  var avgNet=trackedDays?Math.round(active.reduce(function(s,d){return s+d.net;},0)/trackedDays):0;
+  var avgIntake=trackedDays?Math.round(active.reduce(function(s,d){return s+d.food_cal;},0)/trackedDays):0;
+  var totalBurned=Math.round(active.reduce(function(s,d){return s+d.workout_cal;},0));
+  var goalCal=settings.cal||2000;
+  function statCard(val,lbl,col){
+    return '<div class="border border-[#1a1a1a] bg-[#0d0d0d] p-4 text-center">'+
+      '<p class="font-heading text-xl '+col+'">'+val+'</p>'+
+      '<p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-1">'+lbl+'</p>'+
+    '</div>';
+  }
+  stats.innerHTML=
+    statCard(trackedDays+' / '+n,            'Days Tracked',    'text-white/60')+
+    statCard(avgIntake.toLocaleString()+' cal','Avg Daily Intake','text-accent')+
+    statCard(avgNet.toLocaleString()+' cal',   'Avg Net Cal',     avgNet<=goalCal?'text-green-400':'text-red-400')+
+    statCard(totalBurned.toLocaleString()+' cal','Total Burned',  'text-green-400/80');
 }
 
 // ─── FOOD LOG ACTIONS ────────────────────────────────────
