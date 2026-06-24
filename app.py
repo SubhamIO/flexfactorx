@@ -60,9 +60,17 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(admin_bp)
 
-# Create tables on first boot (idempotent)
+# Create tables on first boot (idempotent) + safe column migrations
 with app.app_context():
     db.create_all()
+    # Add new columns to existing tables if missing — idempotent on PostgreSQL
+    try:
+        db.session.execute(db.text(
+            "ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS diet_pref VARCHAR(10) DEFAULT 'all'"
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 # ── Razorpay (optional — graceful degradation if keys not set) ───────────────
 RZP_KEY_ID     = os.environ.get('RAZORPAY_KEY_ID', '')

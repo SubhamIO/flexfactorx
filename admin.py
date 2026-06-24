@@ -125,7 +125,9 @@ def dashboard():
 @admin_bp.route('/user/<user_id>')
 @admin_required
 def user_detail(user_id):
-    u  = User.query.get_or_404(user_id)
+    u  = db.session.get(User, user_id)
+    if not u:
+        abort(404)
     s  = u.settings
     thirty_ago = date.today() - timedelta(days=30)
 
