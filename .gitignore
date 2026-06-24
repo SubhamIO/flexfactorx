@@ -7,3 +7,29 @@ venv/
 flexvenv/
 *venv/
 .DS_Store
+
+# SQLite dev databases
+*.db
+instance/
+
+# Sensitive files — never commit
+*.csv
+rzp-key.csv
+
+# Node / Next.js experiments
+node_modules/
+.next/
+package.json
+package-lock.json
+next.config.ts
+tailwind.config.ts
+tsconfig.json
+postcss.config.mjs
+netlify.toml
+app/
+components/
+data/affiliates.ts
+
+# Uploaded images not yet in gallery
+static/images/support-qr.png
+static/images/gallery/84AC35A9-3CF8-407F-AF8B-71E3C655A911.PNG
