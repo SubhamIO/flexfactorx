@@ -10,6 +10,7 @@ from flask_login import LoginManager, current_user
 from models import db, User
 from auth import auth_bp, init_oauth
 from api import api_bp
+from admin import admin_bp
 
 from data.affiliates import affiliates, CATEGORY_LABELS
 from data.testimonials import testimonials
@@ -57,6 +58,7 @@ def unauthorized():
 # ── Blueprints ────────────────────────────────────────────────────────────────
 app.register_blueprint(auth_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(admin_bp)
 
 # Create tables on first boot (idempotent)
 with app.app_context():

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}{{ u.name }} — Admin — FlexFactorX{% endblock %}
+
+{% block content %}
+<section class="pt-24 pb-16 min-h-screen">
+  <div class="max-w-6xl mx-auto px-6">
+
+    {# ── Header ──────────────────────────────────────────── #}
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="text-white/30 hover:text-accent text-xs tracking-widest uppercase border border-[#1a1a1a] hover:border-accent/30 px-3 py-2 transition-all">← Admin</a>
+        {% if u.picture %}
+        <img src="{{ u.picture }}" class="w-10 h-10 rounded-full border border-[#2a2a2a]" alt="">
+        {% endif %}
+        <div>
+          <h1 class="font-heading text-3xl">{{ u.name | upper if u.name else 'UNNAMED USER' }}</h1>
+          <p class="text-white/40 text-xs mt-0.5">{{ u.email }}</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">Joined</p>
+        <p class="text-white/50 text-sm">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</p>
+      </div>
+    </div>
+
+    {# ── Summary Cards ───────────────────────────────────── #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+      {% for val, label, col in [
+        (total_days,       'Days Tracked',        'text-accent'),
+        ('{:,}'.format(total_food_cal),    'Total Cal Eaten',   'text-white/70'),
+        ('{:,}'.format(total_workout_cal), 'Total Cal Burned',  'text-green-400'),
+        (avg_daily_cal,    'Avg Daily Cal',        'text-white/50'),
+      ] %}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-5 text-center">
+        <p class="font-heading text-3xl {{ col }}">{{ val }}</p>
+        <p class="text-white/30 text-[0.6rem] uppercase tracking-widest mt-1">{{ label }}</p>
+        <p class="text-white/15 text-[0.55rem] mt-0.5">last 30 days</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+      {# ── Current Settings ──────────────────────────────── #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-4">Current Goals</p>
+        {% if s %}
+        <div class="space-y-3">
+          {% for label, val, unit in [
+            ('Calorie Goal', s.calorie_goal, 'cal/day'),
+            ('Protein',      s.protein_g,    'g/day'),
+            ('Carbs',        s.carb_g,       'g/day'),
+            ('Fat',          s.fat_g,        'g/day'),
+            ('Body Weight',  s.weight_kg,    'kg'),
+          ] %}
+          <div class="flex justify-between text-xs border-b border-[#111] pb-2 last:border-0">
+            <span class="text-white/40 uppercase tracking-widest">{{ label }}</span>
+            <span class="text-white/70">{{ val }} <span class="text-white/25">{{ unit }}</span></span>
+          </div>
+          {% endfor %}
+          <p class="text-white/20 text-[0.6rem] pt-1">Updated: {{ s.updated_at.strftime('%d %b %Y %H:%M') if s.updated_at else '—' }}</p>
+        </div>
+        {% else %}
+        <p class="text-white/20 text-sm">No settings configured yet.</p>
+        {% endif %}
+      </div>
+
+      {# ── TDEE History ──────────────────────────────────── #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-4">TDEE Calculation History</p>
+        {% if tdee_snaps %}
+        <div class="space-y-3">
+          {% for snap in tdee_snaps %}
+          <div class="border border-[#111] p-3 text-xs">
+            <div class="flex justify-between mb-1">
+              <span class="text-white/50">{{ snap.goal | replace('_',' ') | title }} — {{ snap.activity_level | title }}</span>
+              <span class="text-white/25">{{ snap.created_at.strftime('%d %b') if snap.created_at else '' }}</span>
+            </div>
+            <div class="flex gap-4 text-white/30">
+              <span>BMR: <span class="text-white/50">{{ snap.bmr }}</span></span>
+              <span>TDEE: <span class="text-white/50">{{ snap.tdee }}</span></span>
+              <span>Goal: <span class="text-accent">{{ snap.goal_cal }}</span> cal</span>
+            </div>
+            <div class="flex gap-4 text-white/25 mt-1">
+              <span>{{ snap.weight_kg }}kg</span>
+              <span>{{ snap.height_cm }}cm</span>
+              <span>Age {{ snap.age }}</span>
+              <span>{{ snap.gender | title }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-white/20 text-sm">No TDEE calculations yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Weight History ──────────────────────────────────── #}
+    {% if weight_hist %}
+    <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6 mb-8">
+      <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-4">
+        Weight History
+        <span class="text-white/30 ml-3">Latest: {{ weight_hist[0].weight_kg }}kg</span>
+      </p>
+      {% set max_w = weight_hist | map(attribute='weight_kg') | max %}
+      {% set min_w = weight_hist | map(attribute='weight_kg') | min %}
+      <div class="flex items-end gap-1 h-16 mb-2">
+        {% for wh in weight_hist | reverse %}
+        {% set range = (max_w - min_w) if max_w != min_w else 1 %}
+        {% set h = [(((wh.weight_kg - min_w) / range) * 80 + 20)|round|int, 10]|max %}
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-white/20 rounded-t-sm" style="height:{{ h }}%"
+               title="{{ wh.recorded_date }} — {{ wh.weight_kg }}kg"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-between text-[0.55rem] text-white/20">
+        <span>{{ weight_hist[-1].recorded_date }}</span>
+        <span>{{ weight_hist[0].recorded_date }} (latest)</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── 30-Day Daily Log ────────────────────────────────── #}
+    <div class="border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div class="px-6 py-4 border-b border-[#1a1a1a]">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase">Daily Log — Last 30 Days ({{ total_days }} days tracked)</p>
+      </div>
+      {% if daily %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-[#1a1a1a]">
+              {% for col in ['Date', 'Food Cal', 'Workout Cal', 'Net Cal', 'Protein (g)'] %}
+              <th class="px-5 py-3 text-left text-white/25 tracking-widest uppercase font-normal">{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#0f0f0f]">
+            {% for d, v in daily %}
+            {% set net = v.food_cal - v.workout_cal %}
+            <tr class="hover:bg-white/[0.02]">
+              <td class="px-5 py-2.5 text-white/50">{{ d }}</td>
+              <td class="px-5 py-2.5 text-white/60">{{ '{:,}'.format(v.food_cal) }}</td>
+              <td class="px-5 py-2.5 text-green-400/70">{{ '{:,}'.format(v.workout_cal) if v.workout_cal else '—' }}</td>
+              <td class="px-5 py-2.5 {{ 'text-red-400' if net > 2500 else 'text-accent' }}">{{ '{:,}'.format(net) }}</td>
+              <td class="px-5 py-2.5 text-white/40">{{ v.protein | round | int }}g</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="px-6 py-10 text-center text-white/20">No food logs in the last 30 days.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}
