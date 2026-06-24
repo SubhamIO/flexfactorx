@@ -150,6 +150,15 @@ def blogs_page():
                            category_labels=BLOG_CATEGORY_LABELS)
 
 
+@app.route('/blogs/<slug>')
+def blog_post(slug):
+    from flask import abort
+    post = next((b for b in blogs if b.get('slug') == slug), None)
+    if not post:
+        abort(404)
+    return render_template(f'blog_posts/{slug}.html', blog=post)
+
+
 @app.route('/tools')
 def tools():
     return render_template('tools.html')

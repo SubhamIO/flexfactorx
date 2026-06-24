@@ -286,7 +286,215 @@ def build_creatine_101():
     print('✓ creatine-101.pdf')
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 9 WAYS TO SLEEP BETTER — Fix Your Sleep, Naturally
+# ══════════════════════════════════════════════════════════════════════════════
+def build_sleep_better():
+    label = '9 Ways to Sleep Better — World of FlexFactorX'
+    story = []
+
+    # ── Title block ──
+    story.append(Paragraph('FLEXFACTORX  •  RECOVERY', S['tag']))
+    story.append(Paragraph('9 WAYS TO SLEEP BETTER', S['h1']))
+    story.append(Paragraph('Fix Your Sleep, Naturally', S['small']))
+    story.append(Spacer(1, 4))
+    story.append(HRFlowable(width='100%', thickness=0.4, color=FAINT,
+                            spaceAfter=8, spaceBefore=4))
+
+    # ── Intro ──
+    story += [Paragraph(
+        'Your sleep shapes everything — your mood, your metabolism, your recovery, and how '
+        'much muscle you actually keep from all those hard sessions. Yet most people grind '
+        'through restless nights and groggy mornings, assuming that’s just how it is. It isn’t. '
+        'You don’t need prescriptions or expensive gadgets to fix your sleep. These nine '
+        'science-backed strategies work with your body’s natural rhythms — this is the '
+        'FlexFactorX playbook for reclaiming deep, restorative sleep.',
+        S['lead'],
+    )]
+
+    # ── Circadian rhythm primer ──
+    story += h2('FIRST — UNDERSTAND YOUR BODY CLOCK')
+    story += p(
+        'Your circadian rhythm is your internal 24-hour clock. It decides when you feel alert '
+        'and when you wind down, mostly by responding to light and darkness and releasing '
+        'hormones like melatonin at night. When that rhythm gets disrupted — irregular schedules, '
+        'late screens, poor light exposure — your entire sleep architecture falls apart.'
+    )
+    story += p(
+        'The warning signs: trouble falling asleep, waking through the night, morning grogginess '
+        'despite enough hours in bed, and energy crashes during the day. Fix the rhythm and you '
+        'fix the sleep. Here’s how — nine ways, in order of impact.'
+    )
+
+    # ── 1 ──
+    story += h2('1. GET BRIGHT LIGHT FIRST THING')
+    story += p(
+        'Light is the single most powerful lever for resetting your clock. Within the first hour '
+        'of waking, get 15–30 minutes of bright light. Natural sunlight is best; a 10,000-lux '
+        'light therapy lamp works for early risers or darker months. Morning light tells your '
+        'brain to ramp up alertness-promoting cortisol now — so melatonin shows up on time tonight.'
+    )
+
+    # ── 2 ──
+    story += h2('2. KILL THE BLUE LIGHT AT NIGHT')
+    story += p(
+        'Cut blue light exposure 2–3 hours before bed. Switch on night mode, wear blue-light '
+        'blocking glasses, or better yet create a "digital sunset" by stepping away from screens '
+        'entirely. Install blackout curtains for complete darkness — even small amounts of light '
+        'can suppress melatonin and fragment your sleep.'
+    )
+
+    # ── 3 ──
+    story += h2('3. KEEP A CONSISTENT SLEEP SCHEDULE')
+    story += p(
+        'Your body thrives on predictability. Going to bed and waking at the same time every day '
+        '— weekends included — reinforces your rhythm more powerfully than any single trick. Need '
+        'to shift your schedule? Move it in 15-minute increments every few days; sudden jumps '
+        'backfire. Limit weekend sleep-ins to one hour past your usual wake time to avoid "social '
+        'jet lag" that wrecks the week ahead.'
+    )
+
+    # ── 4 ──
+    story += h2('4. ENGINEER A COOL, DARK, QUIET ROOM')
+    story += generic_table(
+        ['FACTOR', 'TARGET'],
+        [
+            ('Temperature', 'Keep the room at 60–67°F (15–19°C) — a cool room supports the natural drop in core body temperature that triggers deep sleep.'),
+            ('Light',       'Total darkness. Blackout curtains + eye mask. Cover stray LEDs.'),
+            ('Sound',       'Earplugs, a fan, or a white-noise machine to mask disruptions.'),
+            ('Air',         'Good circulation and clean air — add a purifier if your area is polluted.'),
+        ],
+        [0.22, 0.78],
+    )
+
+    # ── 5 ──
+    story += h2('5. BUILD A WIND-DOWN ROUTINE')
+    story += p(
+        'A structured wind-down tells your brain that sleep is coming. Start 1–2 hours before your '
+        'target bedtime and actively do calming things, not just avoid stimulating ones.'
+    )
+    story += h3('The Digital Sunset')
+    story += p(
+        'Switch off all screens at least one hour before bed. Device blue light suppresses '
+        'melatonin and keeps your brain in an alert, "online" state.'
+    )
+    story += h3('Relaxation Techniques')
+    story += p(
+        'Try progressive muscle relaxation — tense and release each muscle group from your toes '
+        'up. Pair it with deep breathing like the 4-7-8 technique to switch on your '
+        'parasympathetic ("rest and digest") nervous system and prime your body for sleep.'
+    )
+
+    # ── 6 ──
+    story += h2('6. USE NATURAL SLEEP AIDS & SMART NUTRITION')
+    story += p(
+        'The right foods and supplements support your body’s own sleep processes without the '
+        'hangover of sleeping pills.'
+    )
+    story += generic_table(
+        ['AID', 'HOW TO USE IT'],
+        [
+            ('Sleep-promoting foods', 'Tart cherry juice (natural melatonin), chamomile tea, tryptophan-rich foods (turkey, warm milk). Finish eating 3+ hours before bed.'),
+            ('Melatonin',             '0.5–3 mg, taken ~30 minutes before bed.'),
+            ('Magnesium glycinate',   '200–400 mg — relaxes muscles and calms the nervous system.'),
+            ('Valerian root',         'A traditional, evidence-supported relaxation aid.'),
+            ('Caffeine cut-off',      'No caffeine within 6 hours of bed — its long half-life lingers even when you feel fine.'),
+            ('Hydration',             'Plenty of water through the day, taper 2 hours before bed to limit bathroom trips.'),
+        ],
+        [0.27, 0.73],
+    )
+    story += p(
+        'Note: supplements can interact with medications. Check with a healthcare provider before '
+        'starting anything new — especially if you take prescriptions or have a health condition.'
+    )
+
+    # ── 7 ──
+    story += h2('7. TIME YOUR EXERCISE RIGHT')
+    story += p(
+        'Regular training is one of the strongest tools for better sleep — it regulates your '
+        'rhythm, lowers stress hormones, and builds your drive for deep sleep. But timing matters. '
+        'Morning or afternoon workouts are ideal: exercise raises core temperature, and the drop '
+        'a few hours later promotes sleepiness. Avoid hard, vigorous sessions within 3 hours of '
+        'bed. If you train in the evening, keep it gentle — yoga, stretching, or an easy walk.'
+    )
+
+    # ── 8 ──
+    story += h2('8. MANAGE STRESS BEFORE IT MANAGES YOU')
+    story += p(
+        'Stress and anxiety are the biggest enemies of quality sleep. Racing thoughts and physical '
+        'tension keep you up for hours or fragment your nights. Build a stress toolkit you can use '
+        'both in the day and at bedtime.'
+    )
+    story += h3('Mindfulness & Meditation')
+    story += p(
+        'Spend 10–20 minutes on meditation or a guided body scan before bed to quiet mental '
+        'chatter and ease into relaxation.'
+    )
+    story += h3('Journaling')
+    story += p(
+        'Keep a bedside journal and "brain dump" worries and tomorrow’s tasks. Clearing the mental '
+        'clutter signals your brain that it’s safe to let go and rest.'
+    )
+
+    # ── 9 ──
+    story += h2('9. TRACK PROGRESS & STAY PATIENT')
+    story += p(
+        'Reset isn’t instant. Most people notice improvements within 1–2 weeks of consistency, '
+        'while a full circadian reset can take 4–6 weeks — longer if you’re recovering from chronic '
+        'disruption. Track the right metrics: how fast you fall asleep, number of night wakings, '
+        'morning energy, and daytime alertness. Feeling refreshed on waking with steady energy all '
+        'day is the real win. On night shifts or an irregular schedule? Stay consistent within your '
+        'own pattern, use blackout curtains and an eye mask for daytime sleep, and use light therapy '
+        'to anchor your rhythm.'
+    )
+
+    # ── FAQ ──
+    story += h2('FREQUENTLY ASKED QUESTIONS')
+    story += faq('How long until my sleep improves?',
+                 'Most people see results within 1–2 weeks of consistent effort. A complete reset '
+                 'can take 4–6 weeks, especially after chronic sleep disruption.')
+    story += faq('Can I combine multiple natural sleep aids?',
+                 'Yes — many complement each other. Magnesium and melatonin pair well, as do '
+                 'relaxation techniques and a better sleep environment. Start with one or two before '
+                 'adding more.')
+    story += faq('What if I work night shifts?',
+                 'Stay consistent within your own schedule. Use blackout curtains and an eye mask '
+                 'for daytime sleep, and light therapy to shift your rhythm to match your shifts.')
+    story += faq('How do I know it’s actually working?',
+                 'Track how quickly you fall asleep, night wakings, morning energy, and daytime '
+                 'alertness. You should feel more refreshed waking up and have steadier energy.')
+    story += faq('Are natural sleep methods safe?',
+                 'Generally yes, but some supplements interact with medications. Consult a healthcare '
+                 'provider before starting new supplements if you take prescriptions or have a '
+                 'health condition.')
+
+    # ── Key takeaways ──
+    story += h2('KEY TAKEAWAYS')
+    story += p(
+        'Better sleep isn’t about perfection — it’s about consistency and patience. Start with the '
+        'fundamentals: morning light, consistent timing, and a cool, dark room. Then layer in stress '
+        'management, smart nutrition, and a calm evening routine as those habits stick.'
+    )
+    story += p(
+        'Quality sleep is an investment in every part of your health and training. These strategies '
+        'work with your body, not against it, and the gains compound over time. Prioritise '
+        'restorative sleep today — your future self, and your progress, will thank you.'
+    )
+
+    story.append(Spacer(1, 8))
+    story.append(HRFlowable(width='100%', thickness=0.4, color=FAINT, spaceAfter=6))
+    story.append(Paragraph(
+        'Educational content only — not medical advice. Consult a qualified professional before '
+        'starting any supplement or making major lifestyle changes. © FlexFactorX. All rights reserved.',
+        S['note'],
+    ))
+
+    make_doc('sleep-better-naturally.pdf', label).build(story)
+    print('✓ sleep-better-naturally.pdf')
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     build_creatine_101()
+    build_sleep_better()
     print('\nAll blog PDFs saved to static/pdfs/')

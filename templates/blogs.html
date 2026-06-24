@@ -47,8 +47,8 @@
          data-category="{{ blog.category }}">
 
       {# ── Visual Thumbnail ──────────────────────────── #}
-      <div class="relative h-52 bg-[#080808] flex items-center justify-center overflow-hidden border-b border-[#1a1a1a] group-hover:border-accent/20 transition-colors cursor-pointer"
-           onclick="openPreview('{{ blog.filename }}', '{{ blog.name }}', '/static/pdfs/{{ blog.filename }}')">
+      <a href="/blogs/{{ blog.slug }}" title="Read: {{ blog.name }}"
+         class="relative h-52 bg-[#080808] flex items-center justify-center overflow-hidden border-b border-[#1a1a1a] group-hover:border-accent/20 transition-colors cursor-pointer">
 
         {# Radial glow #}
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_60%,rgba(255,77,0,0.07),transparent)]
@@ -83,7 +83,7 @@
         {# Bottom accent line #}
         <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent
                     scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>
-      </div>
+      </a>
 
       {# ── Card Body ─────────────────────────────────── #}
       <div class="flex flex-col flex-1 p-6">
@@ -121,15 +121,14 @@
 
         {# Actions #}
         <div class="flex gap-2">
-          <a href="/static/pdfs/{{ blog.filename }}" download="{{ blog.name }}.pdf"
+          <a href="/blogs/{{ blog.slug }}"
              class="flex-1 text-center bg-accent text-white text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:brightness-90 transition-all">
-            ↓ Download
+            Read Article →
           </a>
-          <button type="button"
-                  onclick="openPreview('{{ blog.filename }}', '{{ blog.name }}', '/static/pdfs/{{ blog.filename }}')"
-                  class="flex-1 border border-white/15 text-white/70 text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:border-accent/50 hover:text-white transition-colors">
-            Preview
-          </button>
+          <a href="/static/pdfs/{{ blog.filename }}" download="{{ blog.name }}.pdf"
+             class="flex-1 text-center border border-white/15 text-white/70 text-[0.65rem] tracking-[0.15em] uppercase py-3 hover:border-accent/50 hover:text-white transition-colors">
+            ↓ PDF
+          </a>
         </div>
 
       </div>

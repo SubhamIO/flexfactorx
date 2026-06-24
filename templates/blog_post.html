@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ blog.seo_title }} | FlexFactorX{% endblock %}
+{% block description %}{{ blog.meta_description }}{% endblock %}
+
+{% block head_extra %}
+<meta name="keywords"    content="{{ blog.keywords }}">
+<meta name="author"      content="{{ blog.author }}">
+<meta name="robots"      content="index, follow">
+<link rel="canonical"    href="https://flexfactorx.onrender.com/blogs/{{ blog.slug }}">
+
+<meta property="og:type"        content="article">
+<meta property="og:title"       content="{{ blog.seo_title }}">
+<meta property="og:description" content="{{ blog.meta_description }}">
+<meta property="og:url"         content="https://flexfactorx.onrender.com/blogs/{{ blog.slug }}">
+<meta property="og:site_name"   content="FlexFactorX">
+
+<meta name="twitter:card"        content="summary">
+<meta name="twitter:title"       content="{{ blog.seo_title }}">
+<meta name="twitter:description" content="{{ blog.meta_description }}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ blog.seo_title | tojson }},
+  "description": {{ blog.meta_description | tojson }},
+  "keywords": {{ blog.keywords | tojson }},
+  "author": { "@type": "Organization", "name": "FlexFactorX", "url": "https://flexfactorx.onrender.com" },
+  "publisher": { "@type": "Organization", "name": "FlexFactorX", "url": "https://flexfactorx.onrender.com" },
+  "datePublished": "{{ blog.date_iso }}",
+  "dateModified":  "{{ blog.date_iso }}",
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "https://flexfactorx.onrender.com/blogs/{{ blog.slug }}" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+{# ── Back breadcrumb ────────────────────────────────────── #}
+<div class="max-w-3xl mx-auto px-6 pt-28 pb-4">
+  <a href="/blogs" class="text-white/30 hover:text-accent text-[0.6rem] tracking-[0.2em] uppercase transition-colors">
+    ← Back to All Articles
+  </a>
+</div>
+
+{# ── Article Header ─────────────────────────────────────── #}
+<header class="max-w-3xl mx-auto px-6 pb-12 border-b border-[#1a1a1a]">
+  <span class="inline-block text-accent text-[0.6rem] tracking-[0.3em] uppercase border border-accent/30 px-2.5 py-1 mb-5">
+    {{ blog.category | title }}
+  </span>
+  <h1 class="font-heading text-5xl md:text-6xl leading-[0.9] mb-4">{{ blog.name | upper }}</h1>
+  <p class="text-white/50 text-xl mb-8 leading-relaxed">{{ blog.subtitle }}</p>
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.65rem] text-white/30 uppercase tracking-widest">
+    <span>By <span class="text-white/50">{{ blog.author }}</span></span>
+    <span class="text-white/15">·</span>
+    <time datetime="{{ blog.date_iso }}">{{ blog.date }}</time>
+    <span class="text-white/15">·</span>
+    <span>{{ blog.read_time }}</span>
+    <span class="text-white/15">·</span>
+    <span class="text-accent">{{ blog.level }}</span>
+  </div>
+</header>
+
+{# ── Article Body ───────────────────────────────────────── #}
+<article class="max-w-3xl mx-auto px-6 py-12" itemscope itemtype="https://schema.org/Article">
+  <div class="prose-ffx">
+    {% block article_content %}{% endblock %}
+  </div>
+</article>
+
+{# ── Tags ───────────────────────────────────────────────── #}
+<div class="max-w-3xl mx-auto px-6 pb-10 border-b border-[#1a1a1a]">
+  <p class="text-[0.6rem] tracking-[0.2em] uppercase text-white/25 mb-3">Tagged</p>
+  <div class="flex flex-wrap gap-2">
+    {% for tag in blog.tags %}
+    <span class="text-[0.6rem] tracking-[0.15em] uppercase text-white/35 border border-[#222] px-3 py-1">{{ tag }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── PDF Download CTA ───────────────────────────────────── #}
+<section class="max-w-3xl mx-auto px-6 py-12">
+  <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+    <div>
+      <p class="text-accent text-[0.6rem] tracking-[0.3em] uppercase mb-2">Save for Offline</p>
+      <p class="font-heading text-2xl mb-1">GET THE PDF VERSION</p>
+      <p class="text-white/40 text-sm">Full article formatted for easy reading — save it, share it, print it.</p>
+    </div>
+    <a href="/static/pdfs/{{ blog.filename }}" download="{{ blog.name }}.pdf"
+       class="flex-shrink-0 bg-accent text-white text-xs tracking-[0.15em] uppercase px-8 py-4 hover:brightness-90 transition-all whitespace-nowrap">
+      ↓ Download PDF
+    </a>
+  </div>
+</section>
+
+{# ── Back to blog ───────────────────────────────────────── #}
+<div class="max-w-3xl mx-auto px-6 pb-20 text-center">
+  <a href="/blogs" class="text-white/30 hover:text-accent text-[0.6rem] tracking-[0.2em] uppercase transition-colors">
+    ← Browse All Articles
+  </a>
+</div>
+
+<style>
+/* Article prose styles — Tailwind CDN has no typography plugin */
+.prose-ffx h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1a1a1a;
+}
+.prose-ffx h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.prose-ffx p {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 1rem;
+}
+.prose-ffx .lead {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+.prose-ffx strong { color: rgba(255,255,255,0.85); }
+.prose-ffx .accent { color: #FF4D00; }
+.prose-ffx table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  margin: 1.5rem 0;
+}
+.prose-ffx th {
+  background: #111;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border: 1px solid #1a1a1a;
+}
+.prose-ffx td {
+  padding: 0.6rem 1rem;
+  border: 1px solid #111;
+  color: rgba(255,255,255,0.6);
+  vertical-align: top;
+}
+.prose-ffx td:first-child { color: rgba(255,255,255,0.8); font-weight: 500; }
+.prose-ffx tr:hover td { background: rgba(255,255,255,0.02); }
+.prose-ffx .faq-q {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #FF4D00;
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+.prose-ffx .faq-a {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+}
+.prose-ffx .callout {
+  border-left: 2px solid #FF4D00;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255,77,0,0.05);
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.65);
+}
+.prose-ffx a { color: #FF4D00; text-decoration: underline; text-underline-offset: 3px; }
+.prose-ffx a:hover { color: #ff6a26; }
+.prose-ffx .section-num {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: rgba(255,255,255,0.04);
+  line-height: 1;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+</style>
+
+{% endblock %}
