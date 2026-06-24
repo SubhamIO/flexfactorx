@@ -180,6 +180,10 @@ def collabs():
 
 
 # ── SEO ───────────────────────────────────────────────────────────────────────
+@app.route('/google736474751546943a.html')
+def google_verify():
+    return Response('google-site-verification: google736474751546943a.html',
+                    mimetype='text/html')
 SITE_ROOT = 'https://flexfactorx.onrender.com'
 
 @app.route('/robots.txt')
