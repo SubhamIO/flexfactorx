@@ -4,7 +4,7 @@ import hashlib
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
 from flask_login import LoginManager, current_user
 
 from models import db, User
@@ -177,6 +177,55 @@ def tracker():
 @app.route('/collabs')
 def collabs():
     return render_template('collabs.html')
+
+
+# ── SEO ───────────────────────────────────────────────────────────────────────
+SITE_ROOT = 'https://flexfactorx.onrender.com'
+
+@app.route('/robots.txt')
+def robots():
+    body = f'User-agent: *\nAllow: /\nSitemap: {SITE_ROOT}/sitemap.xml\n'
+    return Response(body, mimetype='text/plain')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    static_pages = [
+        ('/',          '2026-06-24', 'weekly',  '1.0'),
+        ('/about',     '2026-06-24', 'monthly', '0.6'),
+        ('/programs',  '2026-06-24', 'monthly', '0.8'),
+        ('/blogs',     '2026-06-24', 'weekly',  '0.9'),
+        ('/shop',      '2026-06-24', 'monthly', '0.7'),
+        ('/tools',     '2026-06-24', 'monthly', '0.8'),
+        ('/collabs',   '2026-06-24', 'monthly', '0.5'),
+        ('/contact',   '2026-06-24', 'monthly', '0.5'),
+    ]
+    urls = []
+    for path, lastmod, freq, pri in static_pages:
+        urls.append(
+            f'  <url>\n'
+            f'    <loc>{SITE_ROOT}{path}</loc>\n'
+            f'    <lastmod>{lastmod}</lastmod>\n'
+            f'    <changefreq>{freq}</changefreq>\n'
+            f'    <priority>{pri}</priority>\n'
+            f'  </url>'
+        )
+    for post in blogs:
+        urls.append(
+            f'  <url>\n'
+            f'    <loc>{SITE_ROOT}/blogs/{post["slug"]}</loc>\n'
+            f'    <lastmod>{post["date_iso"]}</lastmod>\n'
+            f'    <changefreq>monthly</changefreq>\n'
+            f'    <priority>0.9</priority>\n'
+            f'  </url>'
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + '\n'.join(urls) +
+        '\n</urlset>'
+    )
+    return Response(xml, mimetype='application/xml')
 
 
 @app.route('/contact')
