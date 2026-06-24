@@ -762,6 +762,18 @@
           <input id="s-bw" type="number" placeholder="e.g. 75"
                  class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
         </div>
+        <div>
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Diet Preference</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="s-dp-all"    type="button" onclick="setSDietPref('all')"
+                    class="text-[0.6rem] tracking-widest uppercase py-2 border border-accent bg-accent text-white transition-all">All</button>
+            <button id="s-dp-veg"    type="button" onclick="setSDietPref('veg')"
+                    class="text-[0.6rem] tracking-widest uppercase py-2 border border-[#1a1a1a] text-white/40 hover:text-white transition-all">🌿 Veg</button>
+            <button id="s-dp-nonveg" type="button" onclick="setSDietPref('nonveg')"
+                    class="text-[0.6rem] tracking-widest uppercase py-2 border border-[#1a1a1a] text-white/40 hover:text-white transition-all">🍗 Non-Veg</button>
+          </div>
+          <p class="text-white/20 text-xs mt-1">Filters the food database and tailors meal suggestions</p>
+        </div>
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Protein (g)</label>
@@ -796,6 +808,11 @@
       <div class="flex items-center justify-between p-5 border-b border-[#1a1a1a]">
         <p id="fm-title" class="text-xs tracking-widest uppercase text-white/50">Add Food</p>
         <button onclick="closeFoodModal()" class="text-white/30 hover:text-white text-lg">✕</button>
+      </div>
+      <div class="flex gap-0 border-b border-[#1a1a1a]">
+        <button type="button" id="ff-all"    onclick="setFoodFilter('all')"    class="flex-1 text-[0.6rem] tracking-widest uppercase py-2.5 border-b-2 border-accent text-white transition-all">All</button>
+        <button type="button" id="ff-veg"    onclick="setFoodFilter('veg')"    class="flex-1 text-[0.6rem] tracking-widest uppercase py-2.5 border-b-2 border-transparent text-white/40 hover:text-white transition-all">🌿 Veg</button>
+        <button type="button" id="ff-nonveg" onclick="setFoodFilter('nonveg')" class="flex-1 text-[0.6rem] tracking-widest uppercase py-2.5 border-b-2 border-transparent text-white/40 hover:text-white transition-all">🍗 Non-Veg</button>
       </div>
       <div class="p-5 border-b border-[#1a1a1a]">
         <p class="text-[0.6rem] tracking-widest uppercase text-white/25 mb-2">Quick Custom Add</p>
@@ -1075,6 +1092,7 @@ window.tdeeCalc = function(){
   var carbG   = Math.round(cCal/4);
   var delta   = goalCal-tdee;
   var wklyKg  = (delta*7)/7700;
+  var pref    = settings.diet_pref || 'all';
 
   setText('r-bmr',  bmr.toLocaleString());
   setText('r-tdee', tdee.toLocaleString());
@@ -1088,15 +1106,23 @@ window.tdeeCalc = function(){
 
   setText('r-protein-g',   proteinG+'g'); setText('r-protein-cal', pCal+' cal');
   setText('r-protein-pct', Math.round(pCal/goalCal*100)+'%'); setWidth('r-protein-bar',pCal/goalCal*100);
-  setText('r-protein-food', Math.round(proteinG/6)+' eggs | '+Math.round(proteinG/0.31)+'g chicken | '+Math.round(proteinG/10)+' cups dal | '+Math.round(proteinG/24)+' scoops whey');
+  var proteinEq = pref==='veg'
+    ? Math.round(proteinG/15)+' portions soya chunks | '+Math.round(proteinG/18)+'×100g paneer | '+Math.round(proteinG/10)+' cups dal | '+Math.round(proteinG/24)+' scoops whey'
+    : pref==='nonveg'
+    ? Math.round(proteinG/6)+' eggs | '+Math.round(proteinG/0.31)+'g chicken breast | '+Math.round(proteinG/26)+'×100g fish | '+Math.round(proteinG/24)+' scoops whey'
+    : Math.round(proteinG/6)+' eggs | '+Math.round(proteinG/0.31)+'g chicken | '+Math.round(proteinG/10)+' cups dal | '+Math.round(proteinG/24)+' scoops whey';
+  setText('r-protein-food', proteinEq);
 
   setText('r-carb-g',   carbG+'g'); setText('r-carb-cal', cCal+' cal');
   setText('r-carb-pct', Math.round(cCal/goalCal*100)+'%'); setWidth('r-carb-bar',cCal/goalCal*100);
-  setText('r-carb-food', Math.round(carbG/15)+' rotis | '+(carbG/57).toFixed(1)+' cups cooked rice | '+Math.round(carbG/23)+' bananas');
+  setText('r-carb-food', Math.round(carbG/15)+' rotis | '+(carbG/57).toFixed(1)+' cups cooked rice | '+Math.round(carbG/23)+' bananas | '+Math.round(carbG/39)+' cups quinoa');
 
   setText('r-fat-g',   fatG+'g'); setText('r-fat-cal', fCal+' cal');
   setText('r-fat-pct', Math.round(fCal/goalCal*100)+'%'); setWidth('r-fat-bar',fCal/goalCal*100);
-  setText('r-fat-food', Math.round(fatG/5)+' whole eggs | '+Math.round(fatG/4)+'g ghee | '+Math.round(fatG/14)+'× 30g peanuts');
+  var fatEq = pref==='nonveg'
+    ? Math.round(fatG/5)+' whole eggs | '+Math.round(fatG/4)+'g ghee | '+Math.round(fatG/15)+'g almond butter'
+    : Math.round(fatG/15)+'×100g avocado | '+Math.round(fatG/4)+'g ghee | '+Math.round(fatG/9)+' tbsp almond butter';
+  setText('r-fat-food', fatEq);
 
   setText('r-delta',  (delta>0?'+':'')+delta+' cal');
   setText('r-weekly', (wklyKg>0?'+':'')+wklyKg.toFixed(2)+' kg');
@@ -1120,8 +1146,8 @@ window.tdeeCalc = function(){
   if(warnMsg){ $id('r-pace-warn').classList.remove('hidden'); setText('r-pace-msg',warnMsg); }
   else $id('r-pace-warn').classList.add('hidden');
 
-  buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor);
-  buildFoodEq(goalCal);
+  buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor,pref);
+  buildFoodEq(goalCal,pref);
 
   try{
     localStorage.setItem('ffx_goal_cal',goalCal);
@@ -1148,13 +1174,16 @@ window.tdeeCalc = function(){
   setTimeout(function(){ $id('tdee-results').scrollIntoView({behavior:'smooth'}); },80);
 };
 
-function buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor){
+function buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor,pref){
+  var proteinExample = (pref==='veg')
+    ? Math.round(proteinG/15)+' portions soya chunks (30g) OR '+Math.round(proteinG/18)+'×100g paneer OR '+Math.round(proteinG/24)+' scoops whey'
+    : Math.round(proteinG/6)+' eggs OR '+Math.round(proteinG/0.31)+'g chicken breast OR '+Math.round(proteinG/24)+' scoops whey';
   var ins=[
     { label:'Your Metabolic Floor',
       body:'Your BMR of '+bmr.toLocaleString()+' cal = '+Math.round(bmr/24)+' cal/hour just staying alive. Eating below the safe minimum ('+safeFloor+' cal) forces muscle breakdown — not just fat loss. Your goal of '+goalCal+' cal is '+(goalCal<safeFloor?'BELOW this limit — switch to a moderate cut.':'above this floor. You\'re in a safe zone.')  ,
       warn: goalCal<safeFloor },
     { label:'The Protein Priority',
-      body:'Your '+proteinG+'g protein target = '+Math.round(proteinG/6)+' eggs OR '+Math.round(proteinG/0.31)+'g chicken breast. Protein is the only macro that directly preserves muscle during a deficit. Hit it first at every meal, then fill remaining calories with carbs and fat.',
+      body:'Your '+proteinG+'g protein target = '+proteinExample+'. Protein is the only macro that directly preserves muscle during a deficit. Hit it first at every meal, then fill remaining calories with carbs and fat.',
       positive:true },
     goal.includes('cut') ? {
       label:'Metabolic Adaptation Warning',
@@ -1178,167 +1207,250 @@ function buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,
     grid.innerHTML+='<div class="p-6 border '+border+' '+bg+'"><p class="text-xs tracking-widest uppercase '+lc+' mb-3">'+i.label+'</p><p class="text-white/60 text-sm leading-relaxed">'+i.body+'</p></div>';
   });
 }
-function buildFoodEq(goalCal){
-  var meals=[
-    {name:'Breakfast', desc:Math.max(2,Math.round(goalCal*0.22/75))+' eggs + 2 rotis + chai', cal:Math.round(goalCal*0.22)},
-    {name:'Lunch',     desc:'2 rotis + '+(goalCal*0.30/260).toFixed(1)+' cup rice + dal + sabzi', cal:Math.round(goalCal*0.30)},
-    {name:'Pre/Post Workout', desc:'1 banana + 1 scoop whey'+(goalCal>2000?' + 20g peanuts':''), cal:Math.round(goalCal*0.12)},
-    {name:'Dinner',    desc:Math.max(2,Math.round(goalCal*0.36/140))+' rotis + 150g chicken/paneer + dal', cal:Math.round(goalCal*0.36)},
+function buildFoodEq(goalCal, pref){
+  pref = pref || 'all';
+  var isVeg    = pref === 'veg';
+  var isNonVeg = pref === 'nonveg';
+
+  var bfCal  = Math.round(goalCal * 0.22);
+  var lnCal  = Math.round(goalCal * 0.30);
+  var preCal = Math.round(goalCal * 0.12);
+  var dinCal = Math.round(goalCal * 0.36);
+
+  // Cap rotis at 3 per meal — extra calories come from protein sources and rice, not more rotis
+  var lnRotis  = goalCal > 2400 ? '3' : '2';
+  var dinRotis = goalCal > 2400 ? '3' : '2';
+  var extraRice = goalCal > 2300 ? ' + ½ cup rice' : '';
+  var snackExtra = goalCal > 2000 ? ' + 20g almonds' : '';
+
+  var bfDesc, lnDesc, preDesc, dinDesc;
+
+  if (isNonVeg) {
+    var eggs = Math.max(2, Math.min(5, Math.round(bfCal / 85)));
+    bfDesc  = eggs + ' boiled/scrambled eggs + 2 multigrain toast + chai';
+    lnDesc  = lnRotis + ' roti + 150g chicken breast + 1 cup dal + salad' + extraRice;
+    preDesc = '1 banana + 1 scoop whey' + snackExtra;
+    dinDesc = dinRotis + ' roti + 150g fish / chicken curry + 1 cup sabzi + dahi';
+  } else if (isVeg) {
+    var chilla = Math.max(2, Math.min(4, Math.round(bfCal / 120)));
+    bfDesc  = chilla + ' moong dal chilla + 1 cup dahi + 1 fruit + chai';
+    lnDesc  = lnRotis + ' roti + 150g paneer sabzi + 1 cup dal + salad' + extraRice;
+    preDesc = '1 banana + 1 scoop whey / soy protein' + snackExtra;
+    dinDesc = dinRotis + ' roti + 1 cup rajma or chole + 1 cup sabzi + dahi';
+  } else {
+    var mixEggs = Math.max(2, Math.min(4, Math.round(bfCal / 80)));
+    bfDesc  = mixEggs + ' eggs + 2 multigrain toast + chai';
+    lnDesc  = lnRotis + ' roti + 150g chicken / paneer + 1 cup dal + salad' + extraRice;
+    preDesc = '1 banana + 1 scoop whey' + snackExtra;
+    dinDesc = dinRotis + ' roti + 150g chicken or paneer + 1 cup dal + sabzi';
+  }
+
+  var meals = [
+    {name:'Breakfast',        desc:bfDesc,  cal:bfCal},
+    {name:'Lunch',            desc:lnDesc,  cal:lnCal},
+    {name:'Pre/Post Workout', desc:preDesc, cal:preCal},
+    {name:'Dinner',           desc:dinDesc, cal:dinCal},
   ];
   var grid=$id('r-food-eq'); grid.innerHTML='';
   var total=0;
-  meals.forEach(function(m){ total+=m.cal; grid.innerHTML+='<div class="border border-[#1a1a1a] bg-[#080808] p-5"><p class="text-xs tracking-widest uppercase text-accent mb-2">'+m.name+'</p><p class="text-white/70 text-sm leading-relaxed mb-3">'+m.desc+'</p><p class="text-white/30 text-xs">~'+m.cal+' cal</p></div>'; });
-  setText('r-food-eq-note','Sample day ~'+total.toLocaleString()+' cal (target: '+goalCal.toLocaleString()+' cal). This is illustrative — track the real foods in the Daily Tracker tab.');
+  meals.forEach(function(m){
+    total+=m.cal;
+    grid.innerHTML+='<div class="border border-[#1a1a1a] bg-[#080808] p-5"><p class="text-xs tracking-widest uppercase text-accent mb-2">'+m.name+'</p><p class="text-white/70 text-sm leading-relaxed mb-3">'+m.desc+'</p><p class="text-white/30 text-xs">~'+m.cal+' cal</p></div>';
+  });
+  var prefNote = pref==='all' ? ' Set Veg/Non-Veg in Tracker → Settings for a tailored plan.' : '';
+  setText('r-food-eq-note','Sample day ~'+total.toLocaleString()+' cal (target: '+goalCal.toLocaleString()+' cal). Illustrative only — track real foods in the Daily Tracker tab.'+prefNote);
 }
 
 
-// ─── INDIAN FOOD DATABASE ────────────────────────────────
+// ─── FOOD DATABASE (veg:true = vegetarian) ───────────────
 var FOODS = [
   // ── Oils, Fats & Condiments
-  {name:'Ghee (1 tsp, 5g)',                   cal:45,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
-  {name:'Cooking Oil — sunflower/veg (1 tsp)',cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
-  {name:'Mustard Oil (1 tsp)',                 cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
-  {name:'Coconut Oil (1 tsp)',                 cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp'},
-  {name:'Butter (1 tsp, 5g)',                  cal:36,  protein:0,   carbs:0,   fat:4,   unit:'1 tsp'},
-  {name:'Olive Oil (1 tsp)',                   cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp'},
-  {name:'Sugar (1 tsp, 4g)',                   cal:16,  protein:0,   carbs:4,   fat:0,   unit:'1 tsp'},
-  {name:'Jaggery / Gur (1 tsp, 5g)',           cal:19,  protein:0,   carbs:5,   fat:0,   unit:'1 tsp'},
-  {name:'Honey (1 tsp, 7g)',                   cal:21,  protein:0,   carbs:6,   fat:0,   unit:'1 tsp'},
-  {name:'Pickle / Achaar (1 tsp)',             cal:20,  protein:0,   carbs:1,   fat:1.5, unit:'1 tsp'},
-  {name:'Green Chutney (2 tbsp)',              cal:15,  protein:0.5, carbs:3,   fat:0,   unit:'2 tbsp'},
-  {name:'Coconut Chutney (2 tbsp)',            cal:55,  protein:1,   carbs:4,   fat:4,   unit:'2 tbsp'},
-  {name:'Tomato Sauce / Ketchup (1 tbsp)',     cal:17,  protein:0.2, carbs:4,   fat:0,   unit:'1 tbsp'},
+  {name:'Ghee (1 tsp, 5g)',                      cal:45,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp',      veg:true},
+  {name:'Cooking Oil — sunflower/veg (1 tsp)',   cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp',      veg:true},
+  {name:'Mustard Oil (1 tsp)',                    cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp',      veg:true},
+  {name:'Coconut Oil (1 tsp)',                    cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp',      veg:true},
+  {name:'Butter (1 tsp, 5g)',                     cal:36,  protein:0,   carbs:0,   fat:4,   unit:'1 tsp',      veg:true},
+  {name:'Olive Oil (1 tsp)',                      cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp',      veg:true},
+  {name:'Sugar (1 tsp, 4g)',                      cal:16,  protein:0,   carbs:4,   fat:0,   unit:'1 tsp',      veg:true},
+  {name:'Jaggery / Gur (1 tsp, 5g)',              cal:19,  protein:0,   carbs:5,   fat:0,   unit:'1 tsp',      veg:true},
+  {name:'Honey (1 tsp, 7g)',                      cal:21,  protein:0,   carbs:6,   fat:0,   unit:'1 tsp',      veg:true},
+  {name:'Pickle / Achaar (1 tsp)',                cal:20,  protein:0,   carbs:1,   fat:1.5, unit:'1 tsp',      veg:true},
+  {name:'Green Chutney (2 tbsp)',                 cal:15,  protein:0.5, carbs:3,   fat:0,   unit:'2 tbsp',     veg:true},
+  {name:'Coconut Chutney (2 tbsp)',               cal:55,  protein:1,   carbs:4,   fat:4,   unit:'2 tbsp',     veg:true},
+  {name:'Tomato Sauce / Ketchup (1 tbsp)',        cal:17,  protein:0.2, carbs:4,   fat:0,   unit:'1 tbsp',     veg:true},
   // ── Breads & Grains
-  {name:'Roti / Chapati (1 medium, 30g)',      cal:80,  protein:3,   carbs:15,  fat:1,   unit:'1 roti'},
-  {name:'Whole Wheat Roti (1, 30g)',           cal:82,  protein:3.5, carbs:15,  fat:1,   unit:'1 roti'},
-  {name:'Ragi / Nachni Roti (1)',              cal:80,  protein:3,   carbs:14,  fat:1,   unit:'1 roti'},
-  {name:'Jowar / Sorghum Roti (1)',            cal:70,  protein:2,   carbs:14,  fat:0.5, unit:'1 roti'},
-  {name:'Bajra / Millet Roti (1)',             cal:85,  protein:3,   carbs:16,  fat:1,   unit:'1 roti'},
-  {name:'Missi Roti / Besan Roti (1)',         cal:95,  protein:4,   carbs:16,  fat:2,   unit:'1 roti'},
-  {name:'Plain Paratha (1, 60g)',              cal:180, protein:4,   carbs:25,  fat:7,   unit:'1 paratha'},
-  {name:'Methi Paratha (1)',                   cal:155, protein:4,   carbs:22,  fat:6,   unit:'1 paratha'},
-  {name:'Aloo Paratha (1)',                    cal:260, protein:5,   carbs:35,  fat:11,  unit:'1 paratha'},
-  {name:'Stuffed Paneer Paratha (1)',          cal:280, protein:9,   carbs:30,  fat:13,  unit:'1 paratha'},
-  {name:'Puri (1 small)',                      cal:90,  protein:2,   carbs:12,  fat:4,   unit:'1 puri'},
-  {name:'White Rice cooked (1 cup, 200g)',     cal:260, protein:5,   carbs:57,  fat:0.4, unit:'1 cup'},
-  {name:'Brown Rice cooked (1 cup, 200g)',     cal:218, protein:5,   carbs:45,  fat:1.6, unit:'1 cup'},
-  {name:'Dosa (1 regular)',                    cal:130, protein:3,   carbs:20,  fat:4,   unit:'1 dosa'},
-  {name:'Rava Dosa (1)',                       cal:115, protein:3,   carbs:18,  fat:4,   unit:'1 dosa'},
-  {name:'Masala Dosa (1)',                     cal:220, protein:5,   carbs:30,  fat:9,   unit:'1 dosa'},
-  {name:'Idli (1)',                            cal:40,  protein:2,   carbs:8,   fat:0.1, unit:'1 idli'},
-  {name:'Poha cooked (1 cup, 100g)',           cal:130, protein:2,   carbs:28,  fat:0.5, unit:'1 cup'},
-  {name:'Upma (1 cup, 150g)',                  cal:200, protein:5,   carbs:35,  fat:4,   unit:'1 cup'},
-  {name:'Uttapam (1)',                         cal:150, protein:4,   carbs:22,  fat:5,   unit:'1 uttapam'},
-  {name:'Medu Vada (1)',                       cal:100, protein:4,   carbs:13,  fat:4,   unit:'1 vada'},
-  {name:'White Bread (1 slice)',               cal:65,  protein:2,   carbs:12,  fat:0.8, unit:'1 slice'},
-  {name:'Oats cooked (1 cup, 250g)',           cal:150, protein:5,   carbs:27,  fat:3,   unit:'1 cup'},
-  {name:'Besan / Chickpea Flour (50g)',        cal:180, protein:9,   carbs:27,  fat:3,   unit:'50g dry'},
-  {name:'Suji / Semolina (50g dry)',           cal:180, protein:6,   carbs:36,  fat:0.5, unit:'50g dry'},
-  {name:'Quinoa cooked (1 cup)',               cal:220, protein:8,   carbs:39,  fat:3.5, unit:'1 cup'},
-  // ── Proteins — Animal
-  {name:'Chicken Breast cooked (100g)',        cal:165, protein:31,  carbs:0,   fat:3.6, unit:'100g'},
-  {name:'Chicken Thigh cooked (100g)',         cal:209, protein:26,  carbs:0,   fat:11,  unit:'100g'},
-  {name:'Chicken Curry (1 cup)',               cal:320, protein:25,  carbs:8,   fat:20,  unit:'1 cup'},
-  {name:'Mutton / Lamb cooked (100g)',         cal:250, protein:25,  carbs:0,   fat:17,  unit:'100g'},
-  {name:'Egg (1 whole)',                       cal:70,  protein:6,   carbs:0.5, fat:5,   unit:'1 egg'},
-  {name:'Egg White (1)',                       cal:17,  protein:3.6, carbs:0.2, fat:0,   unit:'1 white'},
-  {name:'Egg Bhurji (2 eggs, little oil)',     cal:200, protein:14,  carbs:3,   fat:14,  unit:'2 eggs'},
-  {name:'Egg Curry (2 eggs)',                  cal:280, protein:14,  carbs:8,   fat:20,  unit:'2 eggs'},
-  {name:'Fish white (100g cooked)',            cal:140, protein:26,  carbs:0,   fat:3,   unit:'100g'},
-  {name:'Salmon (100g)',                       cal:208, protein:20,  carbs:0,   fat:13,  unit:'100g'},
-  {name:'Prawns cooked (100g)',                cal:99,  protein:18,  carbs:0,   fat:1.5, unit:'100g'},
-  {name:'Tuna canned in water (100g)',         cal:116, protein:26,  carbs:0,   fat:1,   unit:'100g'},
+  {name:'Roti / Chapati (1 medium, 30g)',         cal:80,  protein:3,   carbs:15,  fat:1,   unit:'1 roti',     veg:true},
+  {name:'Whole Wheat Roti (1, 30g)',              cal:82,  protein:3.5, carbs:15,  fat:1,   unit:'1 roti',     veg:true},
+  {name:'Ragi / Nachni Roti (1)',                 cal:80,  protein:3,   carbs:14,  fat:1,   unit:'1 roti',     veg:true},
+  {name:'Jowar / Sorghum Roti (1)',               cal:70,  protein:2,   carbs:14,  fat:0.5, unit:'1 roti',     veg:true},
+  {name:'Bajra / Millet Roti (1)',                cal:85,  protein:3,   carbs:16,  fat:1,   unit:'1 roti',     veg:true},
+  {name:'Missi Roti / Besan Roti (1)',            cal:95,  protein:4,   carbs:16,  fat:2,   unit:'1 roti',     veg:true},
+  {name:'Plain Paratha (1, 60g)',                 cal:180, protein:4,   carbs:25,  fat:7,   unit:'1 paratha',  veg:true},
+  {name:'Methi Paratha (1)',                      cal:155, protein:4,   carbs:22,  fat:6,   unit:'1 paratha',  veg:true},
+  {name:'Aloo Paratha (1)',                       cal:260, protein:5,   carbs:35,  fat:11,  unit:'1 paratha',  veg:true},
+  {name:'Stuffed Paneer Paratha (1)',             cal:280, protein:9,   carbs:30,  fat:13,  unit:'1 paratha',  veg:true},
+  {name:'Puri (1 small)',                         cal:90,  protein:2,   carbs:12,  fat:4,   unit:'1 puri',     veg:true},
+  {name:'White Rice cooked (1 cup, 200g)',        cal:260, protein:5,   carbs:57,  fat:0.4, unit:'1 cup',      veg:true},
+  {name:'Brown Rice cooked (1 cup, 200g)',        cal:218, protein:5,   carbs:45,  fat:1.6, unit:'1 cup',      veg:true},
+  {name:'Dosa (1 regular)',                       cal:130, protein:3,   carbs:20,  fat:4,   unit:'1 dosa',     veg:true},
+  {name:'Rava Dosa (1)',                          cal:115, protein:3,   carbs:18,  fat:4,   unit:'1 dosa',     veg:true},
+  {name:'Masala Dosa (1)',                        cal:220, protein:5,   carbs:30,  fat:9,   unit:'1 dosa',     veg:true},
+  {name:'Idli (1)',                               cal:40,  protein:2,   carbs:8,   fat:0.1, unit:'1 idli',     veg:true},
+  {name:'Medu Vada (1)',                          cal:100, protein:4,   carbs:13,  fat:4,   unit:'1 vada',     veg:true},
+  {name:'Uttapam (1)',                            cal:150, protein:4,   carbs:22,  fat:5,   unit:'1 uttapam',  veg:true},
+  {name:'Pesarattu (1, green moong crepe)',       cal:95,  protein:5,   carbs:15,  fat:2,   unit:'1 piece',    veg:true},
+  {name:'Moong Dal Chilla (1)',                   cal:120, protein:8,   carbs:14,  fat:2.5, unit:'1 chilla',   veg:true},
+  {name:'Besan Chilla / Gram Flour Pancake (1)', cal:130, protein:6,   carbs:18,  fat:3.5, unit:'1 chilla',   veg:true},
+  {name:'Poha cooked (1 cup, 100g)',              cal:130, protein:2,   carbs:28,  fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Upma (1 cup, 150g)',                     cal:200, protein:5,   carbs:35,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Daliya / Broken Wheat Porridge (1 cup)',cal:165, protein:5,   carbs:32,  fat:1.5, unit:'1 cup',      veg:true},
+  {name:'White Bread (1 slice)',                  cal:65,  protein:2,   carbs:12,  fat:0.8, unit:'1 slice',    veg:true},
+  {name:'Brown Bread (1 slice)',                  cal:75,  protein:3,   carbs:14,  fat:1,   unit:'1 slice',    veg:true},
+  {name:'Multigrain Bread (1 slice)',             cal:80,  protein:4,   carbs:14,  fat:1.5, unit:'1 slice',    veg:true},
+  {name:'Oats cooked (1 cup, 250g)',              cal:150, protein:5,   carbs:27,  fat:3,   unit:'1 cup',      veg:true},
+  {name:'Besan / Chickpea Flour (50g)',           cal:180, protein:9,   carbs:27,  fat:3,   unit:'50g dry',    veg:true},
+  {name:'Suji / Semolina (50g dry)',              cal:180, protein:6,   carbs:36,  fat:0.5, unit:'50g dry',    veg:true},
+  {name:'Quinoa cooked (1 cup)',                  cal:220, protein:8,   carbs:39,  fat:3.5, unit:'1 cup',      veg:true},
+  // ── Non-Vegetarian — Chicken & Eggs
+  {name:'Chicken Breast cooked (100g)',           cal:165, protein:31,  carbs:0,   fat:3.6, unit:'100g',       veg:false},
+  {name:'Chicken Thigh cooked (100g)',            cal:209, protein:26,  carbs:0,   fat:11,  unit:'100g',       veg:false},
+  {name:'Chicken Tikka (100g)',                   cal:165, protein:25,  carbs:3,   fat:6,   unit:'100g',       veg:false},
+  {name:'Tandoori Chicken (100g)',                cal:150, protein:23,  carbs:4,   fat:5,   unit:'100g',       veg:false},
+  {name:'Chicken 65 (100g)',                      cal:220, protein:18,  carbs:8,   fat:13,  unit:'100g',       veg:false},
+  {name:'Chicken Curry (1 cup)',                  cal:320, protein:25,  carbs:8,   fat:20,  unit:'1 cup',      veg:false},
+  {name:'Chicken Frankie / Roll (1)',             cal:360, protein:22,  carbs:45,  fat:9,   unit:'1 roll',     veg:false},
+  {name:'Chicken Sandwich (2 slices + 100g)',     cal:320, protein:24,  carbs:32,  fat:10,  unit:'1 sandwich', veg:false},
+  {name:'Egg (1 whole)',                          cal:70,  protein:6,   carbs:0.5, fat:5,   unit:'1 egg',      veg:false},
+  {name:'Egg White (1)',                          cal:17,  protein:3.6, carbs:0.2, fat:0,   unit:'1 white',    veg:false},
+  {name:'Boiled Eggs (2)',                        cal:145, protein:13,  carbs:1,   fat:10,  unit:'2 eggs',     veg:false},
+  {name:'Egg Omelette (2 eggs)',                  cal:200, protein:14,  carbs:2,   fat:16,  unit:'2 eggs',     veg:false},
+  {name:'Scrambled Eggs (2, with butter)',        cal:210, protein:14,  carbs:2,   fat:16,  unit:'2 eggs',     veg:false},
+  {name:'Egg Bhurji (2 eggs, little oil)',        cal:200, protein:14,  carbs:3,   fat:14,  unit:'2 eggs',     veg:false},
+  {name:'Egg Curry (2 eggs)',                     cal:280, protein:14,  carbs:8,   fat:20,  unit:'2 eggs',     veg:false},
+  {name:'Egg Fried Rice (1 cup)',                 cal:320, protein:12,  carbs:48,  fat:10,  unit:'1 cup',      veg:false},
+  // ── Non-Vegetarian — Mutton, Fish & Seafood
+  {name:'Mutton / Lamb cooked (100g)',            cal:250, protein:25,  carbs:0,   fat:17,  unit:'100g',       veg:false},
+  {name:'Mutton Curry (1 cup)',                   cal:320, protein:24,  carbs:8,   fat:22,  unit:'1 cup',      veg:false},
+  {name:'Keema Matar (1 cup)',                    cal:280, protein:22,  carbs:12,  fat:16,  unit:'1 cup',      veg:false},
+  {name:'Fish white cooked (100g)',               cal:140, protein:26,  carbs:0,   fat:3,   unit:'100g',       veg:false},
+  {name:'Fish Curry (1 cup)',                     cal:180, protein:22,  carbs:8,   fat:7,   unit:'1 cup',      veg:false},
+  {name:'Fish Fry / Tawa Fish (100g)',            cal:190, protein:22,  carbs:6,   fat:9,   unit:'100g',       veg:false},
+  {name:'Salmon (100g)',                          cal:208, protein:20,  carbs:0,   fat:13,  unit:'100g',       veg:false},
+  {name:'Prawns cooked (100g)',                   cal:99,  protein:18,  carbs:0,   fat:1.5, unit:'100g',       veg:false},
+  {name:'Tuna canned in water (100g)',            cal:116, protein:26,  carbs:0,   fat:1,   unit:'100g',       veg:false},
+  {name:'Biryani Chicken (1 plate, 350g)',        cal:500, protein:28,  carbs:60,  fat:16,  unit:'1 plate',    veg:false},
+  {name:'Biryani Mutton (1 plate, 350g)',         cal:570, protein:30,  carbs:62,  fat:18,  unit:'1 plate',    veg:false},
   // ── Proteins — Plant
-  {name:'Paneer (100g)',                       cal:265, protein:18,  carbs:3,   fat:21,  unit:'100g'},
-  {name:'Paneer Tikka (100g)',                 cal:230, protein:14,  carbs:7,   fat:15,  unit:'100g'},
-  {name:'Paneer Bhurji (100g)',                cal:180, protein:12,  carbs:3,   fat:13,  unit:'100g'},
-  {name:'Palak Paneer (1 cup)',                cal:280, protein:14,  carbs:10,  fat:20,  unit:'1 cup'},
-  {name:'Tofu firm (100g)',                    cal:76,  protein:8,   carbs:2,   fat:4,   unit:'100g'},
-  {name:'Soya Chunks (30g dry)',               cal:100, protein:15,  carbs:9,   fat:0.5, unit:'30g dry'},
-  {name:'Dal Moong cooked (1 cup)',            cal:147, protein:10,  carbs:26,  fat:0.8, unit:'1 cup'},
-  {name:'Dal Masoor cooked (1 cup)',           cal:162, protein:12,  carbs:29,  fat:0.5, unit:'1 cup'},
-  {name:'Dal Toor / Arhar cooked (1 cup)',     cal:182, protein:11,  carbs:32,  fat:0.5, unit:'1 cup'},
-  {name:'Chana Dal cooked (1 cup)',            cal:200, protein:13,  carbs:35,  fat:1.5, unit:'1 cup'},
-  {name:'Rajma cooked (1 cup)',                cal:220, protein:14,  carbs:40,  fat:0.5, unit:'1 cup'},
-  {name:'Chole / Chickpea cooked (1 cup)',     cal:270, protein:15,  carbs:45,  fat:4,   unit:'1 cup'},
-  {name:'Black Chana cooked (1 cup)',          cal:210, protein:14,  carbs:38,  fat:1.5, unit:'1 cup'},
-  {name:'Sprouts mixed (1 cup)',               cal:85,  protein:6,   carbs:16,  fat:0.4, unit:'1 cup'},
-  {name:'Peas / Matar cooked (1 cup)',         cal:118, protein:8,   carbs:21,  fat:0.4, unit:'1 cup'},
+  {name:'Paneer (100g)',                          cal:265, protein:18,  carbs:3,   fat:21,  unit:'100g',       veg:true},
+  {name:'Low-Fat Paneer (100g)',                  cal:105, protein:14,  carbs:3,   fat:4.5, unit:'100g',       veg:true},
+  {name:'Paneer Tikka (100g)',                    cal:230, protein:14,  carbs:7,   fat:15,  unit:'100g',       veg:true},
+  {name:'Paneer Bhurji (100g)',                   cal:180, protein:12,  carbs:3,   fat:13,  unit:'100g',       veg:true},
+  {name:'Palak Paneer (1 cup)',                   cal:280, protein:14,  carbs:10,  fat:20,  unit:'1 cup',      veg:true},
+  {name:'Cottage Cheese / Chena (100g)',          cal:98,  protein:11,  carbs:3,   fat:4.5, unit:'100g',       veg:true},
+  {name:'Tofu firm (100g)',                       cal:76,  protein:8,   carbs:2,   fat:4,   unit:'100g',       veg:true},
+  {name:'Soya Chunks (30g dry)',                  cal:100, protein:15,  carbs:9,   fat:0.5, unit:'30g dry',    veg:true},
+  {name:'Dal Moong cooked (1 cup)',               cal:147, protein:10,  carbs:26,  fat:0.8, unit:'1 cup',      veg:true},
+  {name:'Dal Masoor cooked (1 cup)',              cal:162, protein:12,  carbs:29,  fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Dal Toor / Arhar cooked (1 cup)',        cal:182, protein:11,  carbs:32,  fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Dal Palak (1 cup)',                      cal:150, protein:9,   carbs:20,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Moong Dal Soup (1 cup)',                 cal:120, protein:8,   carbs:18,  fat:1.5, unit:'1 cup',      veg:true},
+  {name:'Chana Dal cooked (1 cup)',               cal:200, protein:13,  carbs:35,  fat:1.5, unit:'1 cup',      veg:true},
+  {name:'Rajma cooked (1 cup)',                   cal:220, protein:14,  carbs:40,  fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Chole / Chickpea cooked (1 cup)',        cal:270, protein:15,  carbs:45,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Chana Masala (1 cup)',                   cal:240, protein:13,  carbs:38,  fat:5,   unit:'1 cup',      veg:true},
+  {name:'Black Chana cooked (1 cup)',             cal:210, protein:14,  carbs:38,  fat:1.5, unit:'1 cup',      veg:true},
+  {name:'Sprouts mixed (1 cup)',                  cal:85,  protein:6,   carbs:16,  fat:0.4, unit:'1 cup',      veg:true},
+  {name:'Peas / Matar cooked (1 cup)',            cal:118, protein:8,   carbs:21,  fat:0.4, unit:'1 cup',      veg:true},
+  {name:'Hummus (2 tbsp, 30g)',                   cal:70,  protein:2,   carbs:6,   fat:5,   unit:'2 tbsp',     veg:true},
   // ── Dairy
-  {name:'Milk Full Fat (1 cup, 240ml)',        cal:150, protein:8,   carbs:12,  fat:8,   unit:'1 cup'},
-  {name:'Milk Toned (1 cup, 240ml)',           cal:120, protein:8,   carbs:12,  fat:4.5, unit:'1 cup'},
-  {name:'Dahi / Curd (1 cup, 200g)',           cal:120, protein:8,   carbs:10,  fat:4,   unit:'1 cup'},
-  {name:'Greek Yogurt (100g)',                 cal:80,  protein:10,  carbs:3,   fat:2,   unit:'100g'},
-  {name:'Chaas / Buttermilk (1 glass, 250ml)',cal:37,  protein:3,   carbs:4,   fat:0.5, unit:'1 glass'},
-  {name:'Lassi Sweet (1 glass, 300ml)',        cal:200, protein:7,   carbs:32,  fat:5,   unit:'1 glass'},
-  {name:'Lassi Salted (1 glass, 300ml)',       cal:130, protein:7,   carbs:14,  fat:5,   unit:'1 glass'},
-  {name:'Whey Protein 1 scoop (30g)',          cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 scoop'},
-  {name:'Casein Protein 1 scoop (30g)',        cal:110, protein:22,  carbs:4,   fat:1,   unit:'1 scoop'},
-  {name:'Mass Gainer 1 scoop (100g)',          cal:400, protein:25,  carbs:65,  fat:6,   unit:'1 scoop'},
+  {name:'Milk Full Fat (1 cup, 240ml)',           cal:150, protein:8,   carbs:12,  fat:8,   unit:'1 cup',      veg:true},
+  {name:'Milk Toned (1 cup, 240ml)',              cal:120, protein:8,   carbs:12,  fat:4.5, unit:'1 cup',      veg:true},
+  {name:'Dahi / Curd (1 cup, 200g)',              cal:120, protein:8,   carbs:10,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Greek Yogurt (100g)',                    cal:80,  protein:10,  carbs:3,   fat:2,   unit:'100g',       veg:true},
+  {name:'Chaas / Buttermilk (1 glass, 250ml)',   cal:37,  protein:3,   carbs:4,   fat:0.5, unit:'1 glass',    veg:true},
+  {name:'Lassi Sweet (1 glass, 300ml)',           cal:200, protein:7,   carbs:32,  fat:5,   unit:'1 glass',    veg:true},
+  {name:'Lassi Salted (1 glass, 300ml)',          cal:130, protein:7,   carbs:14,  fat:5,   unit:'1 glass',    veg:true},
+  {name:'Soy Milk (1 cup, 240ml)',               cal:80,  protein:7,   carbs:4,   fat:4,   unit:'1 cup',      veg:true},
+  {name:'Whey Protein 1 scoop (30g)',             cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 scoop',    veg:true},
+  {name:'Whey Isolate 1 scoop (28g)',             cal:110, protein:26,  carbs:1,   fat:0.5, unit:'1 scoop',    veg:true},
+  {name:'Soy Protein 1 scoop (30g)',             cal:110, protein:22,  carbs:4,   fat:2,   unit:'1 scoop',    veg:true},
+  {name:'Casein Protein 1 scoop (30g)',           cal:110, protein:22,  carbs:4,   fat:1,   unit:'1 scoop',    veg:true},
+  {name:'Mass Gainer 1 scoop (100g)',             cal:400, protein:25,  carbs:65,  fat:6,   unit:'1 scoop',    veg:true},
   // ── Vegetables & Curries
-  {name:'Aloo Gobi (1 cup)',                   cal:150, protein:4,   carbs:20,  fat:6,   unit:'1 cup'},
-  {name:'Bhindi Masala (100g)',                cal:80,  protein:2,   carbs:10,  fat:3.5, unit:'100g'},
-  {name:'Mixed Sabzi (100g)',                  cal:80,  protein:2,   carbs:12,  fat:3,   unit:'100g'},
-  {name:'Spinach raw (1 cup)',                 cal:7,   protein:1,   carbs:1,   fat:0,   unit:'1 cup'},
-  {name:'Broccoli (1 cup)',                    cal:55,  protein:4,   carbs:11,  fat:0.5, unit:'1 cup'},
-  {name:'Rajma Masala (1 cup)',                cal:250, protein:13,  carbs:42,  fat:5,   unit:'1 cup'},
-  {name:'Sambar (1 cup)',                      cal:70,  protein:4,   carbs:12,  fat:1,   unit:'1 cup'},
-  {name:'Rasam (1 cup)',                       cal:40,  protein:2,   carbs:8,   fat:0.5, unit:'1 cup'},
-  {name:'Curd Rice (1 cup)',                   cal:220, protein:6,   carbs:38,  fat:4,   unit:'1 cup'},
+  {name:'Aloo Gobi (1 cup)',                      cal:150, protein:4,   carbs:20,  fat:6,   unit:'1 cup',      veg:true},
+  {name:'Bhindi Masala (100g)',                   cal:80,  protein:2,   carbs:10,  fat:3.5, unit:'100g',       veg:true},
+  {name:'Baingan Bharta (1 cup)',                 cal:150, protein:4,   carbs:16,  fat:8,   unit:'1 cup',      veg:true},
+  {name:'Mixed Sabzi / Veg Curry (100g)',         cal:80,  protein:2,   carbs:12,  fat:3,   unit:'100g',       veg:true},
+  {name:'Palak / Methi Sabzi (1 cup)',            cal:85,  protein:5,   carbs:10,  fat:3.5, unit:'1 cup',      veg:true},
+  {name:'Spinach raw (1 cup)',                    cal:7,   protein:1,   carbs:1,   fat:0,   unit:'1 cup',      veg:true},
+  {name:'Broccoli (1 cup)',                       cal:55,  protein:4,   carbs:11,  fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Mushrooms sautéed (100g)',               cal:35,  protein:2.5, carbs:5,   fat:1,   unit:'100g',       veg:true},
+  {name:'Sweet Potato cooked (100g)',             cal:90,  protein:2,   carbs:21,  fat:0.1, unit:'100g',       veg:true},
+  {name:'Avocado (100g)',                         cal:160, protein:2,   carbs:9,   fat:15,  unit:'100g',       veg:true},
+  {name:'Kadhi (1 cup)',                          cal:130, protein:5,   carbs:14,  fat:6,   unit:'1 cup',      veg:true},
+  {name:'Rajma Masala (1 cup)',                   cal:250, protein:13,  carbs:42,  fat:5,   unit:'1 cup',      veg:true},
+  {name:'Sambar (1 cup)',                         cal:70,  protein:4,   carbs:12,  fat:1,   unit:'1 cup',      veg:true},
+  {name:'Rasam (1 cup)',                          cal:40,  protein:2,   carbs:8,   fat:0.5, unit:'1 cup',      veg:true},
+  {name:'Curd Rice (1 cup)',                      cal:220, protein:6,   carbs:38,  fat:4,   unit:'1 cup',      veg:true},
   // ── Rice Dishes
-  {name:'Biryani Veg (1 plate, 300g)',         cal:420, protein:10,  carbs:65,  fat:14,  unit:'1 plate'},
-  {name:'Biryani Chicken (1 plate, 350g)',     cal:500, protein:28,  carbs:60,  fat:16,  unit:'1 plate'},
-  {name:'Biryani Mutton (1 plate, 350g)',      cal:570, protein:30,  carbs:62,  fat:18,  unit:'1 plate'},
-  {name:'Khichdi (1 cup)',                     cal:200, protein:8,   carbs:35,  fat:4,   unit:'1 cup'},
-  {name:'Pulao / Veg Pulao (1 cup)',           cal:250, protein:6,   carbs:48,  fat:4,   unit:'1 cup'},
-  {name:'Veg Fried Rice (1 cup)',              cal:290, protein:6,   carbs:52,  fat:6,   unit:'1 cup'},
+  {name:'Biryani Veg (1 plate, 300g)',            cal:420, protein:10,  carbs:65,  fat:14,  unit:'1 plate',    veg:true},
+  {name:'Khichdi (1 cup)',                        cal:200, protein:8,   carbs:35,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Pulao / Veg Pulao (1 cup)',              cal:250, protein:6,   carbs:48,  fat:4,   unit:'1 cup',      veg:true},
+  {name:'Veg Fried Rice (1 cup)',                 cal:290, protein:6,   carbs:52,  fat:6,   unit:'1 cup',      veg:true},
   // ── Street Food & Meals
-  {name:'Chole Bhature (1 plate)',             cal:650, protein:18,  carbs:90,  fat:22,  unit:'1 plate'},
-  {name:'Pav Bhaji (without butter, 1 plate)',cal:380, protein:10,  carbs:65,  fat:8,   unit:'1 plate'},
-  {name:'Pav Bhaji (with butter, 1 plate)',   cal:460, protein:10,  carbs:68,  fat:15,  unit:'1 plate'},
-  {name:'Vada Pav (1)',                        cal:320, protein:7,   carbs:50,  fat:10,  unit:'1 vada pav'},
-  {name:'Samosa (1 medium)',                   cal:200, protein:3,   carbs:26,  fat:10,  unit:'1 samosa'},
-  {name:'Misal Pav (1 plate)',                 cal:350, protein:12,  carbs:55,  fat:10,  unit:'1 plate'},
-  {name:'Dhokla (2 pieces)',                   cal:100, protein:5,   carbs:15,  fat:2,   unit:'2 pieces'},
-  {name:'Papad roasted (1)',                   cal:35,  protein:2,   carbs:6,   fat:0.5, unit:'1 papad'},
-  {name:'Papad fried (1)',                     cal:60,  protein:2,   carbs:7,   fat:3,   unit:'1 papad'},
+  {name:'Chole Bhature (1 plate)',                cal:650, protein:18,  carbs:90,  fat:22,  unit:'1 plate',    veg:true},
+  {name:'Pav Bhaji without butter (1 plate)',     cal:380, protein:10,  carbs:65,  fat:8,   unit:'1 plate',    veg:true},
+  {name:'Pav Bhaji with butter (1 plate)',        cal:460, protein:10,  carbs:68,  fat:15,  unit:'1 plate',    veg:true},
+  {name:'Vada Pav (1)',                           cal:320, protein:7,   carbs:50,  fat:10,  unit:'1 piece',    veg:true},
+  {name:'Samosa (1 medium)',                      cal:200, protein:3,   carbs:26,  fat:10,  unit:'1 samosa',   veg:true},
+  {name:'Misal Pav (1 plate)',                    cal:350, protein:12,  carbs:55,  fat:10,  unit:'1 plate',    veg:true},
+  {name:'Dhokla (2 pieces)',                      cal:100, protein:5,   carbs:15,  fat:2,   unit:'2 pieces',   veg:true},
+  {name:'Papad roasted (1)',                      cal:35,  protein:2,   carbs:6,   fat:0.5, unit:'1 papad',    veg:true},
+  {name:'Papad fried (1)',                        cal:60,  protein:2,   carbs:7,   fat:3,   unit:'1 papad',    veg:true},
   // ── Indian Sweets
-  {name:'Gulab Jamun (1)',                     cal:150, protein:3,   carbs:22,  fat:6,   unit:'1 piece'},
-  {name:'Rasgulla (1)',                        cal:100, protein:3,   carbs:20,  fat:0.5, unit:'1 piece'},
-  {name:'Ladoo Besan (1, 50g)',                cal:200, protein:5,   carbs:25,  fat:9,   unit:'1 ladoo'},
-  {name:'Barfi (1 piece, 30g)',                cal:120, protein:3,   carbs:18,  fat:4,   unit:'1 piece'},
-  {name:'Halwa Suji (1 cup)',                  cal:350, protein:5,   carbs:50,  fat:14,  unit:'1 cup'},
-  {name:'Kheer (1 cup)',                       cal:200, protein:6,   carbs:32,  fat:5,   unit:'1 cup'},
-  {name:'Jalebi (1)',                          cal:60,  protein:0.5, carbs:12,  fat:2,   unit:'1 jalebi'},
-  {name:'Shrikhand (1 cup)',                   cal:250, protein:10,  carbs:40,  fat:5,   unit:'1 cup'},
+  {name:'Gulab Jamun (1)',                        cal:150, protein:3,   carbs:22,  fat:6,   unit:'1 piece',    veg:true},
+  {name:'Rasgulla (1)',                           cal:100, protein:3,   carbs:20,  fat:0.5, unit:'1 piece',    veg:true},
+  {name:'Ladoo Besan (1, 50g)',                   cal:200, protein:5,   carbs:25,  fat:9,   unit:'1 ladoo',    veg:true},
+  {name:'Barfi (1 piece, 30g)',                   cal:120, protein:3,   carbs:18,  fat:4,   unit:'1 piece',    veg:true},
+  {name:'Halwa Suji (1 cup)',                     cal:350, protein:5,   carbs:50,  fat:14,  unit:'1 cup',      veg:true},
+  {name:'Kheer (1 cup)',                          cal:200, protein:6,   carbs:32,  fat:5,   unit:'1 cup',      veg:true},
+  {name:'Jalebi (1)',                             cal:60,  protein:0.5, carbs:12,  fat:2,   unit:'1 jalebi',   veg:true},
+  {name:'Shrikhand (1 cup)',                      cal:250, protein:10,  carbs:40,  fat:5,   unit:'1 cup',      veg:true},
   // ── Fruits
-  {name:'Banana (1 medium)',                   cal:90,  protein:1,   carbs:23,  fat:0.3, unit:'1 banana'},
-  {name:'Apple (1 medium)',                    cal:80,  protein:0.4, carbs:21,  fat:0.2, unit:'1 apple'},
-  {name:'Orange (1 medium)',                   cal:60,  protein:1,   carbs:15,  fat:0.1, unit:'1 orange'},
-  {name:'Mango (1 cup sliced)',                cal:100, protein:1,   carbs:25,  fat:0.6, unit:'1 cup'},
-  {name:'Papaya (1 cup)',                      cal:55,  protein:0.6, carbs:14,  fat:0.1, unit:'1 cup'},
-  {name:'Pomegranate (1 cup arils)',           cal:83,  protein:1.5, carbs:19,  fat:1.2, unit:'1 cup'},
-  {name:'Grapes (1 cup)',                      cal:69,  protein:0.7, carbs:18,  fat:0.2, unit:'1 cup'},
-  {name:'Watermelon (2 cups)',                 cal:80,  protein:1.5, carbs:18,  fat:0.4, unit:'2 cups'},
+  {name:'Banana (1 medium)',                      cal:90,  protein:1,   carbs:23,  fat:0.3, unit:'1 banana',   veg:true},
+  {name:'Apple (1 medium)',                       cal:80,  protein:0.4, carbs:21,  fat:0.2, unit:'1 apple',    veg:true},
+  {name:'Orange (1 medium)',                      cal:60,  protein:1,   carbs:15,  fat:0.1, unit:'1 orange',   veg:true},
+  {name:'Mango (1 cup sliced)',                   cal:100, protein:1,   carbs:25,  fat:0.6, unit:'1 cup',      veg:true},
+  {name:'Papaya (1 cup)',                         cal:55,  protein:0.6, carbs:14,  fat:0.1, unit:'1 cup',      veg:true},
+  {name:'Pomegranate (1 cup arils)',              cal:83,  protein:1.5, carbs:19,  fat:1.2, unit:'1 cup',      veg:true},
+  {name:'Grapes (1 cup)',                         cal:69,  protein:0.7, carbs:18,  fat:0.2, unit:'1 cup',      veg:true},
+  {name:'Watermelon (2 cups)',                    cal:80,  protein:1.5, carbs:18,  fat:0.4, unit:'2 cups',     veg:true},
+  {name:'Kiwi (1)',                               cal:42,  protein:0.8, carbs:10,  fat:0.4, unit:'1 kiwi',     veg:true},
+  {name:'Pineapple (1 cup)',                      cal:83,  protein:0.9, carbs:22,  fat:0.2, unit:'1 cup',      veg:true},
+  {name:'Strawberries (1 cup, 150g)',             cal:48,  protein:1,   carbs:11,  fat:0.5, unit:'1 cup',      veg:true},
   // ── Snacks & Nuts
-  {name:'Peanuts (30g)',                       cal:170, protein:7,   carbs:5,   fat:14,  unit:'30g'},
-  {name:'Almonds (20g ~14 nuts)',              cal:115, protein:4,   carbs:4,   fat:10,  unit:'20g'},
-  {name:'Cashews (20g)',                       cal:113, protein:3.5, carbs:6,   fat:9,   unit:'20g'},
-  {name:'Walnuts (20g)',                       cal:131, protein:3,   carbs:3,   fat:13,  unit:'20g'},
-  {name:'Peanut Butter (1 tbsp, 16g)',         cal:95,  protein:4,   carbs:3,   fat:8,   unit:'1 tbsp'},
-  {name:'Protein Bar (generic)',               cal:200, protein:20,  carbs:20,  fat:7,   unit:'1 bar'},
-  {name:'Biscuits Parle-G (3)',                cal:60,  protein:1,   carbs:11,  fat:1.5, unit:'3 biscuits'},
-  {name:'Makhana / Fox Nuts (30g)',            cal:104, protein:3.5, carbs:20,  fat:0.1, unit:'30g'},
+  {name:'Peanuts (30g)',                          cal:170, protein:7,   carbs:5,   fat:14,  unit:'30g',        veg:true},
+  {name:'Almonds (20g ~14 nuts)',                 cal:115, protein:4,   carbs:4,   fat:10,  unit:'20g',        veg:true},
+  {name:'Cashews (20g)',                          cal:113, protein:3.5, carbs:6,   fat:9,   unit:'20g',        veg:true},
+  {name:'Walnuts (20g)',                          cal:131, protein:3,   carbs:3,   fat:13,  unit:'20g',        veg:true},
+  {name:'Peanut Butter (1 tbsp, 16g)',            cal:95,  protein:4,   carbs:3,   fat:8,   unit:'1 tbsp',     veg:true},
+  {name:'Almond Butter (1 tbsp)',                 cal:98,  protein:3.5, carbs:3,   fat:9,   unit:'1 tbsp',     veg:true},
+  {name:'Chia Seeds (1 tbsp, 12g)',               cal:58,  protein:2,   carbs:5,   fat:4,   unit:'1 tbsp',     veg:true},
+  {name:'Flaxseeds (1 tbsp, 10g)',                cal:55,  protein:1.9, carbs:3,   fat:4,   unit:'1 tbsp',     veg:true},
+  {name:'Granola (30g)',                          cal:130, protein:3,   carbs:18,  fat:6,   unit:'30g',        veg:true},
+  {name:'Protein Bar (generic)',                  cal:200, protein:20,  carbs:20,  fat:7,   unit:'1 bar',      veg:true},
+  {name:'Biscuits Parle-G (3)',                   cal:60,  protein:1,   carbs:11,  fat:1.5, unit:'3 biscuits', veg:true},
+  {name:'Makhana / Fox Nuts (30g)',               cal:104, protein:3.5, carbs:20,  fat:0.1, unit:'30g',        veg:true},
   // ── Beverages
-  {name:'Masala Chai with sugar (1 cup)',      cal:70,  protein:2,   carbs:10,  fat:2,   unit:'1 cup'},
-  {name:'Chai without sugar (1 cup)',          cal:40,  protein:2,   carbs:5,   fat:2,   unit:'1 cup'},
-  {name:'Black Coffee / Green Tea',            cal:5,   protein:0,   carbs:1,   fat:0,   unit:'1 cup'},
-  {name:'Haldi Doodh / Turmeric Milk (1 cup)',cal:110, protein:4,   carbs:12,  fat:4.5, unit:'1 cup'},
-  {name:'Coffee with milk & sugar (1 cup)',    cal:55,  protein:2,   carbs:8,   fat:1.5, unit:'1 cup'},
-  {name:'Coconut Water (1 glass, 240ml)',      cal:46,  protein:0.5, carbs:9,   fat:0.5, unit:'1 glass'},
-  {name:'Protein Shake (1 scoop + water)',     cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 shake'},
-  {name:'BCAA powder (1 scoop)',               cal:15,  protein:5,   carbs:0,   fat:0,   unit:'1 scoop'},
-  {name:'Creatine (1 tsp, 5g)',               cal:0,   protein:0,   carbs:0,   fat:0,   unit:'1 tsp'},
+  {name:'Masala Chai with sugar (1 cup)',         cal:70,  protein:2,   carbs:10,  fat:2,   unit:'1 cup',      veg:true},
+  {name:'Chai without sugar (1 cup)',             cal:40,  protein:2,   carbs:5,   fat:2,   unit:'1 cup',      veg:true},
+  {name:'Black Coffee / Green Tea',               cal:5,   protein:0,   carbs:1,   fat:0,   unit:'1 cup',      veg:true},
+  {name:'Haldi Doodh / Turmeric Milk (1 cup)',   cal:110, protein:4,   carbs:12,  fat:4.5, unit:'1 cup',      veg:true},
+  {name:'Coffee with milk & sugar (1 cup)',       cal:55,  protein:2,   carbs:8,   fat:1.5, unit:'1 cup',      veg:true},
+  {name:'Coconut Water (1 glass, 240ml)',         cal:46,  protein:0.5, carbs:9,   fat:0.5, unit:'1 glass',    veg:true},
+  {name:'Protein Shake (1 scoop + water)',        cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 shake',    veg:true},
+  {name:'BCAA powder (1 scoop)',                  cal:15,  protein:5,   carbs:0,   fat:0,   unit:'1 scoop',    veg:true},
+  {name:'Creatine (1 tsp, 5g)',                  cal:0,   protein:0,   carbs:0,   fat:0,   unit:'1 tsp',      veg:true},
 ];
 
 // ─── TRACKER STATE ───────────────────────────────────────
@@ -1447,6 +1559,8 @@ async function initTracker(){
     loadSettingsFromStorage();
     loadDayFromStorage();
   }
+  foodPref = settings.diet_pref || 'all';
+  setFoodFilter(foodPref);
   filterFoods('');
   renderTracker();
   if(!IS_LOGGED_IN && !localStorage.getItem('ffx_settings') && !localStorage.getItem('ffx_goal_cal')){
@@ -1670,14 +1784,33 @@ window.openFoodModal=function(meal){
 };
 window.closeFoodModal=function(){ $id('modal-food').classList.add('hidden'); document.body.style.overflow=''; };
 
+var foodPref = 'all';
+window.setFoodFilter = function(pref){
+  foodPref = pref;
+  ['all','veg','nonveg'].forEach(function(p){
+    var btn=$id('ff-'+p); if(!btn) return;
+    var active = p===pref;
+    btn.classList.toggle('border-accent',   active);
+    btn.classList.toggle('text-white',      active);
+    btn.classList.toggle('border-b-accent', active);
+    btn.style.borderBottomColor = active ? '#FF4D00' : 'transparent';
+    btn.classList.toggle('text-white/40',   !active);
+  });
+  filterFoods($id('food-search')?($id('food-search').value||''):'');
+};
 window.filterFoods=function(q){
-  var results=q.trim().length>0?FOODS.filter(function(f){ return f.name.toLowerCase().indexOf(q.toLowerCase())>-1; }):FOODS;
+  var results=FOODS.filter(function(f){
+    var nameMatch = q.trim().length===0 || f.name.toLowerCase().indexOf(q.toLowerCase())>-1;
+    var prefMatch = foodPref==='all' || (foodPref==='veg'&&f.veg) || (foodPref==='nonveg'&&!f.veg);
+    return nameMatch && prefMatch;
+  });
   var list=$id('food-list');
   if(!results.length){ list.innerHTML='<p class="text-white/25 text-sm text-center py-8">No matches — use custom add above.</p>'; return; }
   list.innerHTML=results.map(function(f){
     var ri=FOODS.indexOf(f);
+    var badge = f.veg ? '<span class="text-green-400/70 text-[0.6rem] ml-1.5">🌿</span>' : '<span class="text-orange-400/70 text-[0.6rem] ml-1.5">🍗</span>';
     return '<div class="flex items-center justify-between px-5 py-3 hover:bg-white/[0.03] cursor-pointer group" onclick="addFoodFromList('+ri+')">'+
-      '<div class="flex-1 min-w-0"><p class="text-white/70 text-sm truncate">'+f.name+'</p>'+
+      '<div class="flex-1 min-w-0"><p class="text-white/70 text-sm truncate">'+f.name+badge+'</p>'+
       '<p class="text-white/30 text-xs mt-0.5">'+f.cal+' cal · '+f.protein+'g P · '+f.carbs+'g C · '+f.fat+'g F <span class="text-white/20">per '+f.unit+'</span></p></div>'+
       '<span class="text-accent text-xs ml-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">+ Add</span></div>';
   }).join('');
@@ -1797,18 +1930,37 @@ window.removeWorkout=async function(idx){
 };
 
 // ─── SETTINGS ────────────────────────────────────────────
+var _sDietPref = 'all';
+window.setSDietPref = function(pref){
+  _sDietPref = pref;
+  ['all','veg','nonveg'].forEach(function(p){
+    var btn=$id('s-dp-'+p); if(!btn) return;
+    var active=p===pref;
+    btn.classList.toggle('bg-accent',        active);
+    btn.classList.toggle('text-white',       active);
+    btn.classList.toggle('border-accent',    active);
+    btn.classList.toggle('border-[#1a1a1a]', !active);
+    btn.classList.toggle('text-white/40',    !active);
+  });
+};
 window.showSettings=function(){
   $id('s-cal').value=settings.cal||''; $id('s-bw').value=settings.bw||'';
   $id('s-p').value=settings.protein||''; $id('s-c').value=settings.carbs||''; $id('s-f').value=settings.fat||'';
+  _sDietPref = settings.diet_pref||'all';
+  setSDietPref(_sDietPref);
   $id('modal-settings').classList.remove('hidden'); document.body.style.overflow='hidden';
 };
 window.hideSettings=function(){ $id('modal-settings').classList.add('hidden'); document.body.style.overflow=''; };
 window.saveSettings=async function(){
-  settings.cal    =parseInt($id('s-cal').value)||settings.cal;
-  settings.bw     =parseFloat($id('s-bw').value)||settings.bw;
-  settings.protein=parseInt($id('s-p').value)||settings.protein;
-  settings.carbs  =parseInt($id('s-c').value)||settings.carbs;
-  settings.fat    =parseInt($id('s-f').value)||settings.fat;
+  settings.cal       =parseInt($id('s-cal').value)||settings.cal;
+  settings.bw        =parseFloat($id('s-bw').value)||settings.bw;
+  settings.protein   =parseInt($id('s-p').value)||settings.protein;
+  settings.carbs     =parseInt($id('s-c').value)||settings.carbs;
+  settings.fat       =parseInt($id('s-f').value)||settings.fat;
+  settings.diet_pref =_sDietPref;
+  // Sync food modal filter to match
+  foodPref = _sDietPref;
+  setFoodFilter(_sDietPref);
   saveSettingsToStorage();
   if(IS_LOGGED_IN){
     try{

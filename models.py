@@ -35,6 +35,7 @@ class UserSettings(db.Model):
     carb_g       = db.Column(db.Integer, default=200)
     fat_g        = db.Column(db.Integer, default=65)
     weight_kg    = db.Column(db.Float,   default=70.0)
+    diet_pref    = db.Column(db.String(10), default='all')  # 'veg', 'nonveg', 'all'
     updated_at   = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = db.relationship('User', back_populates='settings')

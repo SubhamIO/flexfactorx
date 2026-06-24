@@ -30,13 +30,14 @@ def get_settings():
         return err
     s = current_user.settings
     if not s:
-        return jsonify({'cal': 2000, 'protein': 150, 'carbs': 200, 'fat': 65, 'bw': 70.0})
+        return jsonify({'cal': 2000, 'protein': 150, 'carbs': 200, 'fat': 65, 'bw': 70.0, 'diet_pref': 'all'})
     return jsonify({
-        'cal':     s.calorie_goal,
-        'protein': s.protein_g,
-        'carbs':   s.carb_g,
-        'fat':     s.fat_g,
-        'bw':      s.weight_kg,
+        'cal':       s.calorie_goal,
+        'protein':   s.protein_g,
+        'carbs':     s.carb_g,
+        'fat':       s.fat_g,
+        'bw':        s.weight_kg,
+        'diet_pref': s.diet_pref or 'all',
     })
 
 
@@ -55,6 +56,8 @@ def save_settings():
     s.carb_g       = int(data.get('carbs',   s.carb_g       or 200))
     s.fat_g        = int(data.get('fat',     s.fat_g        or 65))
     s.weight_kg    = float(data.get('bw',    s.weight_kg    or 70.0))
+    dp = data.get('diet_pref', s.diet_pref or 'all')
+    s.diet_pref    = dp if dp in ('veg', 'nonveg', 'all') else 'all'
     db.session.commit()
 
     # Also record weight history when body weight changes
@@ -345,6 +348,8 @@ def migrate_local():
         s.carb_g       = int(settings_raw.get('carbs',   200))
         s.fat_g        = int(settings_raw.get('fat',     65))
         s.weight_kg    = float(settings_raw.get('bw',    70.0))
+        dp = settings_raw.get('diet_pref', 'all')
+        s.diet_pref    = dp if dp in ('veg', 'nonveg', 'all') else 'all'
 
     for date_str, log in food_days.items():
         d       = _parse_date(date_str)
