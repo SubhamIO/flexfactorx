@@ -94,6 +94,60 @@ That's the number that matters. Everything else is noise.
 
 <br>
 
+### NEW — 5 ADVANCED TRACKER FEATURES
+
+> *The features fitness apps charge a premium subscription for — here, they're free.*
+
+<br>
+
+**🔥 STREAK COUNTER**
+
+Your consistency, visualised. Current streak, longest streak, total days tracked — updated automatically every day you log food. Miss a day, the chain breaks. Simple. Brutal. Effective.
+
+<br>
+
+**📊 ADAPTIVE TDEE**
+
+Formula-based TDEE calculators are guesses. Adaptive TDEE is your actual metabolism, computed from what you really ate vs. how your weight actually moved.
+
+```
+Adaptive TDEE = Avg Daily Calories − (Weekly Weight Change × 7700 / 7)
+```
+
+The longer you track, the sharper the estimate. This is the same math used by precision dieters and competitive athletes — no app gives this away for free.
+
+<br>
+
+**💪 WORKOUT PROGRESSION TRACKER**
+
+Track weight on the bar across every session. See your estimated 1-Rep Max (Epley formula) grow week over week. Know exactly when you plateau and when to push.
+
+| What's tracked | Formula used |
+|---|---|
+| Sets × Reps × Weight | Total volume per session |
+| Best weight logged | Raw PR tracking |
+| Estimated 1RM | `weight × (1 + reps / 30)` |
+| Session history | Exercise-by-exercise chart |
+
+<br>
+
+**📋 COPY PREVIOUS DAY'S MEALS**
+
+On a consistent diet? One tap copies everything you ate yesterday into today. Zero re-entry. Full log. Works for guests (localStorage) and signed-in users (cloud).
+
+<br>
+
+**💾 SAVED MEAL TEMPLATES**
+
+Build once, eat again. Save any meal combination as a named template — full macros included. Re-apply to any meal type with a single tap. Your meal prep routine, codified.
+
+- Save templates directly from the food log
+- Organise by meal type (Breakfast, Lunch, Dinner, Snacks, Any)
+- View total calories and protein at a glance
+- Apply to any date with one click
+
+<br>
+
 ---
 
 <br>

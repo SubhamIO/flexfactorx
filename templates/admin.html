@@ -15,16 +15,18 @@
     </div>
 
     {# ── Platform Stats ───────────────────────────────────── #}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
       {% for val, label, sub in [
-        (total_users,           'Total Users',      'registered'),
-        (new_users_7d,          'New Users',         'last 7 days'),
-        (active_users_7d,       'Active Users',      'last 7 days'),
-        (users_with_logs,       'Tracking Users',    'have logged food'),
-        (total_food_entries,    'Food Entries',      'all time'),
-        (total_workout_entries, 'Workout Entries',   'all time'),
-        (total_tdee_calcs,      'TDEE Calculations', 'all time'),
-        (total_users - users_with_logs, 'Inactive Users', 'never logged'),
+        (total_users,           'Total Users',        'registered'),
+        (new_users_7d,          'New Users',           'last 7 days'),
+        (active_users_7d,       'Active Users',        'last 7 days'),
+        (users_with_logs,       'Tracking Users',      'have logged food'),
+        (total_users - users_with_logs, 'Inactive',   'never logged'),
+        (total_food_entries,    'Food Entries',        'all time'),
+        (total_workout_entries, 'Workout Entries',     'all time'),
+        (total_tdee_calcs,      'TDEE Calcs',          'all time'),
+        (total_templates,       'Saved Templates',     'meal templates'),
+        (total_progression,     'Lift Sessions',       'progression entries'),
       ] %}
       <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-5">
         <p class="font-heading text-3xl text-accent">{{ val }}</p>
@@ -126,6 +128,66 @@
       </div>
     </div>
 
+    {# ── Top Lifts + Top Templates ───────────────────────── #}
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+
+      {# Top Strength Lifts by progression #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-1">Top Strength Lifts</p>
+        <p class="text-white/40 text-xs mb-5">Exercises with most logged sessions (weight tracked)</p>
+        {% if top_lifts %}
+        {% set max_s = top_lifts[0].sessions %}
+        <div class="space-y-3">
+          {% for lift in top_lifts %}
+          <div class="flex items-center gap-3">
+            <span class="text-white/25 text-[0.6rem] w-4 text-right flex-shrink-0">{{ loop.index }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="text-white/70 text-xs truncate">{{ lift.exercise_name }}</span>
+                <div class="flex items-center gap-2 ml-2 flex-shrink-0">
+                  {% if lift.best_1rm and lift.best_1rm > 0 %}
+                  <span class="text-accent text-[0.6rem]">{{ lift.best_1rm|round(1) }}kg 1RM</span>
+                  {% endif %}
+                  <span class="text-white/25 text-[0.6rem]">{{ lift.sessions }}×</span>
+                </div>
+              </div>
+              <div class="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
+                <div class="h-full bg-white/30 rounded-full" style="width:{{ ((lift.sessions / [max_s,1]|max)*100)|round }}%"></div>
+              </div>
+              <p class="text-white/20 text-[0.55rem] mt-0.5">{{ lift.lifters }} user{{ 's' if lift.lifters != 1 }} · best weight: {{ lift.best_weight }}kg</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-white/20 text-sm">No strength progression logged yet.</p>
+        {% endif %}
+      </div>
+
+      {# Most-saved meal templates #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-1">Saved Meal Templates</p>
+        <p class="text-white/40 text-xs mb-5">Templates saved across all users</p>
+        {% if top_templates %}
+        <div class="space-y-3">
+          {% for tpl in top_templates %}
+          <div class="flex items-center justify-between border-b border-[#111] pb-2 last:border-0">
+            <div class="flex-1 min-w-0">
+              <p class="text-white/70 text-xs truncate">{{ tpl.name }}</p>
+              <p class="text-white/25 text-[0.55rem] mt-0.5">
+                {{ tpl.meal_type | title }} · {{ tpl.total_cal }} cal · {{ tpl.total_protein|round|int }}g P
+              </p>
+            </div>
+            <span class="text-white/30 text-[0.6rem] ml-3 flex-shrink-0">{{ tpl.cnt }} saved</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-white/20 text-sm">No meal templates saved yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
     {# ── User Table ──────────────────────────────────────── #}
     <div class="border border-[#1a1a1a] bg-[#0d0d0d]">
       <div class="flex items-center justify-between px-6 py-4 border-b border-[#1a1a1a]">
@@ -136,7 +198,7 @@
         <table class="w-full text-xs">
           <thead>
             <tr class="border-b border-[#1a1a1a]">
-              {% for col in ['User', 'Email', 'Joined', 'Last Login', 'Days Tracked', 'Total Cal Logged', 'Last Log Date', ''] %}
+              {% for col in ['User', 'Email', 'Joined', 'Last Login', 'Days Tracked', 'Cal Logged', 'Templates', 'Lifts', 'Last Log', ''] %}
               <th class="px-4 py-3 text-left text-white/30 tracking-widest uppercase font-normal">{{ col }}</th>
               {% endfor %}
             </tr>
@@ -164,6 +226,8 @@
                 <span class="{{ 'text-accent' if row.days > 0 else 'text-white/20' }}">{{ row.days }}</span>
               </td>
               <td class="px-4 py-3 text-white/40">{{ '{:,}'.format(row.total_cal) if row.total_cal else '—' }}</td>
+              <td class="px-4 py-3 {{ 'text-white/50' if row.templates else 'text-white/15' }}">{{ row.templates or '—' }}</td>
+              <td class="px-4 py-3 {{ 'text-white/50' if row.progressions else 'text-white/15' }}">{{ row.progressions or '—' }}</td>
               <td class="px-4 py-3 text-white/30">{{ row.last_log.strftime('%d %b') if row.last_log else 'Never' }}</td>
               <td class="px-4 py-3">
                 <a href="{{ url_for('admin.user_detail', user_id=u.id) }}"
@@ -171,7 +235,7 @@
               </td>
             </tr>
             {% else %}
-            <tr><td colspan="8" class="px-6 py-10 text-center text-white/20">No users yet.</td></tr>
+            <tr><td colspan="10" class="px-6 py-10 text-center text-white/20">No users yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>

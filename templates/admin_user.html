@@ -123,6 +123,67 @@
     </div>
     {% endif %}
 
+    {# ── Saved Meal Templates ────────────────────────────── #}
+    <div class="border border-[#1a1a1a] bg-[#0d0d0d] mb-8">
+      <div class="px-6 py-4 border-b border-[#1a1a1a] flex items-center justify-between">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase">Saved Meal Templates ({{ user_templates | length }})</p>
+      </div>
+      {% if user_templates %}
+      <div class="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#111]">
+        {% for tpl in user_templates %}
+        <div class="p-5 border-b border-[#111] last:border-b-0">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-white/70 text-xs font-medium">{{ tpl.name }}</p>
+              <p class="text-white/30 text-[0.55rem] uppercase tracking-wider mt-0.5">{{ tpl.meal_type }}</p>
+            </div>
+            <div class="text-right flex-shrink-0 ml-3">
+              <p class="text-accent text-xs">{{ tpl.total_cal }} cal</p>
+              <p class="text-white/30 text-[0.55rem]">{{ tpl.total_protein | round | int }}g protein</p>
+            </div>
+          </div>
+          <p class="text-white/20 text-[0.6rem]">Saved {{ tpl.created_at.strftime('%d %b %Y') if tpl.created_at else '' }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="px-6 py-8 text-center text-white/20">No meal templates saved yet.</p>
+      {% endif %}
+    </div>
+
+    {# ── Workout Progression ──────────────────────────────── #}
+    <div class="border border-[#1a1a1a] bg-[#0d0d0d] mb-8">
+      <div class="px-6 py-4 border-b border-[#1a1a1a]">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase">Strength Progression — Best Lifts ({{ prog_summary | length }} exercises)</p>
+      </div>
+      {% if prog_summary %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-[#1a1a1a]">
+              {% for col in ['Exercise', 'Best Weight', 'Est. 1RM', 'Sessions', 'Last Logged'] %}
+              <th class="px-5 py-3 text-left text-white/25 tracking-widest uppercase font-normal">{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#0f0f0f]">
+            {% for p in prog_summary %}
+            <tr class="hover:bg-white/[0.02]">
+              <td class="px-5 py-2.5 text-white/60">{{ p.exercise_name }}</td>
+              <td class="px-5 py-2.5 text-white/50">{{ p.best_weight }}kg</td>
+              <td class="px-5 py-2.5 text-accent">{{ p.best_1rm | round(1) if p.best_1rm else '—' }}kg</td>
+              <td class="px-5 py-2.5 text-white/40">{{ p.sessions }}</td>
+              <td class="px-5 py-2.5 text-white/30">{{ p.last_date.strftime('%d %b %Y') if p.last_date else '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="px-6 py-8 text-center text-white/20">No strength sessions logged yet.</p>
+      {% endif %}
+    </div>
+
     {# ── 30-Day Daily Log ────────────────────────────────── #}
     <div class="border border-[#1a1a1a] bg-[#0d0d0d]">
       <div class="px-6 py-4 border-b border-[#1a1a1a]">
