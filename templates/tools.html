@@ -987,25 +987,19 @@
           <p class="text-white/25 uppercase tracking-widest mb-1">Last Session</p>
           <p id="str-last-text" class="text-white/60"></p>
         </div>
-        <div class="grid grid-cols-3 gap-3 mb-4">
-          <div>
-            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Sets</label>
-            <input id="wk-str-sets" type="number" min="1" max="30" placeholder="4"
-                   oninput="previewStrength()"
-                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
+        <div class="mb-3">
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Number of Sets</label>
+          <input id="wk-str-sets" type="number" min="1" max="20" placeholder="e.g. 4"
+                 oninput="renderSetRows()"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
+        </div>
+        <div id="set-rows-container" class="hidden mb-4 border border-[#1a1a1a] overflow-hidden">
+          <div class="grid grid-cols-[2rem_1fr_1fr] gap-2 px-3 py-2 bg-[#111]">
+            <span class="text-[0.6rem] text-white/25 uppercase tracking-widest">#</span>
+            <span class="text-[0.6rem] text-white/25 uppercase tracking-widest">Reps</span>
+            <span class="text-[0.6rem] text-white/25 uppercase tracking-widest">Weight (kg)</span>
           </div>
-          <div>
-            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Reps/Set</label>
-            <input id="wk-str-reps" type="number" min="1" max="100" placeholder="8"
-                   oninput="previewStrength()"
-                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
-          </div>
-          <div>
-            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Weight (kg)</label>
-            <input id="wk-str-weight" type="number" min="0" max="500" placeholder="60"
-                   oninput="previewStrength()"
-                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
-          </div>
+          <div id="set-rows-body" class="divide-y divide-[#0f0f0f]"></div>
         </div>
         <div id="strength-preview" class="hidden border border-green-500/20 bg-green-500/5 p-3 mb-4">
           <div class="flex justify-between items-start">
@@ -2162,25 +2156,59 @@ window.previewCardio=function(){
   $id('cardio-preview').classList.remove('hidden');
   setText('cardio-preview-cal', cal+' cal');
 };
+function getSetData(sets){
+  var data=[];
+  for(var i=0;i<sets;i++){
+    var rEl=$id('set-reps-'+i); var wEl=$id('set-weight-'+i);
+    data.push({reps:rEl?parseInt(rEl.value)||0:0, weight:wEl?parseFloat(wEl.value)||0:0});
+  }
+  return data;
+}
+window.renderSetRows=function(){
+  var sets=parseInt($id('wk-str-sets').value)||0;
+  var container=$id('set-rows-container'); var body=$id('set-rows-body');
+  if(!sets||sets<1){ container.classList.add('hidden'); body.innerHTML=''; previewStrength(); return; }
+  var existing=[];
+  for(var i=0;i<20;i++){
+    var r=$id('set-reps-'+i); if(!r) break;
+    var w=$id('set-weight-'+i);
+    existing.push({reps:r.value, weight:w?w.value:''});
+  }
+  container.classList.remove('hidden');
+  var cls='w-full bg-[#0d0d0d] border border-[#1a1a1a] text-white placeholder-white/20 px-2 py-2 text-sm focus:outline-none focus:border-green-500/50';
+  body.innerHTML='';
+  for(var j=0;j<sets;j++){
+    var prev=existing[j]||{reps:'',weight:''};
+    var row=document.createElement('div');
+    row.className='grid grid-cols-[2rem_1fr_1fr] gap-2 px-3 py-2 items-center border-t border-[#111]';
+    row.innerHTML='<span class="text-white/30 text-xs text-center">'+(j+1)+'</span>'+
+      '<input type="number" id="set-reps-'+j+'" min="1" max="100" placeholder="Reps" value="'+prev.reps+'" oninput="previewStrength()" class="'+cls+'">'+
+      '<input type="number" id="set-weight-'+j+'" min="0" max="500" placeholder="0" value="'+prev.weight+'" oninput="previewStrength()" class="'+cls+'">';
+    body.appendChild(row);
+  }
+  previewStrength();
+};
 window.previewStrength=function(){
   var met=parseFloat($id('wk-str-ex').value)||5;
   var sets=parseInt($id('wk-str-sets').value)||0;
-  var reps=parseInt($id('wk-str-reps').value)||0;
-  var weight=parseFloat($id('wk-str-weight').value)||0;
-  if(!sets||!reps){ $id('strength-preview').classList.add('hidden'); return; }
-  var mins=estimateStrengthTime(sets,reps);
+  if(!sets){ $id('strength-preview').classList.add('hidden'); return; }
+  var setData=getSetData(sets);
+  var filled=setData.filter(function(s){return s.reps>0;});
+  if(!filled.length){ $id('strength-preview').classList.add('hidden'); return; }
+  var totalReps=setData.reduce(function(t,s){return t+s.reps;},0);
+  var avgReps=Math.round(totalReps/filled.length);
+  var mins=estimateStrengthTime(sets,avgReps||8);
   var cal=calFromMET(met,mins);
   $id('strength-preview').classList.remove('hidden');
   setText('str-preview-cal', cal+' cal');
-  setText('str-preview-time','Est. time: ~'+Math.round(mins)+' min ('+sets+'×'+reps+' + rest)');
+  setText('str-preview-time','Est. time: ~'+Math.round(mins)+' min');
   var oneRMEl=$id('str-preview-1rm');
-  if(weight>0&&reps>0){
-    var oneRM=Math.round(weight*(1+reps/30)*10)/10;
-    setText('str-1rm-val', oneRM+' kg');
-    oneRMEl.classList.remove('hidden');
-  } else {
-    oneRMEl.classList.add('hidden');
-  }
+  var best1RM=0;
+  setData.forEach(function(s){
+    if(s.weight>0&&s.reps>0){ var rm=Math.round(s.weight*(1+s.reps/30)*10)/10; if(rm>best1RM) best1RM=rm; }
+  });
+  if(best1RM>0){ setText('str-1rm-val', best1RM+' kg'); oneRMEl.classList.remove('hidden'); }
+  else { oneRMEl.classList.add('hidden'); }
 };
 
 async function _saveWorkoutEntry(entry, type, duration){
@@ -2210,21 +2238,31 @@ window.logStrength=async function(){
   var exSel=$id('wk-str-ex'); var met=parseFloat(exSel.value)||5;
   var exName=exSel.options[exSel.selectedIndex].text;
   var sets=parseInt($id('wk-str-sets').value)||0;
-  var reps=parseInt($id('wk-str-reps').value)||0;
-  var weight=parseFloat($id('wk-str-weight').value)||0;
-  if(!sets||!reps) return;
-  var mins=estimateStrengthTime(sets,reps);
+  if(!sets) return;
+  var setData=getSetData(sets);
+  var filled=setData.filter(function(s){return s.reps>0;});
+  if(!filled.length) return;
+  var avgReps=Math.round(filled.reduce(function(t,s){return t+s.reps;},0)/filled.length);
+  var mins=estimateStrengthTime(sets,avgReps);
   var cal=calFromMET(met,mins);
-  var desc=sets+'×'+reps+(weight?' @ '+weight+'kg':'')+' (~'+Math.round(mins)+' min)';
+  var hasWeight=setData.some(function(s){return s.weight>0;});
+  var setDescs=setData.map(function(s){ return s.reps>0?(s.reps+(s.weight?'×'+s.weight:'reps')):null; }).filter(Boolean);
+  var desc=sets+' sets: '+setDescs.join(', ')+(hasWeight?' kg':'');
   await _saveWorkoutEntry({name:exName,desc:desc,cal:cal},'strength',Math.round(mins));
-  // Save progression entry when weight is provided
-  if(IS_LOGGED_IN && weight>0){
-    fetch('/api/analytics/progression',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({exercise_name:exName,sets:sets,reps:reps,weight_kg:weight})
-    }).catch(function(){});
+  // Save best-set progression entry
+  if(IS_LOGGED_IN){
+    var bestSet=setData.reduce(function(best,s){
+      if(s.reps>0&&s.weight>0&&(!best||s.weight>best.weight)) return s; return best;
+    },null);
+    if(bestSet){
+      fetch('/api/analytics/progression',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({exercise_name:exName,sets:sets,reps:bestSet.reps,weight_kg:bestSet.weight})
+      }).catch(function(){});
+    }
   }
-  // Reset weight field
-  $id('wk-str-weight').value='';
+  // Reset
+  $id('wk-str-sets').value='';
+  renderSetRows();
 };
 window.logCustomWorkout=async function(){
   var name=($id('wk-cust-name').value||'').trim();
@@ -2344,6 +2382,9 @@ window.fetchLastSession = async function(){
   var exSel=$id('wk-str-ex');
   var name=exSel.options[exSel.selectedIndex].text;
   el.classList.add('hidden');
+  // Reset rows when exercise changes
+  $id('wk-str-sets').value='';
+  renderSetRows();
   try{
     var res=await fetch('/api/analytics/progression?exercise='+encodeURIComponent(name)+'&limit=1');
     if(!res.ok) return;
@@ -2356,6 +2397,17 @@ window.fetchLastSession = async function(){
     var oneRM=s.one_rm_est>0?' · Est. 1RM: '+s.one_rm_est+'kg':'';
     setText('str-last-text', detail+oneRM+' ('+dateLabel+')');
     el.classList.remove('hidden');
+    // Pre-fill sets count and all rows with last session values
+    if(s.sets>0){
+      $id('wk-str-sets').value=s.sets;
+      renderSetRows();
+      for(var i=0;i<s.sets;i++){
+        var rEl=$id('set-reps-'+i); var wEl=$id('set-weight-'+i);
+        if(rEl) rEl.value=s.reps_per_set;
+        if(wEl&&s.weight_kg>0) wEl.value=s.weight_kg;
+      }
+      previewStrength();
+    }
   }catch(e){}
 };
 
