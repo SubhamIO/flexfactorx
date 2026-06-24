@@ -1,0 +1,1307 @@
+{% extends "base.html" %}
+
+{% block title %}Fitness Tools — TDEE Calculator & Calorie + Workout Tracker | FlexFactorX{% endblock %}
+{% block description %}Free TDEE calculator with macro blueprint, and a daily tracker that combines food calories with workout calories burned — showing your true net daily balance.{% endblock %}
+
+{% block content %}
+
+{# ── Page Header + Tab Switcher ───────────────────────── #}
+<section class="pt-28 border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6 pb-6">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Free Tools</p>
+    <h1 class="font-heading text-5xl md:text-7xl">FITNESS TOOLS.</h1>
+  </div>
+  <div class="max-w-6xl mx-auto px-6 flex gap-0">
+    <button id="btn-tdee" onclick="showTab('tdee')"
+            class="text-xs tracking-[0.15em] uppercase px-8 py-4 border-b-2 border-accent text-white transition-all">
+      TDEE Calculator
+    </button>
+    <button id="btn-tracker" onclick="showTab('tracker')"
+            class="text-xs tracking-[0.15em] uppercase px-8 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
+      Daily Tracker
+    </button>
+  </div>
+</section>
+
+{# ════════════════════════════════════════════════════════ #}
+{#  TAB 1 — TDEE CALCULATOR                               #}
+{# ════════════════════════════════════════════════════════ #}
+<div id="tab-tdee">
+
+  <section class="max-w-6xl mx-auto px-6 py-14">
+    <p class="text-white/50 max-w-2xl leading-relaxed mb-10">
+      Most calculators give you one number and stop. This one gives you macro targets, a goal timeline,
+      what those numbers mean in real rotis and rice, and insights most apps charge for.
+    </p>
+    <div class="max-w-3xl">
+
+      <div class="grid sm:grid-cols-2 gap-6 mb-8">
+        <div>
+          <label for="t-age" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Age</label>
+          <input id="t-age" type="number" min="15" max="80" placeholder="e.g. 24"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+        </div>
+        <div>
+          <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Gender</p>
+          <div class="grid grid-cols-2 gap-2">
+            <label><input type="radio" name="t-gender" value="male" class="sr-only" checked>
+              <div class="t-gender-opt cursor-pointer border border-accent bg-accent/10 text-white text-xs tracking-wider uppercase text-center py-3">Male</div></label>
+            <label><input type="radio" name="t-gender" value="female" class="sr-only">
+              <div class="t-gender-opt cursor-pointer border border-[#1a1a1a] text-white/40 text-xs tracking-wider uppercase text-center py-3">Female</div></label>
+          </div>
+        </div>
+        <div>
+          <label for="t-height" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Height (cm)</label>
+          <input id="t-height" type="number" min="100" max="250" placeholder="e.g. 175"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+        </div>
+        <div>
+          <label for="t-weight" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Weight (kg)</label>
+          <input id="t-weight" type="number" min="30" max="300" placeholder="e.g. 75"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-3">Activity Level</p>
+        <div class="space-y-2">
+          {% for val, label, desc, mult in [
+            ('sedentary','Sedentary',      'Desk job, no exercise',                        '×1.2'),
+            ('light',    'Lightly Active', 'Light exercise 1–3 days/week',                '×1.375'),
+            ('moderate', 'Moderately Active','Exercise 3–5 days/week',                   '×1.55'),
+            ('very',     'Very Active',    'Hard training 6–7 days/week or physical job', '×1.725'),
+            ('extra',    'Extra Active',   'Physical job + daily training / 2-a-days',   '×1.9'),
+          ] %}
+          <label class="t-act-lbl flex items-center gap-4 p-4 border cursor-pointer transition-all
+                         {{ 'border-accent/40 bg-accent/5' if val=='moderate' else 'border-[#1a1a1a] hover:border-[#2a2a2a]' }}">
+            <input type="radio" name="t-activity" value="{{ val }}" class="sr-only" {{ 'checked' if val=='moderate' }}>
+            <div class="t-act-dot w-3 h-3 rounded-full border-2 flex-shrink-0 transition-all
+                         {{ 'border-accent bg-accent' if val=='moderate' else 'border-[#444]' }}"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-sm font-medium">{{ label }}</p>
+              <p class="text-white/40 text-xs mt-0.5">{{ desc }}</p>
+            </div>
+            <span class="text-accent text-xs font-mono flex-shrink-0">{{ mult }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-3">Primary Goal</p>
+        <div class="grid grid-cols-5 gap-2">
+          {% for val, label, adj in [
+            ('aggressive_cut','Aggressive Cut','−500'),
+            ('cut','Cut','−300'),
+            ('maintain','Maintain','±0'),
+            ('lean_bulk','Lean Bulk','+200'),
+            ('bulk','Bulk','+500'),
+          ] %}
+          <label class="t-goal-lbl cursor-pointer">
+            <input type="radio" name="t-goal" value="{{ val }}" class="sr-only" {{ 'checked' if val=='cut' }}>
+            <div class="t-goal-opt border text-center py-3 px-1 transition-all
+                         {{ 'border-accent/40 bg-accent/5' if val=='cut' else 'border-[#1a1a1a] hover:border-[#2a2a2a]' }}">
+              <p class="text-white text-[0.65rem] font-medium leading-tight">{{ label }}</p>
+              <p class="text-accent text-[0.6rem] tracking-wider mt-1">{{ adj }}</p>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <label for="t-target" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">
+          Target Weight (kg) <span class="normal-case tracking-normal text-white/20 text-[0.65rem] ml-2">— optional</span>
+        </label>
+        <input id="t-target" type="number" min="30" max="300" placeholder="e.g. 70"
+               class="w-full sm:w-56 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+      </div>
+
+      <button onclick="tdeeCalc()"
+              class="bg-accent text-white text-xs tracking-[0.2em] uppercase px-12 py-4 hover:brightness-90 transition-all">
+        Calculate My TDEE →
+      </button>
+      <p id="tdee-error" class="hidden mt-4 text-red-400 text-sm">Please fill in age, height, and weight.</p>
+    </div>
+  </section>
+
+  {# Results #}
+  <div id="tdee-results" class="hidden">
+    <div class="h-px bg-accent"></div>
+
+    {# Numbers #}
+    <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+      <div class="max-w-6xl mx-auto px-6 py-14">
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Your Metabolic Profile</p>
+        <h2 class="font-heading text-5xl md:text-6xl mb-10">YOUR NUMBERS.</h2>
+        <div class="grid md:grid-cols-3 gap-4 mb-8">
+          <div class="p-8 border border-[#1a1a1a] bg-[#080808]">
+            <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">BMR</p>
+            <p id="r-bmr" class="font-heading text-5xl text-white mb-1">—</p>
+            <p class="text-white/30 text-xs mb-3">cal/day at rest</p>
+            <p class="text-white/40 text-xs leading-relaxed">Your body's energy floor — burns even at complete rest.</p>
+          </div>
+          <div class="p-8 border border-accent/40 bg-accent/5 relative overflow-hidden">
+            <span class="absolute top-0 right-0 text-[0.5rem] tracking-widest uppercase text-accent bg-accent/10 border-l border-b border-accent/20 px-3 py-1">Maintenance</span>
+            <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">TDEE</p>
+            <p id="r-tdee" class="font-heading text-5xl text-accent mb-1">—</p>
+            <p class="text-white/30 text-xs mb-3">cal/day including activity</p>
+            <p class="text-white/40 text-xs leading-relaxed">Eat this to stay exactly where you are.</p>
+          </div>
+          <div class="p-8 border border-[#1a1a1a] bg-[#080808]">
+            <p id="r-goal-lbl" class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">Goal Calories</p>
+            <p id="r-goal" class="font-heading text-5xl text-white mb-1">—</p>
+            <p id="r-adj" class="text-white/30 text-xs mb-3">cal/day for your goal</p>
+            <p class="text-white/40 text-xs leading-relaxed">Hit this consistently — not perfectly.</p>
+          </div>
+        </div>
+        <div class="border border-[#1a1a1a] p-5 bg-[#080808]">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">Where Your Calories Go</p>
+          <div class="flex h-8 overflow-hidden mb-3 rounded-sm">
+            <div id="r-bar-bmr"  class="bg-accent flex items-center justify-center text-[0.55rem] tracking-widest uppercase text-white overflow-hidden transition-all duration-1000" style="width:65%">BMR</div>
+            <div id="r-bar-neat" class="bg-white/25 flex items-center justify-center text-[0.55rem] uppercase text-white/60 overflow-hidden transition-all duration-1000" style="width:20%">NEAT</div>
+            <div id="r-bar-ex"   class="bg-white/10 flex items-center justify-center text-[0.55rem] uppercase text-white/30 overflow-hidden transition-all duration-1000" style="width:15%">EX</div>
+          </div>
+          <div class="flex flex-wrap gap-5 text-xs text-white/40">
+            <span><span id="r-pct-bmr"  class="text-white/70">—</span> BMR</span>
+            <span><span id="r-pct-neat" class="text-white/70">—</span> NEAT (daily movement)</span>
+            <span><span id="r-pct-ex"   class="text-white/70">—</span> Exercise</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {# Macros #}
+    <section class="max-w-6xl mx-auto px-6 py-14 border-b border-[#1a1a1a]">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Evidence-Based Targets</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-10">MACRO BLUEPRINT.</h2>
+      <div class="grid md:grid-cols-3 gap-4 mb-5">
+        {% for mid, mlabel, badge in [('protein','Protein','Priority #1'),('carb','Carbohydrates','Fuel'),('fat','Dietary Fat','Hormones')] %}
+        <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+          <div class="flex justify-between items-start mb-4">
+            <p class="text-xs tracking-[0.15em] uppercase text-white/40">{{ mlabel }}</p>
+            <span class="text-[0.6rem] tracking-widest {{ 'text-accent border-accent/20' if mid=='protein' else 'text-white/30 border-white/10' }} border px-2 py-0.5">{{ badge }}</span>
+          </div>
+          <p id="r-{{ mid }}-g"   class="font-heading text-4xl text-white mb-0.5">—g</p>
+          <p id="r-{{ mid }}-cal" class="text-white/30 text-xs mb-3">— cal</p>
+          <div class="h-1 bg-[#1a1a1a] mb-3"><div id="r-{{ mid }}-bar" class="h-full {{ 'bg-accent' if mid=='protein' else ('bg-white/30' if mid=='carb' else 'bg-white/20') }} transition-all duration-700" style="width:0%"></div></div>
+          <p id="r-{{ mid }}-pct" class="text-white/40 text-xs mb-4">— %</p>
+          <div class="border-t border-[#1a1a1a] pt-4">
+            <p class="text-white/25 text-[0.65rem] uppercase tracking-widest mb-1">In real food</p>
+            <p id="r-{{ mid }}-food" class="text-white/50 text-xs leading-relaxed">—</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    {# Timeline #}
+    <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+      <div class="max-w-6xl mx-auto px-6 py-14">
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Reality Check</p>
+        <h2 class="font-heading text-5xl md:text-6xl mb-10">YOUR TIMELINE.</h2>
+        <div class="grid md:grid-cols-3 gap-4 mb-5">
+          <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+            <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-2">Daily Deficit / Surplus</p>
+            <p id="r-delta" class="font-heading text-4xl text-white mb-1">—</p>
+            <p class="text-white/30 text-xs">cal / day</p>
+          </div>
+          <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+            <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-2">Weekly Change</p>
+            <p id="r-weekly" class="font-heading text-4xl text-white mb-1">—</p>
+            <p class="text-white/30 text-xs">kg / week</p>
+          </div>
+          <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+            <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-2">In 12 Weeks</p>
+            <p id="r-12w" class="font-heading text-4xl text-white mb-1">—</p>
+            <p class="text-white/30 text-xs">projected kg</p>
+          </div>
+        </div>
+        <div id="r-target-block" class="hidden border border-[#1a1a1a] bg-[#080808] p-5 mb-4">
+          <div class="flex justify-between mb-3">
+            <p class="text-xs tracking-widest uppercase text-white/30">Goal Progress</p>
+            <p id="r-weeks" class="text-accent text-sm font-medium">—</p>
+          </div>
+          <div class="h-2 bg-[#1a1a1a] mb-2"><div id="r-prog-bar" class="h-full bg-accent transition-all duration-1000" style="width:5%"></div></div>
+          <div class="flex justify-between text-xs text-white/25 mt-1">
+            <span id="r-from-lbl">Now</span><span id="r-to-lbl">Goal</span>
+          </div>
+        </div>
+        <div id="r-pace-warn" class="hidden border border-yellow-500/30 bg-yellow-500/5 p-5">
+          <p class="text-yellow-400 text-[0.65rem] tracking-widest uppercase mb-2">Pace Warning</p>
+          <p id="r-pace-msg" class="text-white/60 text-sm leading-relaxed">—</p>
+        </div>
+      </div>
+    </section>
+
+    {# Insights #}
+    <section class="max-w-6xl mx-auto px-6 py-14 border-b border-[#1a1a1a]">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">What Other Calculators Skip</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-10">DEEP INSIGHTS.</h2>
+      <div id="r-insights" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    {# Indian Food Equivalents #}
+    <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+      <div class="max-w-6xl mx-auto px-6 py-14">
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">India-Specific</p>
+        <h2 class="font-heading text-5xl md:text-6xl mb-4">IN REAL FOOD.</h2>
+        <p class="text-white/50 mb-10 max-w-xl">Your goal calories as a realistic Indian meal day.</p>
+        <div id="r-food-eq" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5"></div>
+        <div class="border border-[#1a1a1a] bg-[#080808] p-5">
+          <p id="r-food-eq-note" class="text-white/40 text-sm">—</p>
+        </div>
+      </div>
+    </section>
+
+    {# CTA → Tracker #}
+    <section class="max-w-6xl mx-auto px-6 py-16 text-center">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Next Step</p>
+      <h2 class="font-heading text-4xl md:text-5xl mb-5">NOW TRACK YOUR DAY.</h2>
+      <p class="text-white/50 max-w-xs mx-auto mb-8 text-sm">Your targets auto-populate in the tracker. Log food and workouts to see your true net calories.</p>
+      <button onclick="showTab('tracker')"
+              class="bg-accent text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:brightness-90 transition-all">
+        Switch to Daily Tracker →
+      </button>
+    </section>
+  </div>
+
+</div>{# /tab-tdee #}
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  TAB 2 — DAILY TRACKER                                 #}
+{# ════════════════════════════════════════════════════════ #}
+<div id="tab-tracker" class="hidden">
+
+  {# ── Net Calories Summary ────────────────────────────── #}
+  <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-accent text-xs tracking-[0.3em] uppercase mb-1">Daily Summary</p>
+          <p id="tr-date" class="font-heading text-3xl text-white">—</p>
+        </div>
+        <button onclick="showSettings()"
+                class="text-xs tracking-widest uppercase text-white/30 hover:text-accent border border-[#1a1a1a] hover:border-accent/40 px-4 py-2 transition-all">
+          ⚙ Settings
+        </button>
+      </div>
+
+      {# 4-stat row #}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="border border-[#1a1a1a] bg-[#080808] p-4 text-center">
+          <p id="tr-goal"    class="font-heading text-3xl text-white/60">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-1">TDEE Goal</p>
+        </div>
+        <div class="border border-[#1a1a1a] bg-[#080808] p-4 text-center">
+          <p id="tr-eaten"   class="font-heading text-3xl text-white">0</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-1">Food Eaten</p>
+        </div>
+        <div class="border border-green-500/20 bg-green-500/5 p-4 text-center">
+          <p id="tr-burned"  class="font-heading text-3xl text-green-400">0</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-1">Workout Burned</p>
+        </div>
+        <div class="border border-accent/30 bg-accent/5 p-4 text-center">
+          <p id="tr-net-rem" class="font-heading text-3xl text-accent">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-1">Net Remaining</p>
+        </div>
+      </div>
+
+      {# Progress bar #}
+      <div class="h-2 bg-[#1a1a1a] rounded-full overflow-hidden mb-2">
+        <div id="tr-prog" class="h-full bg-accent transition-all duration-700 rounded-full" style="width:0%"></div>
+      </div>
+      <div class="flex justify-between text-[0.6rem] text-white/25 tracking-widest uppercase mb-5">
+        <span>0 cal</span>
+        <span id="tr-goal-label-sm">Goal</span>
+      </div>
+
+      {# Macro bars #}
+      <div class="grid md:grid-cols-3 gap-4 mb-5">
+        {% for mid, mlabel, col in [('protein','Protein','bg-accent'),('carbs','Carbs','bg-white/40'),('fat','Fat','bg-white/20')] %}
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-white/40 tracking-widest uppercase">{{ mlabel }}</span>
+            <span class="text-white/50"><span id="tm-{{ mid }}-e">0</span>g / <span id="tm-{{ mid }}-g">—</span>g</span>
+          </div>
+          <div class="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+            <div id="tm-{{ mid }}-bar" class="{{ col }} h-full transition-all duration-500" style="width:0%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {# Smart insight #}
+      <div class="border border-[#1a1a1a] bg-[#080808] p-4">
+        <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-2">Smart Insight</p>
+        <p id="tr-insight" class="text-white/60 text-sm leading-relaxed">Log food and workouts below to see your personalised net-calorie insight.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── Food + Workout Logs (side by side on desktop) ─── #}
+  <section class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid md:grid-cols-2 gap-8">
+
+      {# FOOD LOG ─────────────────────────────────────── #}
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-heading text-3xl">FOOD LOG.</h2>
+          <button onclick="openFoodModal('breakfast')"
+                  class="text-[0.65rem] tracking-widest uppercase text-accent border border-accent/30 px-4 py-2 hover:bg-accent hover:text-white transition-all">
+            + Add Food
+          </button>
+        </div>
+
+        {% for meal_id, meal_name in [('breakfast','Breakfast'),('lunch','Lunch'),('dinner','Dinner'),('snacks','Snacks')] %}
+        <div class="mb-4 border border-[#1a1a1a]">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d0d0d] border-b border-[#1a1a1a]">
+            <div class="flex items-center gap-3">
+              <p class="text-xs tracking-widest uppercase text-white/50">{{ meal_name }}</p>
+              <span id="{{ meal_id }}-badge" class="text-[0.6rem] text-white/25 border border-[#1a1a1a] px-2 py-0.5">0 cal</span>
+            </div>
+            <button onclick="openFoodModal('{{ meal_id }}')"
+                    class="text-[0.6rem] tracking-widest uppercase text-accent hover:text-white transition-colors">+ Add</button>
+          </div>
+          <div id="{{ meal_id }}-list">
+            <p class="text-white/20 text-xs text-center py-4">Empty</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {# WORKOUT LOG ──────────────────────────────────── #}
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-heading text-3xl">WORKOUT LOG.</h2>
+          <button onclick="openWorkoutModal()"
+                  class="text-[0.65rem] tracking-widests uppercase text-green-400 border border-green-500/30 px-4 py-2 hover:bg-green-500 hover:text-white transition-all">
+            + Add Exercise
+          </button>
+        </div>
+
+        <div id="workout-list" class="border border-[#1a1a1a] min-h-[120px]">
+          <p class="text-white/20 text-xs text-center py-8">No workouts logged — add one above</p>
+        </div>
+
+        <div class="mt-4 border border-green-500/20 bg-green-500/5 p-4">
+          <p class="text-green-400 text-[0.6rem] tracking-widest uppercase mb-2">Total Burned Today</p>
+          <p class="text-white/70 text-sm">
+            <span id="wr-total" class="font-heading text-2xl text-green-400">0</span>
+            <span class="text-white/30 ml-2 text-xs">cal from exercise</span>
+          </p>
+          <p class="text-white/30 text-xs mt-2">
+            Eating back workout calories is optional — your TDEE already includes your activity level.
+            Burning extra helps deepen the deficit.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── Weekly Summary ──────────────────────────────────── #}
+  <section class="bg-[#0d0d0d] border-y border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+      <div class="flex items-end justify-between mb-6">
+        <div>
+          <p class="text-accent text-xs tracking-[0.3em] uppercase mb-2">History</p>
+          <h2 class="font-heading text-4xl">LAST 7 DAYS.</h2>
+        </div>
+        <div class="text-right">
+          <p id="wk-avg" class="font-heading text-3xl text-white">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">avg net cal/day</p>
+        </div>
+      </div>
+      <div id="wk-chart" class="flex items-end gap-2 h-24 mb-4"></div>
+      <div id="wk-insight" class="border border-[#1a1a1a] bg-[#080808] p-4">
+        <p class="text-white/30 text-sm">Track at least 2 days to see weekly patterns and projections.</p>
+      </div>
+    </div>
+  </section>
+
+</div>{# /tab-tracker #}
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  MODALS                                                 #}
+{# ════════════════════════════════════════════════════════ #}
+
+{# Settings Modal #}
+<div id="modal-settings" class="fixed inset-0 z-50 hidden" role="dialog">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="hideSettings()"></div>
+  <div class="relative z-10 flex items-center justify-center h-full px-6">
+    <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-8 w-full max-w-md">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="font-heading text-2xl">SETTINGS</h2>
+        <button onclick="hideSettings()" class="text-white/40 hover:text-white text-lg">✕</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Daily Calorie Goal</label>
+          <input id="s-cal" type="number" placeholder="e.g. 2000"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+          <p class="text-white/20 text-xs mt-1">Use the TDEE Calculator tab to find your number</p>
+        </div>
+        <div>
+          <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Body Weight (kg) <span class="text-white/20 normal-case text-[0.65rem]">— for workout calorie calc</span></label>
+          <input id="s-bw" type="number" placeholder="e.g. 75"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Protein (g)</label>
+            <input id="s-p" type="number" placeholder="150"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50">
+          </div>
+          <div>
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Carbs (g)</label>
+            <input id="s-c" type="number" placeholder="200"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50">
+          </div>
+          <div>
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Fat (g)</label>
+            <input id="s-f" type="number" placeholder="65"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50">
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-7">
+        <button onclick="saveSettings()" class="flex-1 bg-accent text-white text-xs tracking-widest uppercase py-3 hover:brightness-90">Save</button>
+        <button onclick="clearDay()"     class="flex-1 border border-[#2a2a2a] text-white/30 text-xs tracking-widest uppercase py-3 hover:border-red-500/40 hover:text-red-400 transition-all">Clear Today</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Food Modal #}
+<div id="modal-food" class="fixed inset-0 z-50 hidden" role="dialog">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="closeFoodModal()"></div>
+  <div class="relative z-10 flex items-start justify-center h-full px-4 pt-16 pb-8 overflow-y-auto">
+    <div class="bg-[#0d0d0d] border border-[#1a1a1a] w-full max-w-lg">
+      <div class="flex items-center justify-between p-5 border-b border-[#1a1a1a]">
+        <p id="fm-title" class="text-xs tracking-widest uppercase text-white/50">Add Food</p>
+        <button onclick="closeFoodModal()" class="text-white/30 hover:text-white text-lg">✕</button>
+      </div>
+      <div class="p-5 border-b border-[#1a1a1a]">
+        <p class="text-[0.6rem] tracking-widest uppercase text-white/25 mb-2">Quick Custom Add</p>
+        <div class="flex gap-2 mb-1">
+          <input id="fc-name"    type="text"   placeholder="Food name" class="flex-1 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <input id="fc-cal"     type="number" placeholder="Cal"       class="w-16 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <input id="fc-protein" type="number" placeholder="P(g)"      class="w-16 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <button onclick="addCustomFood()" class="bg-accent text-white text-xs uppercase px-3 hover:brightness-90">Add</button>
+        </div>
+        <p class="text-white/20 text-[0.6rem]">Carbs & fat optional for quick entries</p>
+      </div>
+      <div class="p-5 border-b border-[#1a1a1a]">
+        <input id="food-search" type="search" placeholder="Search Indian foods — ghee, dal, roti, chicken..."
+               oninput="filterFoods(this.value)"
+               class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+      </div>
+      <div id="food-list" class="overflow-y-auto max-h-80 divide-y divide-[#111]"></div>
+    </div>
+  </div>
+</div>
+
+{# Workout Modal #}
+<div id="modal-workout" class="fixed inset-0 z-50 hidden" role="dialog">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="closeWorkoutModal()"></div>
+  <div class="relative z-10 flex items-start justify-center h-full px-4 pt-16 pb-8 overflow-y-auto">
+    <div class="bg-[#0d0d0d] border border-[#1a1a1a] w-full max-w-lg">
+      <div class="flex items-center justify-between p-5 border-b border-[#1a1a1a]">
+        <p class="text-xs tracking-widest uppercase text-white/50">Log Workout</p>
+        <button onclick="closeWorkoutModal()" class="text-white/30 hover:text-white text-lg">✕</button>
+      </div>
+
+      {# Type tabs inside modal #}
+      <div class="flex border-b border-[#1a1a1a]">
+        <button id="wt-btn-cardio"   onclick="setWkType('cardio')"   class="flex-1 text-xs tracking-widest uppercase py-3 border-b-2 border-green-500 text-white transition-all">Cardio</button>
+        <button id="wt-btn-strength" onclick="setWkType('strength')" class="flex-1 text-xs tracking-widest uppercase py-3 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">Strength</button>
+        <button id="wt-btn-custom"   onclick="setWkType('custom')"   class="flex-1 text-xs tracking-widest uppercase py-3 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">Custom</button>
+      </div>
+
+      {# Cardio panel #}
+      <div id="wk-panel-cardio" class="p-5">
+        <div class="mb-4">
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Exercise</label>
+          <select id="wk-cardio-ex" class="w-full bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+            {% for name, met in [
+              ('Walking (4 km/h)',5),('Brisk Walking (6 km/h)',5),('Jogging (8 km/h)',7),
+              ('Running (10 km/h)',9),('Running (12+ km/h)',11),
+              ('Cycling (leisure)',5),('Cycling (vigorous)',10),
+              ('Swimming',7),('Jump Rope',11),('HIIT',10),
+              ('Elliptical',6),('Stair Climbing',8),
+              ('Zumba / Dance Fitness',6),('Yoga',3),('Stretching',2),
+              ('Badminton',7),('Cricket',5),('Football / Soccer',9),
+              ('Basketball',8),('Kabaddi',8),('Boxing / Sparring',10),
+              ('Surya Namaskar',7),
+            ] %}
+            <option value="{{ met }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Duration (minutes)</label>
+          <input id="wk-cardio-dur" type="number" min="1" max="300" placeholder="e.g. 30"
+                 oninput="previewCardio()"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+        </div>
+        <div id="cardio-preview" class="hidden border border-green-500/20 bg-green-500/5 p-3 mb-4">
+          <p class="text-green-400 text-xs tracking-widest uppercase mb-1">Estimated Burn</p>
+          <p id="cardio-preview-cal" class="font-heading text-2xl text-white">— cal</p>
+          <p class="text-white/30 text-xs mt-1">Based on your body weight setting (MET formula)</p>
+        </div>
+        <button onclick="logCardio()" class="w-full bg-green-600 text-white text-xs tracking-widest uppercase py-3 hover:brightness-90 transition-all">Log Cardio →</button>
+      </div>
+
+      {# Strength panel #}
+      <div id="wk-panel-strength" class="hidden p-5">
+        <div class="mb-4">
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Exercise</label>
+          <select id="wk-str-ex" class="w-full bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+            {% for name, met in [
+              ('Push-ups',5),('Pull-ups / Chin-ups',6),('Bodyweight Squats',5),
+              ('Burpees',8),('Mountain Climbers',8),('Plank',4),
+              ('Bench Press',5),('Deadlift',6),('Barbell Squat',5),
+              ('Shoulder Press (OHP)',5),('Bent-over Rows',5),
+              ('Lat Pulldown / Cable Rows',5),('Leg Press',5),
+              ('Bicep Curls',4),('Tricep Pushdowns / Dips',4),
+              ('Lunges',5),('Romanian Deadlift (RDL)',5),
+              ('Dumbbell Flyes',4),('Face Pulls / Rear Delts',4),
+              ('Circuit Training',8),('Calisthenics (general)',6),
+            ] %}
+            <option value="{{ met }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Sets</label>
+            <input id="wk-str-sets" type="number" min="1" max="30" placeholder="e.g. 4"
+                   oninput="previewStrength()"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          </div>
+          <div>
+            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Reps per Set</label>
+            <input id="wk-str-reps" type="number" min="1" max="100" placeholder="e.g. 10"
+                   oninput="previewStrength()"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          </div>
+        </div>
+        <div id="strength-preview" class="hidden border border-green-500/20 bg-green-500/5 p-3 mb-4">
+          <p class="text-green-400 text-xs tracking-widest uppercase mb-1">Estimated Burn</p>
+          <p id="str-preview-cal" class="font-heading text-2xl text-white">— cal</p>
+          <p id="str-preview-time" class="text-white/30 text-xs mt-1">Estimated workout time: —</p>
+          <p class="text-white/25 text-[0.6rem] mt-1">Sets × reps → time estimate → MET formula. Rough guide only.</p>
+        </div>
+        <button onclick="logStrength()" class="w-full bg-green-600 text-white text-xs tracking-widest uppercase py-3 hover:brightness-90 transition-all">Log Exercise →</button>
+      </div>
+
+      {# Custom panel #}
+      <div id="wk-panel-custom" class="hidden p-5">
+        <div class="mb-4">
+          <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Exercise Name</label>
+          <input id="wk-cust-name" type="text" placeholder="e.g. Kettlebell swings"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Duration (min)</label>
+            <input id="wk-cust-dur" type="number" placeholder="e.g. 20"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          </div>
+          <div>
+            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Cal Burned (manual)</label>
+            <input id="wk-cust-cal" type="number" placeholder="e.g. 200"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          </div>
+        </div>
+        <button onclick="logCustomWorkout()" class="w-full bg-green-600 text-white text-xs tracking-widest uppercase py-3 hover:brightness-90 transition-all">Log Workout →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  JAVASCRIPT                                             #}
+{# ════════════════════════════════════════════════════════ #}
+<script>
+(function () {
+'use strict';
+
+// ─── TAB MANAGEMENT ──────────────────────────────────────
+window.showTab = function (name) {
+  document.getElementById('tab-tdee').classList.toggle('hidden',    name !== 'tdee');
+  document.getElementById('tab-tracker').classList.toggle('hidden', name !== 'tracker');
+  var tdeeBtn    = document.getElementById('btn-tdee');
+  var trackerBtn = document.getElementById('btn-tracker');
+  tdeeBtn.className    = tdeeBtn.className.replace(/border-(accent|transparent)/g,    name==='tdee'    ? 'border-accent' : 'border-transparent');
+  trackerBtn.className = trackerBtn.className.replace(/border-(accent|transparent)/g, name==='tracker' ? 'border-accent' : 'border-transparent');
+  tdeeBtn.classList.toggle('text-white',      name === 'tdee');
+  tdeeBtn.classList.toggle('text-white/40',   name !== 'tdee');
+  trackerBtn.classList.toggle('text-white',   name === 'tracker');
+  trackerBtn.classList.toggle('text-white/40',name !== 'tracker');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// ─── TDEE CONSTANTS ──────────────────────────────────────
+var MULT       = { sedentary:1.2, light:1.375, moderate:1.55, very:1.725, extra:1.9 };
+var ADJ        = { aggressive_cut:-500, cut:-300, maintain:0, lean_bulk:200, bulk:500 };
+var PROT_PER   = { aggressive_cut:2.4, cut:2.2, maintain:1.8, lean_bulk:2.0, bulk:2.0 };
+var FAT_PCT    = { aggressive_cut:0.22, cut:0.25, maintain:0.28, lean_bulk:0.25, bulk:0.25 };
+var BREAKDOWN  = { sedentary:[83,17,0], light:[73,17,10], moderate:[65,15,20], very:[58,15,27], extra:[53,15,32] };
+var GOAL_LBL   = {
+  aggressive_cut:'Aggressive Cut (−500/day)', cut:'Cut (−300/day)',
+  maintain:'Maintenance', lean_bulk:'Lean Bulk (+200/day)', bulk:'Bulk (+500/day)'
+};
+
+// TDEE UI: gender, activity, goal radio styling
+document.querySelectorAll('input[name="t-gender"]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.t-gender-opt').forEach(function(d){
+      d.classList.remove('border-accent','bg-accent/10','text-white');
+      d.classList.add('border-[#1a1a1a]','text-white/40');
+    });
+    var o = this.closest('label').querySelector('.t-gender-opt');
+    o.classList.add('border-accent','bg-accent/10','text-white');
+    o.classList.remove('border-[#1a1a1a]','text-white/40');
+  });
+});
+document.querySelectorAll('input[name="t-activity"]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.t-act-lbl').forEach(function(l){
+      l.classList.remove('border-accent/40','bg-accent/5'); l.classList.add('border-[#1a1a1a]');
+      l.querySelector('.t-act-dot').classList.remove('border-accent','bg-accent'); l.querySelector('.t-act-dot').classList.add('border-[#444]');
+    });
+    var l = this.closest('.t-act-lbl');
+    l.classList.add('border-accent/40','bg-accent/5'); l.classList.remove('border-[#1a1a1a]');
+    l.querySelector('.t-act-dot').classList.add('border-accent','bg-accent'); l.querySelector('.t-act-dot').classList.remove('border-[#444]');
+  });
+});
+document.querySelectorAll('input[name="t-goal"]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.t-goal-opt').forEach(function(d){ d.classList.remove('border-accent/40','bg-accent/5'); d.classList.add('border-[#1a1a1a]'); });
+    var o = this.closest('.t-goal-lbl').querySelector('.t-goal-opt');
+    o.classList.add('border-accent/40','bg-accent/5'); o.classList.remove('border-[#1a1a1a]');
+  });
+});
+
+function $id(id){ return document.getElementById(id); }
+function setText(id,v){ var e=$id(id); if(e) e.textContent=v; }
+function setWidth(id,p){ var e=$id(id); if(e) e.style.width=Math.min(100,Math.max(0,p))+'%'; }
+
+// ─── TDEE CALCULATE ──────────────────────────────────────
+window.tdeeCalc = function(){
+  var age    = parseInt($id('t-age').value)||0;
+  var height = parseFloat($id('t-height').value)||0;
+  var weight = parseFloat($id('t-weight').value)||0;
+  var gender = document.querySelector('input[name="t-gender"]:checked').value;
+  var act    = document.querySelector('input[name="t-activity"]:checked').value;
+  var goal   = document.querySelector('input[name="t-goal"]:checked').value;
+  var target = parseFloat($id('t-target').value)||null;
+  if(!age||!height||!weight){ $id('tdee-error').classList.remove('hidden'); return; }
+  $id('tdee-error').classList.add('hidden');
+
+  var bmr     = Math.round(10*weight + 6.25*height - 5*age + (gender==='male'?5:-161));
+  var tdee    = Math.round(bmr * MULT[act]);
+  var goalCal = tdee + ADJ[goal];
+  var proteinG= Math.round(weight * PROT_PER[goal]);
+  var fatG    = Math.round((goalCal * FAT_PCT[goal])/9);
+  var pCal    = proteinG*4, fCal=fatG*9;
+  var cCal    = Math.max(0, goalCal-pCal-fCal);
+  var carbG   = Math.round(cCal/4);
+  var delta   = goalCal-tdee;
+  var wklyKg  = (delta*7)/7700;
+
+  setText('r-bmr',  bmr.toLocaleString());
+  setText('r-tdee', tdee.toLocaleString());
+  setText('r-goal', goalCal.toLocaleString());
+  setText('r-goal-lbl', GOAL_LBL[goal]);
+  setText('r-adj',  delta===0?'at maintenance':(delta>0?'+'+delta+' cal surplus/day':delta+' cal deficit/day'));
+
+  var bd=BREAKDOWN[act];
+  $id('r-bar-bmr').style.width=bd[0]+'%'; $id('r-bar-neat').style.width=bd[1]+'%'; $id('r-bar-ex').style.width=bd[2]+'%';
+  setText('r-pct-bmr',bd[0]+'%'); setText('r-pct-neat',bd[1]+'%'); setText('r-pct-ex',bd[2]+'%');
+
+  setText('r-protein-g',   proteinG+'g'); setText('r-protein-cal', pCal+' cal');
+  setText('r-protein-pct', Math.round(pCal/goalCal*100)+'%'); setWidth('r-protein-bar',pCal/goalCal*100);
+  setText('r-protein-food', Math.round(proteinG/6)+' eggs | '+Math.round(proteinG/0.31)+'g chicken | '+Math.round(proteinG/10)+' cups dal | '+Math.round(proteinG/24)+' scoops whey');
+
+  setText('r-carb-g',   carbG+'g'); setText('r-carb-cal', cCal+' cal');
+  setText('r-carb-pct', Math.round(cCal/goalCal*100)+'%'); setWidth('r-carb-bar',cCal/goalCal*100);
+  setText('r-carb-food', Math.round(carbG/15)+' rotis | '+(carbG/57).toFixed(1)+' cups cooked rice | '+Math.round(carbG/23)+' bananas');
+
+  setText('r-fat-g',   fatG+'g'); setText('r-fat-cal', fCal+' cal');
+  setText('r-fat-pct', Math.round(fCal/goalCal*100)+'%'); setWidth('r-fat-bar',fCal/goalCal*100);
+  setText('r-fat-food', Math.round(fatG/5)+' whole eggs | '+Math.round(fatG/4)+'g ghee | '+Math.round(fatG/14)+'× 30g peanuts');
+
+  setText('r-delta',  (delta>0?'+':'')+delta+' cal');
+  setText('r-weekly', (wklyKg>0?'+':'')+wklyKg.toFixed(2)+' kg');
+  setText('r-12w',    Math.round((weight+wklyKg*12)*10)/10+' kg');
+
+  if(target){
+    var wks=wklyKg!==0?Math.ceil(Math.abs((target-weight)/wklyKg)):null;
+    $id('r-target-block').classList.remove('hidden');
+    setText('r-weeks', wks?wks+' weeks to goal':'Already at maintenance');
+    setText('r-from-lbl', weight+' kg'); setText('r-to-lbl', target+' kg');
+  } else {
+    $id('r-target-block').classList.add('hidden');
+  }
+
+  var safeFloor=gender==='male'?1500:1200;
+  var warnMsg='';
+  if((goal==='cut'||goal==='aggressive_cut')&&Math.abs(wklyKg)>weight*0.01)
+    warnMsg='Your cut pace ('+Math.abs(wklyKg).toFixed(2)+' kg/week) exceeds the safe 1%/week ceiling ('+( weight*0.01).toFixed(2)+' kg). Consider a moderate cut to preserve muscle.';
+  else if((goal==='bulk'||goal==='lean_bulk')&&wklyKg>0.5)
+    warnMsg='Gaining '+wklyKg.toFixed(2)+' kg/week exceeds the natural muscle-building ceiling (~0.25–0.5 kg/week). The excess will be fat. A lean bulk (+200 cal) is smarter.';
+  if(warnMsg){ $id('r-pace-warn').classList.remove('hidden'); setText('r-pace-msg',warnMsg); }
+  else $id('r-pace-warn').classList.add('hidden');
+
+  buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor);
+  buildFoodEq(goalCal);
+
+  try{
+    localStorage.setItem('ffx_goal_cal',goalCal);
+    localStorage.setItem('ffx_protein_g',proteinG);
+    localStorage.setItem('ffx_carb_g',carbG);
+    localStorage.setItem('ffx_fat_g',fatG);
+    localStorage.setItem('ffx_weight_kg',weight);
+    var s=JSON.parse(localStorage.getItem('ffx_settings')||'{}');
+    s.cal=goalCal; s.protein=proteinG; s.carbs=carbG; s.fat=fatG; s.bw=weight;
+    localStorage.setItem('ffx_settings',JSON.stringify(s));
+    settings=s; renderTracker();
+  }catch(e){}
+
+  $id('tdee-results').classList.remove('hidden');
+  setTimeout(function(){ $id('tdee-results').scrollIntoView({behavior:'smooth'}); },80);
+};
+
+function buildInsights(gender,age,weight,bmr,tdee,goalCal,delta,proteinG,wklyKg,goal,act,safeFloor){
+  var ins=[
+    { label:'Your Metabolic Floor',
+      body:'Your BMR of '+bmr.toLocaleString()+' cal = '+Math.round(bmr/24)+' cal/hour just staying alive. Eating below the safe minimum ('+safeFloor+' cal) forces muscle breakdown — not just fat loss. Your goal of '+goalCal+' cal is '+(goalCal<safeFloor?'BELOW this limit — switch to a moderate cut.':'above this floor. You\'re in a safe zone.')  ,
+      warn: goalCal<safeFloor },
+    { label:'The Protein Priority',
+      body:'Your '+proteinG+'g protein target = '+Math.round(proteinG/6)+' eggs OR '+Math.round(proteinG/0.31)+'g chicken breast. Protein is the only macro that directly preserves muscle during a deficit. Hit it first at every meal, then fill remaining calories with carbs and fat.',
+      positive:true },
+    goal.includes('cut') ? {
+      label:'Metabolic Adaptation Warning',
+      body:'After 8–12 weeks of cutting, metabolism adapts down by 5–15%. If fat loss stalls for 2+ weeks while hitting calories, take a 2-week diet break at '+tdee.toLocaleString()+' cal, then resume. This resets leptin and prevents metabolic crash.' }
+    : {
+      label:'Natural Muscle Ceiling',
+      body:'At your age, natural muscle gain maxes at ~'+(gender==='male'?Math.max(0.5,Math.min(1.5,1.5-(age-20)*0.04)).toFixed(1):Math.max(0.3,Math.min(0.75,0.75-(age-20)*0.02)).toFixed(1))+'kg/month. Calories beyond that become fat. Your +'+(delta)+' cal surplus is'+(delta<=300?' well calibrated for lean gains.':' aggressive — consider a leaner approach.'),
+      warn: delta>400, positive: delta<=300 },
+    { label:'The Cardio Trap',
+      body:'30 min moderate cardio burns ~'+Math.round(weight*3.5)+' cal — about '+Math.round(weight*3.5/80)+' rotis. A single samosa cancels 17 minutes of running. Cardio is a tool; your diet is the driver. Use the Workout Tracker to see exactly how much exercise contributes to your daily balance.' },
+    { label:'NEAT: Your Hidden Calorie Burner',
+      body:'Non-Exercise Activity Thermogenesis (steps, fidgeting, standing) accounts for '+BREAKDOWN[act][1]+'% of your burn. 8,000–10,000 steps/day can add 300–500 cal to your TDEE without a single gym session — the most underrated fat-loss lever.' },
+    { label:'Sleep = Training Variable',
+      body:'Sleeping <6 hours vs 8 hours causes 55% less weight loss to come from fat — and more from muscle (Nedeltcheva et al., 2010). Same calories, same workout, wrong tissue. 7–9 hours is part of the program.' }
+  ];
+  var grid=$id('r-insights'); grid.innerHTML='';
+  ins.forEach(function(i){
+    var border=i.warn?'border-yellow-500/30':(i.positive?'border-green-500/20':'border-[#1a1a1a]');
+    var bg=i.warn?'bg-yellow-500/5':(i.positive?'bg-green-500/5':'bg-[#0d0d0d]');
+    var lc=i.warn?'text-yellow-400':(i.positive?'text-green-400':'text-accent');
+    grid.innerHTML+='<div class="p-6 border '+border+' '+bg+'"><p class="text-xs tracking-widest uppercase '+lc+' mb-3">'+i.label+'</p><p class="text-white/60 text-sm leading-relaxed">'+i.body+'</p></div>';
+  });
+}
+function buildFoodEq(goalCal){
+  var meals=[
+    {name:'Breakfast', desc:Math.max(2,Math.round(goalCal*0.22/75))+' eggs + 2 rotis + chai', cal:Math.round(goalCal*0.22)},
+    {name:'Lunch',     desc:'2 rotis + '+(goalCal*0.30/260).toFixed(1)+' cup rice + dal + sabzi', cal:Math.round(goalCal*0.30)},
+    {name:'Pre/Post Workout', desc:'1 banana + 1 scoop whey'+(goalCal>2000?' + 20g peanuts':''), cal:Math.round(goalCal*0.12)},
+    {name:'Dinner',    desc:Math.max(2,Math.round(goalCal*0.36/140))+' rotis + 150g chicken/paneer + dal', cal:Math.round(goalCal*0.36)},
+  ];
+  var grid=$id('r-food-eq'); grid.innerHTML='';
+  var total=0;
+  meals.forEach(function(m){ total+=m.cal; grid.innerHTML+='<div class="border border-[#1a1a1a] bg-[#080808] p-5"><p class="text-xs tracking-widest uppercase text-accent mb-2">'+m.name+'</p><p class="text-white/70 text-sm leading-relaxed mb-3">'+m.desc+'</p><p class="text-white/30 text-xs">~'+m.cal+' cal</p></div>'; });
+  setText('r-food-eq-note','Sample day ~'+total.toLocaleString()+' cal (target: '+goalCal.toLocaleString()+' cal). This is illustrative — track the real foods in the Daily Tracker tab.');
+}
+
+
+// ─── INDIAN FOOD DATABASE ────────────────────────────────
+var FOODS = [
+  // ── Oils, Fats & Condiments
+  {name:'Ghee (1 tsp, 5g)',                   cal:45,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
+  {name:'Cooking Oil — sunflower/veg (1 tsp)',cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
+  {name:'Mustard Oil (1 tsp)',                 cal:44,  protein:0,   carbs:0,   fat:5,   unit:'1 tsp'},
+  {name:'Coconut Oil (1 tsp)',                 cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp'},
+  {name:'Butter (1 tsp, 5g)',                  cal:36,  protein:0,   carbs:0,   fat:4,   unit:'1 tsp'},
+  {name:'Olive Oil (1 tsp)',                   cal:40,  protein:0,   carbs:0,   fat:4.5, unit:'1 tsp'},
+  {name:'Sugar (1 tsp, 4g)',                   cal:16,  protein:0,   carbs:4,   fat:0,   unit:'1 tsp'},
+  {name:'Jaggery / Gur (1 tsp, 5g)',           cal:19,  protein:0,   carbs:5,   fat:0,   unit:'1 tsp'},
+  {name:'Honey (1 tsp, 7g)',                   cal:21,  protein:0,   carbs:6,   fat:0,   unit:'1 tsp'},
+  {name:'Pickle / Achaar (1 tsp)',             cal:20,  protein:0,   carbs:1,   fat:1.5, unit:'1 tsp'},
+  {name:'Green Chutney (2 tbsp)',              cal:15,  protein:0.5, carbs:3,   fat:0,   unit:'2 tbsp'},
+  {name:'Coconut Chutney (2 tbsp)',            cal:55,  protein:1,   carbs:4,   fat:4,   unit:'2 tbsp'},
+  {name:'Tomato Sauce / Ketchup (1 tbsp)',     cal:17,  protein:0.2, carbs:4,   fat:0,   unit:'1 tbsp'},
+  // ── Breads & Grains
+  {name:'Roti / Chapati (1 medium, 30g)',      cal:80,  protein:3,   carbs:15,  fat:1,   unit:'1 roti'},
+  {name:'Whole Wheat Roti (1, 30g)',           cal:82,  protein:3.5, carbs:15,  fat:1,   unit:'1 roti'},
+  {name:'Ragi / Nachni Roti (1)',              cal:80,  protein:3,   carbs:14,  fat:1,   unit:'1 roti'},
+  {name:'Jowar / Sorghum Roti (1)',            cal:70,  protein:2,   carbs:14,  fat:0.5, unit:'1 roti'},
+  {name:'Bajra / Millet Roti (1)',             cal:85,  protein:3,   carbs:16,  fat:1,   unit:'1 roti'},
+  {name:'Missi Roti / Besan Roti (1)',         cal:95,  protein:4,   carbs:16,  fat:2,   unit:'1 roti'},
+  {name:'Plain Paratha (1, 60g)',              cal:180, protein:4,   carbs:25,  fat:7,   unit:'1 paratha'},
+  {name:'Methi Paratha (1)',                   cal:155, protein:4,   carbs:22,  fat:6,   unit:'1 paratha'},
+  {name:'Aloo Paratha (1)',                    cal:260, protein:5,   carbs:35,  fat:11,  unit:'1 paratha'},
+  {name:'Stuffed Paneer Paratha (1)',          cal:280, protein:9,   carbs:30,  fat:13,  unit:'1 paratha'},
+  {name:'Puri (1 small)',                      cal:90,  protein:2,   carbs:12,  fat:4,   unit:'1 puri'},
+  {name:'White Rice cooked (1 cup, 200g)',     cal:260, protein:5,   carbs:57,  fat:0.4, unit:'1 cup'},
+  {name:'Brown Rice cooked (1 cup, 200g)',     cal:218, protein:5,   carbs:45,  fat:1.6, unit:'1 cup'},
+  {name:'Dosa (1 regular)',                    cal:130, protein:3,   carbs:20,  fat:4,   unit:'1 dosa'},
+  {name:'Rava Dosa (1)',                       cal:115, protein:3,   carbs:18,  fat:4,   unit:'1 dosa'},
+  {name:'Masala Dosa (1)',                     cal:220, protein:5,   carbs:30,  fat:9,   unit:'1 dosa'},
+  {name:'Idli (1)',                            cal:40,  protein:2,   carbs:8,   fat:0.1, unit:'1 idli'},
+  {name:'Poha cooked (1 cup, 100g)',           cal:130, protein:2,   carbs:28,  fat:0.5, unit:'1 cup'},
+  {name:'Upma (1 cup, 150g)',                  cal:200, protein:5,   carbs:35,  fat:4,   unit:'1 cup'},
+  {name:'Uttapam (1)',                         cal:150, protein:4,   carbs:22,  fat:5,   unit:'1 uttapam'},
+  {name:'Medu Vada (1)',                       cal:100, protein:4,   carbs:13,  fat:4,   unit:'1 vada'},
+  {name:'White Bread (1 slice)',               cal:65,  protein:2,   carbs:12,  fat:0.8, unit:'1 slice'},
+  {name:'Oats cooked (1 cup, 250g)',           cal:150, protein:5,   carbs:27,  fat:3,   unit:'1 cup'},
+  {name:'Besan / Chickpea Flour (50g)',        cal:180, protein:9,   carbs:27,  fat:3,   unit:'50g dry'},
+  {name:'Suji / Semolina (50g dry)',           cal:180, protein:6,   carbs:36,  fat:0.5, unit:'50g dry'},
+  {name:'Quinoa cooked (1 cup)',               cal:220, protein:8,   carbs:39,  fat:3.5, unit:'1 cup'},
+  // ── Proteins — Animal
+  {name:'Chicken Breast cooked (100g)',        cal:165, protein:31,  carbs:0,   fat:3.6, unit:'100g'},
+  {name:'Chicken Thigh cooked (100g)',         cal:209, protein:26,  carbs:0,   fat:11,  unit:'100g'},
+  {name:'Chicken Curry (1 cup)',               cal:320, protein:25,  carbs:8,   fat:20,  unit:'1 cup'},
+  {name:'Mutton / Lamb cooked (100g)',         cal:250, protein:25,  carbs:0,   fat:17,  unit:'100g'},
+  {name:'Egg (1 whole)',                       cal:70,  protein:6,   carbs:0.5, fat:5,   unit:'1 egg'},
+  {name:'Egg White (1)',                       cal:17,  protein:3.6, carbs:0.2, fat:0,   unit:'1 white'},
+  {name:'Egg Bhurji (2 eggs, little oil)',     cal:200, protein:14,  carbs:3,   fat:14,  unit:'2 eggs'},
+  {name:'Egg Curry (2 eggs)',                  cal:280, protein:14,  carbs:8,   fat:20,  unit:'2 eggs'},
+  {name:'Fish white (100g cooked)',            cal:140, protein:26,  carbs:0,   fat:3,   unit:'100g'},
+  {name:'Salmon (100g)',                       cal:208, protein:20,  carbs:0,   fat:13,  unit:'100g'},
+  {name:'Prawns cooked (100g)',                cal:99,  protein:18,  carbs:0,   fat:1.5, unit:'100g'},
+  {name:'Tuna canned in water (100g)',         cal:116, protein:26,  carbs:0,   fat:1,   unit:'100g'},
+  // ── Proteins — Plant
+  {name:'Paneer (100g)',                       cal:265, protein:18,  carbs:3,   fat:21,  unit:'100g'},
+  {name:'Paneer Tikka (100g)',                 cal:230, protein:14,  carbs:7,   fat:15,  unit:'100g'},
+  {name:'Paneer Bhurji (100g)',                cal:180, protein:12,  carbs:3,   fat:13,  unit:'100g'},
+  {name:'Palak Paneer (1 cup)',                cal:280, protein:14,  carbs:10,  fat:20,  unit:'1 cup'},
+  {name:'Tofu firm (100g)',                    cal:76,  protein:8,   carbs:2,   fat:4,   unit:'100g'},
+  {name:'Soya Chunks (30g dry)',               cal:100, protein:15,  carbs:9,   fat:0.5, unit:'30g dry'},
+  {name:'Dal Moong cooked (1 cup)',            cal:147, protein:10,  carbs:26,  fat:0.8, unit:'1 cup'},
+  {name:'Dal Masoor cooked (1 cup)',           cal:162, protein:12,  carbs:29,  fat:0.5, unit:'1 cup'},
+  {name:'Dal Toor / Arhar cooked (1 cup)',     cal:182, protein:11,  carbs:32,  fat:0.5, unit:'1 cup'},
+  {name:'Chana Dal cooked (1 cup)',            cal:200, protein:13,  carbs:35,  fat:1.5, unit:'1 cup'},
+  {name:'Rajma cooked (1 cup)',                cal:220, protein:14,  carbs:40,  fat:0.5, unit:'1 cup'},
+  {name:'Chole / Chickpea cooked (1 cup)',     cal:270, protein:15,  carbs:45,  fat:4,   unit:'1 cup'},
+  {name:'Black Chana cooked (1 cup)',          cal:210, protein:14,  carbs:38,  fat:1.5, unit:'1 cup'},
+  {name:'Sprouts mixed (1 cup)',               cal:85,  protein:6,   carbs:16,  fat:0.4, unit:'1 cup'},
+  {name:'Peas / Matar cooked (1 cup)',         cal:118, protein:8,   carbs:21,  fat:0.4, unit:'1 cup'},
+  // ── Dairy
+  {name:'Milk Full Fat (1 cup, 240ml)',        cal:150, protein:8,   carbs:12,  fat:8,   unit:'1 cup'},
+  {name:'Milk Toned (1 cup, 240ml)',           cal:120, protein:8,   carbs:12,  fat:4.5, unit:'1 cup'},
+  {name:'Dahi / Curd (1 cup, 200g)',           cal:120, protein:8,   carbs:10,  fat:4,   unit:'1 cup'},
+  {name:'Greek Yogurt (100g)',                 cal:80,  protein:10,  carbs:3,   fat:2,   unit:'100g'},
+  {name:'Chaas / Buttermilk (1 glass, 250ml)',cal:37,  protein:3,   carbs:4,   fat:0.5, unit:'1 glass'},
+  {name:'Lassi Sweet (1 glass, 300ml)',        cal:200, protein:7,   carbs:32,  fat:5,   unit:'1 glass'},
+  {name:'Lassi Salted (1 glass, 300ml)',       cal:130, protein:7,   carbs:14,  fat:5,   unit:'1 glass'},
+  {name:'Whey Protein 1 scoop (30g)',          cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 scoop'},
+  {name:'Casein Protein 1 scoop (30g)',        cal:110, protein:22,  carbs:4,   fat:1,   unit:'1 scoop'},
+  {name:'Mass Gainer 1 scoop (100g)',          cal:400, protein:25,  carbs:65,  fat:6,   unit:'1 scoop'},
+  // ── Vegetables & Curries
+  {name:'Aloo Gobi (1 cup)',                   cal:150, protein:4,   carbs:20,  fat:6,   unit:'1 cup'},
+  {name:'Bhindi Masala (100g)',                cal:80,  protein:2,   carbs:10,  fat:3.5, unit:'100g'},
+  {name:'Mixed Sabzi (100g)',                  cal:80,  protein:2,   carbs:12,  fat:3,   unit:'100g'},
+  {name:'Spinach raw (1 cup)',                 cal:7,   protein:1,   carbs:1,   fat:0,   unit:'1 cup'},
+  {name:'Broccoli (1 cup)',                    cal:55,  protein:4,   carbs:11,  fat:0.5, unit:'1 cup'},
+  {name:'Rajma Masala (1 cup)',                cal:250, protein:13,  carbs:42,  fat:5,   unit:'1 cup'},
+  {name:'Sambar (1 cup)',                      cal:70,  protein:4,   carbs:12,  fat:1,   unit:'1 cup'},
+  {name:'Rasam (1 cup)',                       cal:40,  protein:2,   carbs:8,   fat:0.5, unit:'1 cup'},
+  {name:'Curd Rice (1 cup)',                   cal:220, protein:6,   carbs:38,  fat:4,   unit:'1 cup'},
+  // ── Rice Dishes
+  {name:'Biryani Veg (1 plate, 300g)',         cal:420, protein:10,  carbs:65,  fat:14,  unit:'1 plate'},
+  {name:'Biryani Chicken (1 plate, 350g)',     cal:500, protein:28,  carbs:60,  fat:16,  unit:'1 plate'},
+  {name:'Biryani Mutton (1 plate, 350g)',      cal:570, protein:30,  carbs:62,  fat:18,  unit:'1 plate'},
+  {name:'Khichdi (1 cup)',                     cal:200, protein:8,   carbs:35,  fat:4,   unit:'1 cup'},
+  {name:'Pulao / Veg Pulao (1 cup)',           cal:250, protein:6,   carbs:48,  fat:4,   unit:'1 cup'},
+  {name:'Veg Fried Rice (1 cup)',              cal:290, protein:6,   carbs:52,  fat:6,   unit:'1 cup'},
+  // ── Street Food & Meals
+  {name:'Chole Bhature (1 plate)',             cal:650, protein:18,  carbs:90,  fat:22,  unit:'1 plate'},
+  {name:'Pav Bhaji (without butter, 1 plate)',cal:380, protein:10,  carbs:65,  fat:8,   unit:'1 plate'},
+  {name:'Pav Bhaji (with butter, 1 plate)',   cal:460, protein:10,  carbs:68,  fat:15,  unit:'1 plate'},
+  {name:'Vada Pav (1)',                        cal:320, protein:7,   carbs:50,  fat:10,  unit:'1 vada pav'},
+  {name:'Samosa (1 medium)',                   cal:200, protein:3,   carbs:26,  fat:10,  unit:'1 samosa'},
+  {name:'Misal Pav (1 plate)',                 cal:350, protein:12,  carbs:55,  fat:10,  unit:'1 plate'},
+  {name:'Dhokla (2 pieces)',                   cal:100, protein:5,   carbs:15,  fat:2,   unit:'2 pieces'},
+  {name:'Papad roasted (1)',                   cal:35,  protein:2,   carbs:6,   fat:0.5, unit:'1 papad'},
+  {name:'Papad fried (1)',                     cal:60,  protein:2,   carbs:7,   fat:3,   unit:'1 papad'},
+  // ── Indian Sweets
+  {name:'Gulab Jamun (1)',                     cal:150, protein:3,   carbs:22,  fat:6,   unit:'1 piece'},
+  {name:'Rasgulla (1)',                        cal:100, protein:3,   carbs:20,  fat:0.5, unit:'1 piece'},
+  {name:'Ladoo Besan (1, 50g)',                cal:200, protein:5,   carbs:25,  fat:9,   unit:'1 ladoo'},
+  {name:'Barfi (1 piece, 30g)',                cal:120, protein:3,   carbs:18,  fat:4,   unit:'1 piece'},
+  {name:'Halwa Suji (1 cup)',                  cal:350, protein:5,   carbs:50,  fat:14,  unit:'1 cup'},
+  {name:'Kheer (1 cup)',                       cal:200, protein:6,   carbs:32,  fat:5,   unit:'1 cup'},
+  {name:'Jalebi (1)',                          cal:60,  protein:0.5, carbs:12,  fat:2,   unit:'1 jalebi'},
+  {name:'Shrikhand (1 cup)',                   cal:250, protein:10,  carbs:40,  fat:5,   unit:'1 cup'},
+  // ── Fruits
+  {name:'Banana (1 medium)',                   cal:90,  protein:1,   carbs:23,  fat:0.3, unit:'1 banana'},
+  {name:'Apple (1 medium)',                    cal:80,  protein:0.4, carbs:21,  fat:0.2, unit:'1 apple'},
+  {name:'Orange (1 medium)',                   cal:60,  protein:1,   carbs:15,  fat:0.1, unit:'1 orange'},
+  {name:'Mango (1 cup sliced)',                cal:100, protein:1,   carbs:25,  fat:0.6, unit:'1 cup'},
+  {name:'Papaya (1 cup)',                      cal:55,  protein:0.6, carbs:14,  fat:0.1, unit:'1 cup'},
+  {name:'Pomegranate (1 cup arils)',           cal:83,  protein:1.5, carbs:19,  fat:1.2, unit:'1 cup'},
+  {name:'Grapes (1 cup)',                      cal:69,  protein:0.7, carbs:18,  fat:0.2, unit:'1 cup'},
+  {name:'Watermelon (2 cups)',                 cal:80,  protein:1.5, carbs:18,  fat:0.4, unit:'2 cups'},
+  // ── Snacks & Nuts
+  {name:'Peanuts (30g)',                       cal:170, protein:7,   carbs:5,   fat:14,  unit:'30g'},
+  {name:'Almonds (20g ~14 nuts)',              cal:115, protein:4,   carbs:4,   fat:10,  unit:'20g'},
+  {name:'Cashews (20g)',                       cal:113, protein:3.5, carbs:6,   fat:9,   unit:'20g'},
+  {name:'Walnuts (20g)',                       cal:131, protein:3,   carbs:3,   fat:13,  unit:'20g'},
+  {name:'Peanut Butter (1 tbsp, 16g)',         cal:95,  protein:4,   carbs:3,   fat:8,   unit:'1 tbsp'},
+  {name:'Protein Bar (generic)',               cal:200, protein:20,  carbs:20,  fat:7,   unit:'1 bar'},
+  {name:'Biscuits Parle-G (3)',                cal:60,  protein:1,   carbs:11,  fat:1.5, unit:'3 biscuits'},
+  {name:'Makhana / Fox Nuts (30g)',            cal:104, protein:3.5, carbs:20,  fat:0.1, unit:'30g'},
+  // ── Beverages
+  {name:'Masala Chai with sugar (1 cup)',      cal:70,  protein:2,   carbs:10,  fat:2,   unit:'1 cup'},
+  {name:'Chai without sugar (1 cup)',          cal:40,  protein:2,   carbs:5,   fat:2,   unit:'1 cup'},
+  {name:'Black Coffee / Green Tea',            cal:5,   protein:0,   carbs:1,   fat:0,   unit:'1 cup'},
+  {name:'Haldi Doodh / Turmeric Milk (1 cup)',cal:110, protein:4,   carbs:12,  fat:4.5, unit:'1 cup'},
+  {name:'Coffee with milk & sugar (1 cup)',    cal:55,  protein:2,   carbs:8,   fat:1.5, unit:'1 cup'},
+  {name:'Coconut Water (1 glass, 240ml)',      cal:46,  protein:0.5, carbs:9,   fat:0.5, unit:'1 glass'},
+  {name:'Protein Shake (1 scoop + water)',     cal:120, protein:24,  carbs:3,   fat:2,   unit:'1 shake'},
+  {name:'BCAA powder (1 scoop)',               cal:15,  protein:5,   carbs:0,   fat:0,   unit:'1 scoop'},
+  {name:'Creatine (1 tsp, 5g)',               cal:0,   protein:0,   carbs:0,   fat:0,   unit:'1 tsp'},
+];
+
+// ─── TRACKER STATE ───────────────────────────────────────
+function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function pad(n){ return n<10?'0'+n:''+n; }
+var TODAY = todayKey();
+
+var settings = (function(){
+  try{
+    var s=JSON.parse(localStorage.getItem('ffx_settings')||'null');
+    if(s) return s;
+    return {
+      cal:    parseInt(localStorage.getItem('ffx_goal_cal'))||2000,
+      protein:parseInt(localStorage.getItem('ffx_protein_g'))||150,
+      carbs:  parseInt(localStorage.getItem('ffx_carb_g'))||200,
+      fat:    parseInt(localStorage.getItem('ffx_fat_g'))||65,
+      bw:     parseFloat(localStorage.getItem('ffx_weight_kg'))||70,
+    };
+  }catch(e){ return {cal:2000,protein:150,carbs:200,fat:65,bw:70}; }
+})();
+
+function saveSettingsToStorage(){ try{ localStorage.setItem('ffx_settings',JSON.stringify(settings)); }catch(e){} }
+
+function loadDayLog(key){
+  try{ return JSON.parse(localStorage.getItem('ffx_log_'+key)||'null') || {breakfast:[],lunch:[],dinner:[],snacks:[]}; }
+  catch(e){ return {breakfast:[],lunch:[],dinner:[],snacks:[]}; }
+}
+function loadWorkouts(key){
+  try{ return JSON.parse(localStorage.getItem('ffx_wk_'+key)||'null') || []; }
+  catch(e){ return []; }
+}
+
+var foodLog   = loadDayLog(TODAY);
+var workouts  = loadWorkouts(TODAY);
+var currentMeal = 'breakfast';
+var wkType = 'cardio';
+
+function saveFoodLog(){ try{ localStorage.setItem('ffx_log_'+TODAY,JSON.stringify(foodLog)); }catch(e){} }
+function saveWorkouts(){ try{ localStorage.setItem('ffx_wk_'+TODAY,JSON.stringify(workouts)); }catch(e){} }
+
+// ─── RENDER TRACKER ──────────────────────────────────────
+function foodTotals(){
+  var t={cal:0,protein:0,carbs:0,fat:0};
+  ['breakfast','lunch','dinner','snacks'].forEach(function(m){
+    (foodLog[m]||[]).forEach(function(e){ t.cal+=e.cal||0; t.protein+=e.protein||0; t.carbs+=e.carbs||0; t.fat+=e.fat||0; });
+  });
+  return t;
+}
+function workoutTotal(){ var c=0; workouts.forEach(function(w){ c+=w.cal||0; }); return c; }
+
+function renderTracker(){
+  var ft   = foodTotals();
+  var wBurn= workoutTotal();
+  var goal = settings.cal||2000;
+  var net  = ft.cal - wBurn;        // net calories consumed
+  var rem  = goal - net;
+
+  // Stats row
+  setText('tr-goal',    goal.toLocaleString());
+  setText('tr-eaten',   ft.cal.toLocaleString());
+  setText('tr-burned',  wBurn.toLocaleString());
+  setText('tr-net-rem', rem >= 0 ? rem.toLocaleString() : '−'+Math.abs(rem).toLocaleString());
+  var netRemEl = $id('tr-net-rem');
+  if(netRemEl) netRemEl.style.color = rem < 0 ? '#ef4444' : '#FF4D00';
+
+  setText('tr-goal-label-sm', 'Goal: '+goal+' cal');
+  setWidth('tr-prog', Math.min(100, (net/goal)*100));
+  var prog=$id('tr-prog'); if(prog) prog.style.backgroundColor=net>goal?'#ef4444':'#FF4D00';
+
+  // Macros
+  renderMacroBar('protein', ft.protein, settings.protein||150);
+  renderMacroBar('carbs',   ft.carbs,   settings.carbs||200);
+  renderMacroBar('fat',     ft.fat,     settings.fat||65);
+
+  // Meal badges and lists
+  ['breakfast','lunch','dinner','snacks'].forEach(function(m){
+    var mc=0; (foodLog[m]||[]).forEach(function(e){ mc+=e.cal||0; });
+    setText(m+'-badge', mc+' cal');
+    renderMealList(m);
+  });
+
+  // Workout list
+  renderWorkoutList();
+  setText('wr-total', wBurn.toLocaleString());
+
+  // Smart insight
+  renderInsight(ft.cal, wBurn, rem, goal, ft.protein);
+
+  // Weekly
+  renderWeekly();
+}
+
+function renderMacroBar(name, eaten, goal){
+  setText('tm-'+name+'-e', Math.round(eaten));
+  setText('tm-'+name+'-g', goal);
+  var pct=goal>0?Math.min(120,(eaten/goal)*100):0;
+  var bar=$id('tm-'+name+'-bar');
+  if(bar){ bar.style.width=Math.min(100,pct)+'%'; bar.style.backgroundColor=pct>110?'#ef4444':''; }
+}
+
+function renderMealList(meal){
+  var list=$id(meal+'-list');
+  var entries=foodLog[meal]||[];
+  if(!entries.length){ list.innerHTML='<p class="text-white/20 text-xs text-center py-4">Empty</p>'; return; }
+  list.innerHTML=entries.map(function(e,i){
+    return '<div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.02] group">' +
+      '<div class="flex-1 min-w-0"><p class="text-white/70 text-xs truncate">'+e.name+'</p>' +
+      '<p class="text-white/30 text-[0.6rem]">'+e.cal+' cal'+(e.protein?' · '+Math.round(e.protein)+'g P':'')+(e.carbs?' · '+Math.round(e.carbs)+'g C':'')+(e.fat?' · '+Math.round(e.fat)+'g F':'')+'</p></div>' +
+      '<button onclick="removeFood(\''+meal+'\','+i+')" class="text-white/15 hover:text-red-400 ml-3 opacity-0 group-hover:opacity-100 transition-all text-sm">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+function renderWorkoutList(){
+  var list=$id('workout-list');
+  if(!workouts.length){ list.innerHTML='<p class="text-white/20 text-xs text-center py-8">No workouts logged — add one above</p>'; return; }
+  list.innerHTML=workouts.map(function(w,i){
+    return '<div class="flex items-center justify-between px-4 py-3 border-b border-[#111] last:border-0 hover:bg-white/[0.02] group">' +
+      '<div class="flex-1 min-w-0">' +
+        '<p class="text-white/70 text-sm truncate">'+w.name+'</p>' +
+        '<p class="text-green-400/60 text-xs mt-0.5">'+w.desc+' · '+w.cal+' cal burned</p>' +
+      '</div>' +
+      '<button onclick="removeWorkout('+i+')" class="text-white/15 hover:text-red-400 ml-3 opacity-0 group-hover:opacity-100 transition-all text-sm">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function renderInsight(eaten, burned, rem, goal, proteinG){
+  var msg='';
+  var net=eaten-burned;
+  if(eaten===0&&burned===0){ msg='Log food and workouts below to see your net calorie balance and what to do next.'; }
+  else if(rem>500){ msg='Net intake: '+net+' cal (food '+eaten+' − workout '+burned+'). You have '+rem+' cal remaining vs your '+goal+' goal. '+(burned>0?'Great work burning '+burned+' cal — that extra deficit helps.':'Add a workout to deepen your deficit further.'); }
+  else if(rem>0&&rem<=500){ msg='Net intake: '+net+' cal. Only '+rem+' cal left — almost at your target. '+(burned>0?'Your '+burned+' cal workout has given you more flexibility today.':'A short 20-min walk would add ~'+(Math.round((settings.bw||70)*3.5*20/60))+' cal of buffer.'); }
+  else if(rem<0&&rem>-300){ msg='Net: '+net+' cal — just '+Math.abs(rem)+' cal over goal. '+(burned>0?'Your workout burned '+burned+' cal, keeping you close to target. One-off small overshoots are fine.':'Add a 20-min walk to get back on track.'); }
+  else if(rem<=-300){ msg='Net: '+net+' cal — '+Math.abs(rem)+' cal over your goal. '+(burned>0?'Your '+burned+' cal workout helped, but the food intake was high. Review what\'s adding the most calories.':'A '+Math.round(Math.abs(rem)/((settings.bw||70)*0.15))+'-min run would burn this back. Or audit your largest meal tomorrow.'); }
+
+  var proTarget=settings.protein||150;
+  if(eaten>400&&proteinG<proTarget*0.4) msg+=' Protein is low — prioritise chicken, eggs, paneer, or dal in your next meal.';
+
+  setText('tr-insight',msg);
+}
+
+function renderWeekly(){
+  var days=[]; var totalNet=0; var counted=0;
+  for(var i=6;i>=0;i--){
+    var d=new Date(); d.setDate(d.getDate()-i);
+    var k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    var l=k===TODAY?foodLog:loadDayLog(k);
+    var w=k===TODAY?workouts:loadWorkouts(k);
+    var dc=0; ['breakfast','lunch','dinner','snacks'].forEach(function(m){ (l[m]||[]).forEach(function(e){ dc+=e.cal||0; }); });
+    var dw=0; w.forEach(function(x){ dw+=x.cal||0; });
+    var net=dc-dw;
+    var labels=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    days.push({label:labels[d.getDay()],net:net,goal:settings.cal,isToday:i===0});
+    if(dc>0){ totalNet+=net; counted++; }
+  }
+  var avg=counted>0?Math.round(totalNet/counted):0;
+  setText('wk-avg', avg||'—');
+
+  var maxVal=Math.max(settings.cal*1.2, Math.max.apply(null, days.map(function(d){ return d.net; })), 1);
+  var chart=$id('wk-chart');
+  chart.innerHTML=days.map(function(d){
+    var h=d.net>0?Math.max(6,Math.round((d.net/maxVal)*100)):4;
+    var over=d.net>d.goal;
+    var col=d.net===0?'bg-[#1a1a1a]':(over?'bg-red-500/50':(d.isToday?'bg-accent':'bg-accent/40'));
+    return '<div class="flex-1 flex flex-col items-center gap-1">'+
+      '<span class="text-[0.55rem] text-white/25">'+(d.net>0?d.net:'')+'</span>'+
+      '<div class="w-full '+col+' rounded-t-sm transition-all duration-700" style="height:'+h+'%"></div>'+
+      '<span class="text-[0.6rem] uppercase tracking-widest '+(d.isToday?'text-accent':'text-white/25')+'">'+d.label+'</span>'+
+    '</div>';
+  }).join('');
+
+  var wi=$id('wk-insight');
+  if(counted<2){ wi.innerHTML='<p class="text-white/30 text-sm">Track 2+ days to see weekly patterns.</p>'; return; }
+  var delta=avg-settings.cal;
+  var wklyKg=((delta*7)/7700).toFixed(2);
+  wi.innerHTML='<p class="text-accent text-[0.6rem] tracking-widest uppercase mb-2">Weekly Pattern</p>'+
+    '<p class="text-white/60 text-sm leading-relaxed">'+counted+'-day average net: '+avg+' cal/day (goal: '+settings.cal+'). '+
+    (delta<0?'You\'re running a '+Math.abs(delta)+' cal daily deficit — trending to lose ~'+Math.abs(wklyKg)+' kg/week. Keep it consistent.':
+    delta>0?'You\'re averaging '+delta+' cal over goal daily. Add a workout or tighten lunch to close the gap.':
+    'Nearly perfect maintenance.')+'</p>';
+}
+
+// ─── FOOD LOG ACTIONS ────────────────────────────────────
+window.removeFood = function(meal, idx){ foodLog[meal].splice(idx,1); saveFoodLog(); renderTracker(); };
+
+function addFoodEntry(food, servings){
+  servings=servings||1;
+  foodLog[currentMeal].push({name:food.name,cal:Math.round(food.cal*servings),protein:Math.round(food.protein*servings*10)/10,carbs:Math.round(food.carbs*servings*10)/10,fat:Math.round(food.fat*servings*10)/10});
+  saveFoodLog(); renderTracker(); closeFoodModal();
+}
+
+window.addCustomFood=function(){
+  var name=($id('fc-name').value||'').trim();
+  var cal=parseInt($id('fc-cal').value)||0;
+  var pro=parseFloat($id('fc-protein').value)||0;
+  if(!name||!cal) return;
+  addFoodEntry({name:name,cal:cal,protein:pro,carbs:0,fat:0});
+  $id('fc-name').value=''; $id('fc-cal').value=''; $id('fc-protein').value='';
+};
+
+window.openFoodModal=function(meal){
+  currentMeal=meal;
+  var labels={breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snacks:'Snacks'};
+  setText('fm-title','Add to '+labels[meal]);
+  $id('modal-food').classList.remove('hidden'); document.body.style.overflow='hidden';
+  $id('food-search').value=''; filterFoods(''); setTimeout(function(){ $id('food-search').focus(); },100);
+};
+window.closeFoodModal=function(){ $id('modal-food').classList.add('hidden'); document.body.style.overflow=''; };
+
+window.filterFoods=function(q){
+  var results=q.trim().length>0?FOODS.filter(function(f){ return f.name.toLowerCase().indexOf(q.toLowerCase())>-1; }):FOODS;
+  var list=$id('food-list');
+  if(!results.length){ list.innerHTML='<p class="text-white/25 text-sm text-center py-8">No matches — use custom add above.</p>'; return; }
+  list.innerHTML=results.map(function(f){
+    var ri=FOODS.indexOf(f);
+    return '<div class="flex items-center justify-between px-5 py-3 hover:bg-white/[0.03] cursor-pointer group" onclick="addFoodFromList('+ri+')">'+
+      '<div class="flex-1 min-w-0"><p class="text-white/70 text-sm truncate">'+f.name+'</p>'+
+      '<p class="text-white/30 text-xs mt-0.5">'+f.cal+' cal · '+f.protein+'g P · '+f.carbs+'g C · '+f.fat+'g F <span class="text-white/20">per '+f.unit+'</span></p></div>'+
+      '<span class="text-accent text-xs ml-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">+ Add</span></div>';
+  }).join('');
+};
+window.addFoodFromList=function(idx){ addFoodEntry(FOODS[idx],1); };
+
+// ─── WORKOUT ACTIONS ─────────────────────────────────────
+window.openWorkoutModal=function(){ $id('modal-workout').classList.remove('hidden'); document.body.style.overflow='hidden'; setWkType('cardio'); };
+window.closeWorkoutModal=function(){ $id('modal-workout').classList.add('hidden'); document.body.style.overflow=''; };
+
+window.setWkType=function(type){
+  wkType=type;
+  ['cardio','strength','custom'].forEach(function(t){
+    var btn=$id('wt-btn-'+t), panel=$id('wk-panel-'+t);
+    var active=t===type;
+    btn.classList.toggle('border-green-500',active); btn.classList.toggle('text-white',active);
+    btn.classList.toggle('border-transparent',!active); btn.classList.toggle('text-white/40',!active);
+    panel.classList.toggle('hidden',!active);
+  });
+};
+
+function bodyWeight(){ return settings.bw||70; }
+function calFromMET(met, minutes){ return Math.round(met * bodyWeight() * (minutes/60)); }
+function estimateStrengthTime(sets, reps){ return (sets*(reps*3+80))/60; } // minutes
+
+window.previewCardio=function(){
+  var met=parseFloat($id('wk-cardio-ex').value)||5;
+  var dur=parseFloat($id('wk-cardio-dur').value)||0;
+  if(!dur){ $id('cardio-preview').classList.add('hidden'); return; }
+  var cal=calFromMET(met,dur);
+  $id('cardio-preview').classList.remove('hidden');
+  setText('cardio-preview-cal', cal+' cal');
+};
+window.previewStrength=function(){
+  var met=parseFloat($id('wk-str-ex').value)||5;
+  var sets=parseInt($id('wk-str-sets').value)||0;
+  var reps=parseInt($id('wk-str-reps').value)||0;
+  if(!sets||!reps){ $id('strength-preview').classList.add('hidden'); return; }
+  var mins=estimateStrengthTime(sets,reps);
+  var cal=calFromMET(met,mins);
+  $id('strength-preview').classList.remove('hidden');
+  setText('str-preview-cal', cal+' cal');
+  setText('str-preview-time','Estimated session time: ~'+Math.round(mins)+' min ('+sets+'×'+reps+' + rest)');
+};
+
+window.logCardio=function(){
+  var exSel=$id('wk-cardio-ex'); var met=parseFloat(exSel.value)||5;
+  var exName=exSel.options[exSel.selectedIndex].text;
+  var dur=parseFloat($id('wk-cardio-dur').value)||0;
+  if(!dur) return;
+  var cal=calFromMET(met,dur);
+  workouts.push({name:exName, desc:dur+' min', cal:cal});
+  saveWorkouts(); renderTracker(); closeWorkoutModal();
+};
+window.logStrength=function(){
+  var exSel=$id('wk-str-ex'); var met=parseFloat(exSel.value)||5;
+  var exName=exSel.options[exSel.selectedIndex].text;
+  var sets=parseInt($id('wk-str-sets').value)||0;
+  var reps=parseInt($id('wk-str-reps').value)||0;
+  if(!sets||!reps) return;
+  var mins=estimateStrengthTime(sets,reps);
+  var cal=calFromMET(met,mins);
+  workouts.push({name:exName, desc:sets+'×'+reps+' reps (~'+Math.round(mins)+' min)', cal:cal});
+  saveWorkouts(); renderTracker(); closeWorkoutModal();
+};
+window.logCustomWorkout=function(){
+  var name=($id('wk-cust-name').value||'').trim();
+  var dur=parseFloat($id('wk-cust-dur').value)||0;
+  var cal=parseInt($id('wk-cust-cal').value)||0;
+  if(!name||(!dur&&!cal)) return;
+  if(!cal&&dur) cal=calFromMET(5,dur);
+  workouts.push({name:name, desc:dur?dur+' min':'manual entry', cal:cal});
+  saveWorkouts(); renderTracker(); closeWorkoutModal();
+};
+window.removeWorkout=function(idx){ workouts.splice(idx,1); saveWorkouts(); renderTracker(); };
+
+// ─── SETTINGS ────────────────────────────────────────────
+window.showSettings=function(){
+  $id('s-cal').value=settings.cal||''; $id('s-bw').value=settings.bw||'';
+  $id('s-p').value=settings.protein||''; $id('s-c').value=settings.carbs||''; $id('s-f').value=settings.fat||'';
+  $id('modal-settings').classList.remove('hidden'); document.body.style.overflow='hidden';
+};
+window.hideSettings=function(){ $id('modal-settings').classList.add('hidden'); document.body.style.overflow=''; };
+window.saveSettings=function(){
+  settings.cal=parseInt($id('s-cal').value)||settings.cal;
+  settings.bw=parseFloat($id('s-bw').value)||settings.bw;
+  settings.protein=parseInt($id('s-p').value)||settings.protein;
+  settings.carbs=parseInt($id('s-c').value)||settings.carbs;
+  settings.fat=parseInt($id('s-f').value)||settings.fat;
+  saveSettingsToStorage(); hideSettings(); renderTracker();
+};
+window.clearDay=function(){
+  if(confirm('Clear all food and workout entries for today?')){
+    foodLog={breakfast:[],lunch:[],dinner:[],snacks:[]}; workouts=[];
+    saveFoodLog(); saveWorkouts(); renderTracker(); hideSettings();
+  }
+};
+
+// ─── KEYBOARD & INIT ─────────────────────────────────────
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ closeFoodModal(); closeWorkoutModal(); hideSettings(); }
+});
+
+// Date label
+var d=new Date();
+var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+setText('tr-date', d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear());
+
+filterFoods('');
+renderTracker();
+
+if(!localStorage.getItem('ffx_settings')&&!localStorage.getItem('ffx_goal_cal')){
+  setTimeout(function(){ if(!document.getElementById('tab-tracker').classList.contains('hidden')) showSettings(); },800);
+}
+
+}());
+</script>
+{% endblock %}
