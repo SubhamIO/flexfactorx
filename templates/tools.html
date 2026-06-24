@@ -75,6 +75,24 @@
       </div>
 
       <div class="mb-8">
+        <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Diet Preference</p>
+        <div class="grid grid-cols-3 gap-2">
+          <label>
+            <input type="radio" name="t-diet" value="all" class="sr-only" checked>
+            <div class="t-diet-opt cursor-pointer border border-accent bg-accent/10 text-white text-xs tracking-wider uppercase text-center py-3">All / Both</div>
+          </label>
+          <label>
+            <input type="radio" name="t-diet" value="veg" class="sr-only">
+            <div class="t-diet-opt cursor-pointer border border-[#1a1a1a] text-white/40 text-xs tracking-wider uppercase text-center py-3">🌿 Vegetarian</div>
+          </label>
+          <label>
+            <input type="radio" name="t-diet" value="nonveg" class="sr-only">
+            <div class="t-diet-opt cursor-pointer border border-[#1a1a1a] text-white/40 text-xs tracking-wider uppercase text-center py-3">🍗 Non-Vegetarian</div>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-8">
         <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-3">Activity Level</p>
         <div class="space-y-2">
           {% for val, label, desc, mult in [
@@ -1047,6 +1065,28 @@ document.querySelectorAll('input[name="t-gender"]').forEach(function(r){
     o.classList.remove('border-[#1a1a1a]','text-white/40');
   });
 });
+document.querySelectorAll('input[name="t-diet"]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.t-diet-opt').forEach(function(d){
+      d.classList.remove('border-accent','bg-accent/10','text-white');
+      d.classList.add('border-[#1a1a1a]','text-white/40');
+    });
+    var o = this.closest('label').querySelector('.t-diet-opt');
+    o.classList.add('border-accent','bg-accent/10','text-white');
+    o.classList.remove('border-[#1a1a1a]','text-white/40');
+  });
+});
+function applyTdietPref(pref){
+  var el = document.querySelector('input[name="t-diet"][value="'+pref+'"]');
+  if(!el) return;
+  el.checked = true;
+  document.querySelectorAll('.t-diet-opt').forEach(function(d){
+    d.classList.remove('border-accent','bg-accent/10','text-white');
+    d.classList.add('border-[#1a1a1a]','text-white/40');
+  });
+  var o = el.closest('label').querySelector('.t-diet-opt');
+  if(o){ o.classList.add('border-accent','bg-accent/10','text-white'); o.classList.remove('border-[#1a1a1a]','text-white/40'); }
+}
 document.querySelectorAll('input[name="t-activity"]').forEach(function(r){
   r.addEventListener('change', function(){
     document.querySelectorAll('.t-act-lbl').forEach(function(l){
@@ -1092,7 +1132,12 @@ window.tdeeCalc = function(){
   var carbG   = Math.round(cCal/4);
   var delta   = goalCal-tdee;
   var wklyKg  = (delta*7)/7700;
-  var pref    = settings.diet_pref || 'all';
+  var dietEl  = document.querySelector('input[name="t-diet"]:checked');
+  var pref    = dietEl ? dietEl.value : (settings.diet_pref || 'all');
+  // Persist selection across tools so food modal and tracker match
+  settings.diet_pref = pref;
+  foodPref = pref;
+  setFoodFilter(pref);
 
   setText('r-bmr',  bmr.toLocaleString());
   setText('r-tdee', tdee.toLocaleString());
@@ -1561,6 +1606,7 @@ async function initTracker(){
   }
   foodPref = settings.diet_pref || 'all';
   setFoodFilter(foodPref);
+  applyTdietPref(foodPref);
   filterFoods('');
   renderTracker();
   if(!IS_LOGGED_IN && !localStorage.getItem('ffx_settings') && !localStorage.getItem('ffx_goal_cal')){
