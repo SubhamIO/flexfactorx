@@ -11,14 +11,26 @@
     <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Free Tools</p>
     <h1 class="font-heading text-5xl md:text-7xl">FITNESS TOOLS.</h1>
   </div>
-  <div class="max-w-6xl mx-auto px-6 flex gap-0">
-    <button id="btn-tdee" onclick="showTab('tdee')"
-            class="text-xs tracking-[0.15em] uppercase px-8 py-4 border-b-2 border-accent text-white transition-all">
+  <div class="max-w-6xl mx-auto px-6 flex gap-0 overflow-x-auto scrollbar-none">
+    <button id="btn-tdee"     onclick="showTab('tdee')"
+            class="tab-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-6 py-4 border-b-2 border-accent text-white transition-all">
       TDEE Calculator
     </button>
-    <button id="btn-tracker" onclick="showTab('tracker')"
-            class="text-xs tracking-[0.15em] uppercase px-8 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
+    <button id="btn-tracker"  onclick="showTab('tracker')"
+            class="tab-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-6 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
       Daily Tracker
+    </button>
+    <button id="btn-progress" onclick="showTab('progress')"
+            class="tab-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-6 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
+      Progress
+    </button>
+    <button id="btn-workouts" onclick="showTab('workouts')"
+            class="tab-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-6 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
+      Workouts
+    </button>
+    <button id="btn-meals"    onclick="showTab('meals')"
+            class="tab-btn flex-shrink-0 text-xs tracking-[0.15em] uppercase px-6 py-4 border-b-2 border-transparent text-white/40 hover:text-white/70 transition-all">
+      Saved Meals
     </button>
   </div>
 </section>
@@ -365,10 +377,16 @@
       <div>
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-heading text-3xl">FOOD LOG.</h2>
-          <button onclick="openFoodModal('breakfast')"
-                  class="text-[0.65rem] tracking-widest uppercase text-accent border border-accent/30 px-4 py-2 hover:bg-accent hover:text-white transition-all">
-            + Add Food
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="copyYesterday()"
+                    class="text-[0.65rem] tracking-widest uppercase text-white/30 border border-[#1a1a1a] px-3 py-2 hover:border-white/20 hover:text-white/60 transition-all">
+              📋 Copy Yesterday
+            </button>
+            <button type="button" onclick="openFoodModal('breakfast')"
+                    class="text-[0.65rem] tracking-widests uppercase text-accent border border-accent/30 px-4 py-2 hover:bg-accent hover:text-white transition-all">
+              + Add Food
+            </button>
+          </div>
         </div>
 
         {% for meal_id, meal_name in [('breakfast','Breakfast'),('lunch','Lunch'),('dinner','Dinner'),('snacks','Snacks')] %}
@@ -438,6 +456,285 @@
   </section>
 
 </div>{# /tab-tracker #}
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  TAB 3 — PROGRESS (Streak + Adaptive TDEE)             #}
+{# ════════════════════════════════════════════════════════ #}
+<div id="tab-progress" class="hidden">
+  {% if not current_user.is_authenticated %}
+  <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+    <p class="font-heading text-5xl mb-4">YOUR PROGRESS.</p>
+    <p class="text-white/40 mb-8 max-w-sm mx-auto">Sign in to track your streak, see your adaptive TDEE, and watch your numbers evolve over time.</p>
+    <a href="{{ url_for('auth.login') }}" class="bg-accent text-white text-xs tracking-[0.2em] uppercase px-10 py-4 hover:brightness-90 transition-all inline-block">Sign In with Google →</a>
+  </section>
+  {% else %}
+
+  {# ── Streak ──────────────────────────────────────────── #}
+  <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-14">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Consistency</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-10">STREAK.</h2>
+      <div class="grid grid-cols-3 gap-4 mb-6" id="streak-cards">
+        <div class="border border-[#1a1a1a] bg-[#080808] p-6 text-center">
+          <p id="st-current" class="font-heading text-6xl text-accent mb-1">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">Current Streak</p>
+          <p class="text-white/15 text-[0.55rem] mt-1">days in a row</p>
+        </div>
+        <div class="border border-[#1a1a1a] bg-[#080808] p-6 text-center">
+          <p id="st-longest" class="font-heading text-6xl text-white mb-1">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">Best Streak</p>
+          <p class="text-white/15 text-[0.55rem] mt-1">personal record</p>
+        </div>
+        <div class="border border-[#1a1a1a] bg-[#080808] p-6 text-center">
+          <p id="st-total" class="font-heading text-6xl text-white/60 mb-1">—</p>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">Total Days</p>
+          <p class="text-white/15 text-[0.55rem] mt-1">tracked all time</p>
+        </div>
+      </div>
+      <div id="streak-message" class="border border-[#1a1a1a] bg-[#080808] p-4">
+        <p class="text-white/30 text-sm">Loading streak data…</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── Adaptive TDEE ────────────────────────────────────── #}
+  <section class="max-w-6xl mx-auto px-6 py-14">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Smarter Than Any Formula</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-4">ADAPTIVE TDEE.</h2>
+    <p class="text-white/40 mb-10 max-w-2xl text-sm leading-relaxed">
+      Most calculators use your stats to <em>estimate</em> your metabolism. This uses your actual logged calories
+      and real weight changes to <em>calculate</em> it. The longer you track, the more accurate it gets.
+    </p>
+
+    {# Loading / error / data states #}
+    <div id="atdee-loading" class="border border-[#1a1a1a] bg-[#0d0d0d] p-8 text-center">
+      <p class="text-white/30 text-sm">Calculating from your data…</p>
+    </div>
+    <div id="atdee-low-data" class="hidden border border-yellow-500/20 bg-yellow-500/5 p-8">
+      <p class="text-yellow-400 text-[0.6rem] tracking-widest uppercase mb-3">Not Enough Data Yet</p>
+      <p id="atdee-low-msg" class="text-white/50 text-sm leading-relaxed">—</p>
+      <p class="text-white/25 text-xs mt-3">Track food daily and log your weight in Settings to unlock adaptive TDEE.</p>
+    </div>
+    <div id="atdee-result" class="hidden">
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6 text-center">
+          <p class="text-white/30 text-[0.6rem] uppercase tracking-widest mb-2">Formula TDEE</p>
+          <p id="atdee-formula" class="font-heading text-5xl text-white/50 mb-1">—</p>
+          <p class="text-white/20 text-xs">from calculator</p>
+        </div>
+        <div class="border border-accent/40 bg-accent/5 p-6 text-center relative overflow-hidden">
+          <span id="atdee-confidence-badge" class="absolute top-0 right-0 text-[0.5rem] tracking-widest uppercase text-accent bg-accent/10 border-l border-b border-accent/20 px-3 py-1">—</span>
+          <p class="text-white/30 text-[0.6rem] uppercase tracking-widest mb-2">Adaptive TDEE</p>
+          <p id="atdee-adaptive" class="font-heading text-5xl text-accent mb-1">—</p>
+          <p class="text-white/20 text-xs">from your actual data</p>
+        </div>
+        <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6 text-center">
+          <p class="text-white/30 text-[0.6rem] uppercase tracking-widest mb-2">Avg Calories Logged</p>
+          <p id="atdee-avg-cal" class="font-heading text-5xl text-white/70 mb-1">—</p>
+          <p id="atdee-days-label" class="text-white/20 text-xs">— days of data</p>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-5">
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-3">How It's Calculated</p>
+          <div class="space-y-2 text-xs text-white/50">
+            <div class="flex justify-between border-b border-[#111] pb-2">
+              <span>Avg daily calories logged</span>
+              <span id="atdee-calc-avg" class="text-white/70">—</span>
+            </div>
+            <div class="flex justify-between border-b border-[#111] pb-2">
+              <span>Weight change</span>
+              <span id="atdee-calc-wchange" class="text-white/70">—</span>
+            </div>
+            <div class="flex justify-between border-b border-[#111] pb-2">
+              <span>Caloric equivalent</span>
+              <span id="atdee-calc-caleq" class="text-white/70">—</span>
+            </div>
+            <div class="flex justify-between pt-1">
+              <span class="text-white/70 font-medium">Adaptive TDEE</span>
+              <span id="atdee-calc-result" class="text-accent font-medium">—</span>
+            </div>
+          </div>
+        </div>
+        <div id="atdee-rec-box" class="border border-[#1a1a1a] bg-[#0d0d0d] p-5 flex flex-col justify-center">
+          <p class="text-accent text-[0.6rem] tracking-widest uppercase mb-3">Recommendation</p>
+          <p id="atdee-rec" class="text-white/60 text-sm leading-relaxed">—</p>
+        </div>
+      </div>
+      <div class="border border-[#1a1a1a] bg-[#080808] p-4">
+        <p class="text-white/20 text-xs leading-relaxed">
+          Adaptive TDEE updates as you log more days and more weight check-ins. Log weight daily in Settings → Body Weight for highest accuracy.
+          Based on last 28 days of data. Formula: <span class="text-white/40">Adaptive TDEE = avg calories − (weekly weight change × 7700 ÷ 7)</span>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {% endif %}
+</div>{# /tab-progress #}
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  TAB 4 — WORKOUTS (Progression Tracking)               #}
+{# ════════════════════════════════════════════════════════ #}
+<div id="tab-workouts" class="hidden">
+  {% if not current_user.is_authenticated %}
+  <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+    <p class="font-heading text-5xl mb-4">WORKOUT PROGRESSION.</p>
+    <p class="text-white/40 mb-8 max-w-sm mx-auto">Sign in to track weight progression across every lift — see your 1RM trend and volume over time.</p>
+    <a href="{{ url_for('auth.login') }}" class="bg-accent text-white text-xs tracking-[0.2em] uppercase px-10 py-4 hover:brightness-90 transition-all inline-block">Sign In with Google →</a>
+  </section>
+  {% else %}
+  <section class="max-w-6xl mx-auto px-6 py-14">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Strength History</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-4">WORKOUT PROGRESSION.</h2>
+    <p class="text-white/40 mb-10 max-w-xl text-sm leading-relaxed">
+      Track the weight you lift each session. Log exercises with weight in the Tracker tab → the history appears here automatically.
+    </p>
+
+    {# Exercise selector #}
+    <div class="mb-8">
+      <label class="block text-xs tracking-widest uppercase text-white/40 mb-3">Select Exercise</label>
+      <div class="flex gap-3">
+        <select id="prog-exercise-select" title="Select exercise for progression" onchange="loadProgression()"
+                class="flex-1 bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+          <option value="">— Choose an exercise —</option>
+          <optgroup label="Push">
+            <option>Bench Press</option><option>Shoulder Press (OHP)</option><option>Dumbbell Flyes</option><option>Push-ups</option>
+          </optgroup>
+          <optgroup label="Pull">
+            <option>Deadlift</option><option>Bent-over Rows</option><option>Pull-ups / Chin-ups</option><option>Lat Pulldown / Cable Rows</option><option>Face Pulls / Rear Delts</option>
+          </optgroup>
+          <optgroup label="Legs">
+            <option>Barbell Squat</option><option>Romanian Deadlift (RDL)</option><option>Leg Press</option><option>Lunges</option><option>Bodyweight Squats</option>
+          </optgroup>
+          <optgroup label="Arms">
+            <option>Bicep Curls</option><option>Tricep Pushdowns / Dips</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option>Burpees</option><option>Plank</option><option>Mountain Climbers</option><option>Circuit Training</option><option>Calisthenics (general)</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    {# Last session highlight #}
+    <div id="prog-last-session" class="hidden border border-accent/30 bg-accent/5 p-5 mb-8">
+      <div class="flex flex-wrap gap-6 items-center">
+        <div>
+          <p class="text-accent text-[0.6rem] tracking-widest uppercase mb-1">Last Session</p>
+          <p id="prog-last-detail" class="text-white text-lg font-medium">—</p>
+        </div>
+        <div>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-1">Volume</p>
+          <p id="prog-last-volume" class="text-white/70 text-lg">—</p>
+        </div>
+        <div>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-1">Est. 1RM</p>
+          <p id="prog-last-1rm" class="font-heading text-3xl text-accent">— kg</p>
+        </div>
+        <div>
+          <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-1">Date</p>
+          <p id="prog-last-date" class="text-white/50 text-sm">—</p>
+        </div>
+      </div>
+    </div>
+
+    {# Progression table #}
+    <div id="prog-empty" class="border border-[#1a1a1a] bg-[#0d0d0d] p-12 text-center">
+      <p class="text-white/20 text-sm">Select an exercise above to see your progression history.</p>
+      <p class="text-white/15 text-xs mt-2">Log strength exercises with weight in the Tracker tab to build history.</p>
+    </div>
+    <div id="prog-table-wrap" class="hidden border border-[#1a1a1a] bg-[#0d0d0d]">
+      <div class="px-6 py-4 border-b border-[#1a1a1a] flex items-center justify-between">
+        <p id="prog-table-title" class="text-accent text-[0.6rem] tracking-[0.25em] uppercase">— History</p>
+        <p id="prog-sessions-count" class="text-white/25 text-xs">— sessions</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-[#1a1a1a]">
+              {% for col in ['Date', 'Weight (kg)', 'Sets × Reps', 'Volume (kg)', 'Est. 1RM'] %}
+              <th class="px-5 py-3 text-left text-white/25 tracking-widest uppercase font-normal">{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody id="prog-tbody" class="divide-y divide-[#0f0f0f]"></tbody>
+        </table>
+      </div>
+      {# Mini 1RM trend chart #}
+      <div class="px-6 py-5 border-t border-[#1a1a1a]">
+        <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-3">1RM Trend</p>
+        <div id="prog-chart" class="flex items-end gap-1.5 h-16"></div>
+      </div>
+    </div>
+
+  </section>
+  {% endif %}
+</div>{# /tab-workouts #}
+
+
+{# ════════════════════════════════════════════════════════ #}
+{#  TAB 5 — SAVED MEALS (Templates)                       #}
+{# ════════════════════════════════════════════════════════ #}
+<div id="tab-meals" class="hidden">
+  {% if not current_user.is_authenticated %}
+  <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+    <p class="font-heading text-5xl mb-4">SAVED MEALS.</p>
+    <p class="text-white/40 mb-8 max-w-sm mx-auto">Sign in to save your favourite meal combos as templates and add them in one click.</p>
+    <a href="{{ url_for('auth.login') }}" class="bg-accent text-white text-xs tracking-[0.2em] uppercase px-10 py-4 hover:brightness-90 transition-all inline-block">Sign In with Google →</a>
+  </section>
+  {% else %}
+  <section class="max-w-6xl mx-auto px-6 py-14">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">One-Click Re-use</p>
+        <h2 class="font-heading text-5xl md:text-6xl">SAVED MEALS.</h2>
+      </div>
+      <button type="button" onclick="showTab('tracker'); setTimeout(function(){ openFoodModal('breakfast'); },100)"
+              class="text-xs tracking-widest uppercase text-accent border border-accent/30 px-5 py-3 hover:bg-accent hover:text-white transition-all">
+        + Go to Tracker to Save
+      </button>
+    </div>
+
+    <div id="meals-loading" class="border border-[#1a1a1a] bg-[#0d0d0d] p-8 text-center">
+      <p class="text-white/30 text-sm">Loading saved meals…</p>
+    </div>
+    <div id="meals-empty" class="hidden border border-[#1a1a1a] bg-[#0d0d0d] p-12 text-center">
+      <p class="font-heading text-3xl text-white/20 mb-3">NO SAVED MEALS YET.</p>
+      <p class="text-white/25 text-sm max-w-sm mx-auto">Open the Tracker → click "+ Add Food" → use "📌 Save Meal as Template" after adding items to a meal.</p>
+    </div>
+    <div id="meals-grid" class="hidden grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  {# Apply Template Modal #}
+  <div id="modal-apply-tpl" class="fixed inset-0 z-50 hidden" role="dialog">
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="closeApplyModal()"></div>
+    <div class="relative z-10 flex items-center justify-center h-full px-6">
+      <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-8 w-full max-w-md">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h2 class="font-heading text-2xl">APPLY TEMPLATE</h2>
+            <p id="apply-tpl-name" class="text-white/40 text-xs mt-0.5">—</p>
+          </div>
+          <button type="button" onclick="closeApplyModal()" class="text-white/40 hover:text-white text-lg">✕</button>
+        </div>
+        <p class="text-white/40 text-xs mb-4">Add all items from this template to:</p>
+        <div class="grid grid-cols-2 gap-2 mb-6">
+          {% for m in ['breakfast','lunch','dinner','snacks'] %}
+          <button type="button" onclick="applyTemplate('{{ m }}')"
+                  class="border border-[#1a1a1a] text-white/60 text-xs tracking-widest uppercase py-3 hover:border-accent/40 hover:text-accent hover:bg-accent/5 transition-all">
+            {{ m.title() }}
+          </button>
+          {% endfor %}
+        </div>
+        <p id="apply-tpl-preview" class="text-white/25 text-xs border-t border-[#1a1a1a] pt-4">—</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>{# /tab-meals #}
 
 
 {# ════════════════════════════════════════════════════════ #}
@@ -515,7 +812,27 @@
                oninput="filterFoods(this.value)"
                class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
       </div>
-      <div id="food-list" class="overflow-y-auto max-h-80 divide-y divide-[#111]"></div>
+      <div id="food-list" class="overflow-y-auto max-h-64 divide-y divide-[#111]"></div>
+      {% if current_user.is_authenticated %}
+      <div class="p-4 border-t border-[#1a1a1a] bg-[#080808]">
+        <div id="save-tpl-row" class="flex items-center gap-2">
+          <button type="button" onclick="openSaveTemplate()"
+                  class="text-[0.6rem] tracking-widest uppercase text-white/25 hover:text-accent transition-colors border border-[#1a1a1a] hover:border-accent/30 px-3 py-2">
+            📌 Save Meal as Template
+          </button>
+        </div>
+        <div id="save-tpl-form" class="hidden mt-2">
+          <div class="flex gap-2">
+            <input id="tpl-name-input" type="text" placeholder="Template name (e.g. Morning Stack)"
+                   class="flex-1 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+            <button type="button" onclick="saveCurrentMealAsTemplate()"
+                    class="bg-accent text-white text-[0.6rem] uppercase tracking-widest px-3 hover:brightness-90">Save</button>
+            <button type="button" onclick="closeSaveTemplateForm()"
+                    class="text-white/30 text-xs px-2 hover:text-white">✕</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -575,7 +892,8 @@
       <div id="wk-panel-strength" class="hidden p-5">
         <div class="mb-4">
           <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Exercise</label>
-          <select id="wk-str-ex" class="w-full bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          <select id="wk-str-ex" title="Select exercise" onchange="fetchLastSession()"
+                  class="w-full bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
             {% for name, met in [
               ('Push-ups',5),('Pull-ups / Chin-ups',6),('Bodyweight Squats',5),
               ('Burpees',8),('Mountain Climbers',8),('Plank',4),
@@ -591,27 +909,45 @@
             {% endfor %}
           </select>
         </div>
-        <div class="grid grid-cols-2 gap-3 mb-4">
+        {# Last session banner — populated by JS #}
+        <div id="str-last-session" class="hidden border border-white/10 bg-white/[0.03] p-3 mb-4 text-xs">
+          <p class="text-white/25 uppercase tracking-widest mb-1">Last Session</p>
+          <p id="str-last-text" class="text-white/60"></p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mb-4">
           <div>
-            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Sets</label>
-            <input id="wk-str-sets" type="number" min="1" max="30" placeholder="e.g. 4"
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Sets</label>
+            <input id="wk-str-sets" type="number" min="1" max="30" placeholder="4"
                    oninput="previewStrength()"
-                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
           </div>
           <div>
-            <label class="block text-xs tracking-widests uppercase text-white/40 mb-2">Reps per Set</label>
-            <input id="wk-str-reps" type="number" min="1" max="100" placeholder="e.g. 10"
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Reps/Set</label>
+            <input id="wk-str-reps" type="number" min="1" max="100" placeholder="8"
                    oninput="previewStrength()"
-                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
+          </div>
+          <div>
+            <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Weight (kg)</label>
+            <input id="wk-str-weight" type="number" min="0" max="500" placeholder="60"
+                   oninput="previewStrength()"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-3 text-sm focus:outline-none focus:border-green-500/50">
           </div>
         </div>
         <div id="strength-preview" class="hidden border border-green-500/20 bg-green-500/5 p-3 mb-4">
-          <p class="text-green-400 text-xs tracking-widest uppercase mb-1">Estimated Burn</p>
-          <p id="str-preview-cal" class="font-heading text-2xl text-white">— cal</p>
-          <p id="str-preview-time" class="text-white/30 text-xs mt-1">Estimated workout time: —</p>
-          <p class="text-white/25 text-[0.6rem] mt-1">Sets × reps → time estimate → MET formula. Rough guide only.</p>
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-green-400 text-xs tracking-widest uppercase mb-1">Estimated Burn</p>
+              <p id="str-preview-cal" class="font-heading text-2xl text-white">— cal</p>
+              <p id="str-preview-time" class="text-white/30 text-xs mt-1">Est. time: —</p>
+            </div>
+            <div id="str-preview-1rm" class="hidden text-right">
+              <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mb-1">Est. 1RM</p>
+              <p id="str-1rm-val" class="font-heading text-2xl text-accent">— kg</p>
+            </div>
+          </div>
         </div>
-        <button onclick="logStrength()" class="w-full bg-green-600 text-white text-xs tracking-widest uppercase py-3 hover:brightness-90 transition-all">Log Exercise →</button>
+        <button type="button" onclick="logStrength()" class="w-full bg-green-600 text-white text-xs tracking-widest uppercase py-3 hover:brightness-90 transition-all">Log Exercise →</button>
       </div>
 
       {# Custom panel #}
@@ -651,18 +987,24 @@
 var IS_LOGGED_IN = {{ (current_user.is_authenticated)|tojson }};
 
 // ─── TAB MANAGEMENT ──────────────────────────────────────
+var TAB_NAMES = ['tdee','tracker','progress','workouts','meals'];
 window.showTab = function (name) {
-  document.getElementById('tab-tdee').classList.toggle('hidden',    name !== 'tdee');
-  document.getElementById('tab-tracker').classList.toggle('hidden', name !== 'tracker');
-  var tdeeBtn    = document.getElementById('btn-tdee');
-  var trackerBtn = document.getElementById('btn-tracker');
-  tdeeBtn.className    = tdeeBtn.className.replace(/border-(accent|transparent)/g,    name==='tdee'    ? 'border-accent' : 'border-transparent');
-  trackerBtn.className = trackerBtn.className.replace(/border-(accent|transparent)/g, name==='tracker' ? 'border-accent' : 'border-transparent');
-  tdeeBtn.classList.toggle('text-white',      name === 'tdee');
-  tdeeBtn.classList.toggle('text-white/40',   name !== 'tdee');
-  trackerBtn.classList.toggle('text-white',   name === 'tracker');
-  trackerBtn.classList.toggle('text-white/40',name !== 'tracker');
+  TAB_NAMES.forEach(function(t){
+    var tab = document.getElementById('tab-'+t);
+    var btn = document.getElementById('btn-'+t);
+    if(!tab||!btn) return;
+    var active = t === name;
+    tab.classList.toggle('hidden', !active);
+    btn.classList.toggle('border-accent', active);
+    btn.classList.toggle('border-transparent', !active);
+    btn.classList.toggle('text-white', active);
+    btn.classList.toggle('text-white/40', !active);
+  });
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Lazy-load data for new tabs
+  if(name === 'progress'  && IS_LOGGED_IN) loadProgressTab();
+  if(name === 'workouts'  && IS_LOGGED_IN) initProgressionTab();
+  if(name === 'meals'     && IS_LOGGED_IN) loadTemplates();
 };
 
 // ─── TDEE CONSTANTS ──────────────────────────────────────
@@ -1373,12 +1715,21 @@ window.previewStrength=function(){
   var met=parseFloat($id('wk-str-ex').value)||5;
   var sets=parseInt($id('wk-str-sets').value)||0;
   var reps=parseInt($id('wk-str-reps').value)||0;
+  var weight=parseFloat($id('wk-str-weight').value)||0;
   if(!sets||!reps){ $id('strength-preview').classList.add('hidden'); return; }
   var mins=estimateStrengthTime(sets,reps);
   var cal=calFromMET(met,mins);
   $id('strength-preview').classList.remove('hidden');
   setText('str-preview-cal', cal+' cal');
-  setText('str-preview-time','Estimated session time: ~'+Math.round(mins)+' min ('+sets+'×'+reps+' + rest)');
+  setText('str-preview-time','Est. time: ~'+Math.round(mins)+' min ('+sets+'×'+reps+' + rest)');
+  var oneRMEl=$id('str-preview-1rm');
+  if(weight>0&&reps>0){
+    var oneRM=Math.round(weight*(1+reps/30)*10)/10;
+    setText('str-1rm-val', oneRM+' kg');
+    oneRMEl.classList.remove('hidden');
+  } else {
+    oneRMEl.classList.add('hidden');
+  }
 };
 
 async function _saveWorkoutEntry(entry, type, duration){
@@ -1409,10 +1760,20 @@ window.logStrength=async function(){
   var exName=exSel.options[exSel.selectedIndex].text;
   var sets=parseInt($id('wk-str-sets').value)||0;
   var reps=parseInt($id('wk-str-reps').value)||0;
+  var weight=parseFloat($id('wk-str-weight').value)||0;
   if(!sets||!reps) return;
   var mins=estimateStrengthTime(sets,reps);
   var cal=calFromMET(met,mins);
-  await _saveWorkoutEntry({name:exName,desc:sets+'×'+reps+' reps (~'+Math.round(mins)+' min)',cal:cal},'strength',Math.round(mins));
+  var desc=sets+'×'+reps+(weight?' @ '+weight+'kg':'')+' (~'+Math.round(mins)+' min)';
+  await _saveWorkoutEntry({name:exName,desc:desc,cal:cal},'strength',Math.round(mins));
+  // Save progression entry when weight is provided
+  if(IS_LOGGED_IN && weight>0){
+    fetch('/api/analytics/progression',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({exercise_name:exName,sets:sets,reps:reps,weight_kg:weight})
+    }).catch(function(){});
+  }
+  // Reset weight field
+  $id('wk-str-weight').value='';
 };
 window.logCustomWorkout=async function(){
   var name=($id('wk-cust-name').value||'').trim();
@@ -1476,9 +1837,341 @@ window.clearDay=async function(){
   }
 };
 
+// ─── COPY YESTERDAY ──────────────────────────────────────
+window.copyYesterday = async function(){
+  if(IS_LOGGED_IN){
+    try{
+      var res=await fetch('/api/tracker/copy-day',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({to_date:TODAY})});
+      var data=await res.json();
+      if(!data.ok){ setSyncStatus(data.message||'Nothing logged yesterday'); return; }
+      foodLog=data.food_log;
+      renderTracker();
+      setSyncStatus('Copied '+data.copied+' items from yesterday ✓');
+    }catch(e){ setSyncStatus('Offline'); }
+  } else {
+    // Guest: copy from localStorage
+    var d=new Date(); d.setDate(d.getDate()-1);
+    var yk=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    var prev=loadDayLog(yk);
+    var copied=0;
+    ['breakfast','lunch','dinner','snacks'].forEach(function(m){
+      (prev[m]||[]).forEach(function(e){
+        var dup=(foodLog[m]||[]).some(function(x){ return x.name===e.name; });
+        if(!dup){ foodLog[m].push(Object.assign({},e)); copied++; }
+      });
+    });
+    saveFoodLog(); renderTracker();
+    if(copied>0) alert('Copied '+copied+' items from yesterday.');
+    else alert('Nothing logged yesterday to copy.');
+  }
+};
+
+// ─── LAST SESSION (strength modal) ───────────────────────
+window.fetchLastSession = async function(){
+  var el=$id('str-last-session');
+  if(!IS_LOGGED_IN||!el) return;
+  var exSel=$id('wk-str-ex');
+  var name=exSel.options[exSel.selectedIndex].text;
+  el.classList.add('hidden');
+  try{
+    var res=await fetch('/api/analytics/progression?exercise='+encodeURIComponent(name)+'&limit=1');
+    if(!res.ok) return;
+    var data=await res.json();
+    if(!data.length) return;
+    var s=data[0];
+    var d=new Date(s.date); var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dateLabel=d.getDate()+' '+months[d.getMonth()];
+    var detail=(s.weight_kg>0?s.weight_kg+'kg × ':'')+s.sets+'×'+s.reps_per_set;
+    var oneRM=s.one_rm_est>0?' · Est. 1RM: '+s.one_rm_est+'kg':'';
+    setText('str-last-text', detail+oneRM+' ('+dateLabel+')');
+    el.classList.remove('hidden');
+  }catch(e){}
+};
+
+// ─── PROGRESS TAB ────────────────────────────────────────
+function loadProgressTab(){
+  loadStreakData();
+  loadAdaptiveTDEE();
+}
+
+async function loadStreakData(){
+  try{
+    var res=await fetch('/api/analytics/streak');
+    if(!res.ok) return;
+    var d=await res.json();
+    setText('st-current', d.current_streak||0);
+    setText('st-longest',  d.longest_streak||0);
+    setText('st-total',    d.total_days_tracked||0);
+    var msg='';
+    var cur=d.current_streak||0;
+    if(cur===0)      msg='No active streak. Log food today to start one — even one day counts.';
+    else if(cur<3)   msg='Streak started — '+cur+' day'+(cur>1?'s':'')+'. Keep going. Day 7 is the milestone.';
+    else if(cur<7)   msg=cur+' days strong. Most people quit before day 7. You\'re still here.';
+    else if(cur<14)  msg=cur+' days. One full week behind you. This is where habits start to feel automatic.';
+    else if(cur<30)  msg=cur+' days. Two weeks of consistency. You\'re building real momentum.';
+    else if(cur<60)  msg=cur+' days straight. One full month. This is a lifestyle now, not a streak.';
+    else             msg=cur+' days. Exceptional. This is elite-level discipline.';
+    if(d.longest_streak>cur&&d.longest_streak>0) msg+=' Personal best: '+d.longest_streak+' days.';
+    var msgEl=$id('streak-message');
+    if(msgEl) msgEl.innerHTML='<p class="text-accent text-[0.6rem] tracking-widest uppercase mb-2">Streak Analysis</p><p class="text-white/60 text-sm leading-relaxed">'+msg+'</p>';
+  }catch(e){}
+}
+
+async function loadAdaptiveTDEE(){
+  var loading=$id('atdee-loading'), lowData=$id('atdee-low-data'), result=$id('atdee-result');
+  if(!loading||!lowData||!result) return;
+  loading.classList.remove('hidden'); lowData.classList.add('hidden'); result.classList.add('hidden');
+  try{
+    var res=await fetch('/api/analytics/adaptive-tdee');
+    loading.classList.add('hidden');
+    if(!res.ok){ lowData.classList.remove('hidden'); return; }
+    var d=await res.json();
+
+    if(d.status!=='ok'){
+      lowData.classList.remove('hidden');
+      var lowMsg=$id('atdee-low-msg');
+      if(lowMsg){
+        if(d.status==='insufficient_data')
+          lowMsg.textContent='You\'ve tracked '+d.days_of_data+' day'+(d.days_of_data===1?'':'s')+' out of the 7 needed. Keep logging daily food to unlock this feature.';
+        else if(d.status==='insufficient_weight_data')
+          lowMsg.textContent='You\'ve tracked '+d.days_of_data+' days of food — great. Now log your body weight in Settings → Body Weight for at least 2 different days to compute adaptive TDEE.';
+      }
+      return;
+    }
+
+    result.classList.remove('hidden');
+    setText('atdee-formula',   d.formula_tdee?d.formula_tdee.toLocaleString():'—');
+    setText('atdee-adaptive',  d.adaptive_tdee.toLocaleString());
+    setText('atdee-avg-cal',   d.avg_calories.toLocaleString());
+    setText('atdee-days-label',d.days_of_data+' days of data · '+d.weight_entries+' weight check-ins');
+
+    var badge=$id('atdee-confidence-badge');
+    if(badge){
+      var conf={'high':'HIGH CONFIDENCE','medium':'MEDIUM CONFIDENCE','low':'LOW CONFIDENCE'};
+      badge.textContent=conf[d.confidence]||d.confidence.toUpperCase();
+    }
+
+    var wStr=(d.weekly_weight_change_kg>0?'+':'')+d.weekly_weight_change_kg.toFixed(2)+' kg/week';
+    var calEq=Math.round(d.weekly_weight_change_kg*7700/7);
+    var calEqStr=(calEq>0?'+':'')+calEq+' cal/day equivalent';
+    setText('atdee-calc-avg',    d.avg_calories.toLocaleString()+' cal/day');
+    setText('atdee-calc-wchange',wStr);
+    setText('atdee-calc-caleq',  calEqStr);
+    setText('atdee-calc-result', d.adaptive_tdee.toLocaleString()+' cal');
+    setText('atdee-rec',         d.recommendation);
+
+    // Color the gap box
+    var recBox=$id('atdee-rec-box');
+    if(recBox&&d.gap!==0){
+      recBox.classList.remove('border-[#1a1a1a]');
+      recBox.classList.add(d.gap>0?'border-green-500/20':'border-yellow-500/20');
+    }
+  }catch(e){ loading.classList.add('hidden'); lowData.classList.remove('hidden'); }
+}
+
+// ─── WORKOUT PROGRESSION TAB ──────────────────────────────
+function initProgressionTab(){
+  // Populate exercise list from API (exercises the user has data for)
+  // The select already has a full static list; we just show the tab
+}
+
+window.loadProgression = async function(){
+  var sel=$id('prog-exercise-select');
+  if(!sel) return;
+  var exercise=sel.value;
+  var empty=$id('prog-empty'), wrap=$id('prog-table-wrap'), lastSess=$id('prog-last-session');
+  if(!exercise){ empty.classList.remove('hidden'); wrap.classList.add('hidden'); lastSess.classList.add('hidden'); return; }
+
+  empty.classList.add('hidden');
+  try{
+    var res=await fetch('/api/analytics/progression?exercise='+encodeURIComponent(exercise)+'&limit=20');
+    if(!res.ok){ empty.classList.remove('hidden'); return; }
+    var rows=await res.json();
+    if(!rows.length){
+      empty.classList.remove('hidden'); wrap.classList.add('hidden'); lastSess.classList.add('hidden');
+      $id('prog-empty').querySelector('p').textContent='No data for '+exercise+' yet. Log this exercise with a weight in the Tracker tab.';
+      return;
+    }
+
+    wrap.classList.remove('hidden');
+    setText('prog-table-title', exercise+' — History');
+    setText('prog-sessions-count', rows.length+' session'+(rows.length===1?'':'s'));
+
+    // Last session card (first row = most recent)
+    var latest=rows[0];
+    var ld=new Date(latest.date); var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    lastSess.classList.remove('hidden');
+    setText('prog-last-detail', (latest.weight_kg>0?latest.weight_kg+'kg × ':'')+latest.sets+'×'+latest.reps_per_set);
+    setText('prog-last-volume', latest.total_volume>0?(latest.total_volume.toLocaleString()+' kg total vol'):'—');
+    setText('prog-last-1rm',    latest.one_rm_est>0?latest.one_rm_est+' kg':'—');
+    setText('prog-last-date',   ld.getDate()+' '+mo[ld.getMonth()]+' '+ld.getFullYear());
+
+    // Table rows
+    var tbody=$id('prog-tbody'); tbody.innerHTML='';
+    rows.forEach(function(r,i){
+      var rd=new Date(r.date);
+      var prev=rows[i+1];
+      var weightDiff=prev&&r.weight_kg>0&&prev.weight_kg>0?(r.weight_kg-prev.weight_kg):null;
+      var diffBadge=weightDiff!==null?(' <span class="'+(weightDiff>=0?'text-green-400':'text-red-400')+'ml-1">'+(weightDiff>=0?'+':'')+weightDiff+'kg</span>'):'';
+      tbody.innerHTML+='<tr class="hover:bg-white/[0.02]">'+
+        '<td class="px-5 py-3 text-white/50">'+rd.getDate()+' '+mo[rd.getMonth()]+'</td>'+
+        '<td class="px-5 py-3 text-white/70 font-medium">'+(r.weight_kg>0?r.weight_kg+'kg':i===0?'—':'—')+diffBadge+'</td>'+
+        '<td class="px-5 py-3 text-white/60">'+r.sets+'×'+r.reps_per_set+'</td>'+
+        '<td class="px-5 py-3 text-white/40">'+(r.total_volume>0?r.total_volume.toLocaleString():'—')+'</td>'+
+        '<td class="px-5 py-3 '+(r.one_rm_est>0?'text-accent':'text-white/25')+'">'+(r.one_rm_est>0?r.one_rm_est+' kg':'—')+'</td>'+
+      '</tr>';
+    });
+
+    // Mini 1RM chart (reversed = oldest first visually)
+    var chartRows=rows.slice().reverse().filter(function(r){ return r.one_rm_est>0; });
+    var chart=$id('prog-chart'); chart.innerHTML='';
+    if(chartRows.length>1){
+      var maxRM=Math.max.apply(null,chartRows.map(function(r){ return r.one_rm_est; }));
+      chartRows.forEach(function(r){
+        var h=Math.max(6,Math.round((r.one_rm_est/maxRM)*100));
+        var rd2=new Date(r.date);
+        chart.innerHTML+='<div class="flex-1 flex flex-col items-center gap-1">'+
+          '<span class="text-[0.5rem] text-white/25">'+r.one_rm_est+'</span>'+
+          '<div class="w-full bg-accent/50 rounded-t-sm" style="height:'+h+'%"></div>'+
+          '<span class="text-[0.55rem] text-white/20">'+mo[rd2.getMonth()]+rd2.getDate()+'</span>'+
+        '</div>';
+      });
+    } else {
+      chart.innerHTML='<p class="text-white/20 text-xs">Need 2+ sessions with weight to show trend.</p>';
+    }
+  }catch(e){ empty.classList.remove('hidden'); wrap.classList.add('hidden'); }
+};
+
+// ─── MEAL TEMPLATES ──────────────────────────────────────
+var _templates = [];
+var _activeTplId = null;
+
+async function loadTemplates(){
+  var loadingEl=$id('meals-loading'), emptyEl=$id('meals-empty'), gridEl=$id('meals-grid');
+  if(!loadingEl) return;
+  loadingEl.classList.remove('hidden'); emptyEl.classList.add('hidden'); gridEl.classList.add('hidden');
+  try{
+    var res=await fetch('/api/tracker/templates');
+    loadingEl.classList.add('hidden');
+    if(!res.ok) return;
+    _templates=await res.json();
+    if(!_templates.length){ emptyEl.classList.remove('hidden'); return; }
+    gridEl.classList.remove('hidden');
+    renderTemplateGrid();
+  }catch(e){ loadingEl.classList.add('hidden'); }
+}
+
+function renderTemplateGrid(){
+  var gridEl=$id('meals-grid'); if(!gridEl) return;
+  gridEl.innerHTML='';
+  var mealColors={breakfast:'text-yellow-400',lunch:'text-green-400',dinner:'text-accent',snacks:'text-blue-400',any:'text-white/40'};
+  _templates.forEach(function(t){
+    var items=t.items||[];
+    var preview=items.slice(0,3).map(function(i){ return i.name; }).join(', ')+(items.length>3?' +'+( items.length-3)+' more':'');
+    var col=mealColors[t.meal_type]||'text-white/40';
+    gridEl.innerHTML+='<div class="border border-[#1a1a1a] bg-[#0d0d0d] p-5 flex flex-col gap-3">'+
+      '<div class="flex justify-between items-start">'+
+        '<p class="text-white font-medium text-sm">'+t.name+'</p>'+
+        '<button type="button" onclick="deleteTpl('+t.id+')" class="text-white/20 hover:text-red-400 transition-colors text-sm ml-2">✕</button>'+
+      '</div>'+
+      '<p class="text-white/30 text-xs leading-relaxed flex-1">'+preview+'</p>'+
+      '<div class="flex items-center justify-between">'+
+        '<div class="flex gap-3 text-xs">'+
+          '<span class="text-white/50">'+t.total_cal+' cal</span>'+
+          '<span class="text-white/30">'+Math.round(t.total_protein)+'g P</span>'+
+        '</div>'+
+        '<button type="button" onclick="openApplyModal('+t.id+')"'+
+                'class="text-[0.65rem] tracking-widest uppercase text-accent border border-accent/30 px-3 py-1.5 hover:bg-accent hover:text-white transition-all">'+
+          'Apply →</button>'+
+      '</div>'+
+    '</div>';
+  });
+}
+
+window.deleteTpl = async function(id){
+  if(!confirm('Delete this saved meal template?')) return;
+  try{
+    await fetch('/api/tracker/templates/'+id,{method:'DELETE'});
+    _templates=_templates.filter(function(t){ return t.id!==id; });
+    if(!_templates.length){
+      $id('meals-grid').classList.add('hidden');
+      $id('meals-empty').classList.remove('hidden');
+    } else {
+      renderTemplateGrid();
+    }
+    setSyncStatus('Template deleted');
+  }catch(e){}
+};
+
+window.openApplyModal = function(id){
+  var tpl=_templates.find(function(t){ return t.id===id; });
+  if(!tpl) return;
+  _activeTplId=id;
+  setText('apply-tpl-name', tpl.name);
+  var items=tpl.items||[];
+  var preview=items.map(function(i){ return i.name+' ('+i.cal+' cal)'; }).join(' · ');
+  setText('apply-tpl-preview', preview);
+  $id('modal-apply-tpl').classList.remove('hidden'); document.body.style.overflow='hidden';
+};
+window.closeApplyModal = function(){
+  $id('modal-apply-tpl').classList.add('hidden'); document.body.style.overflow=''; _activeTplId=null;
+};
+
+window.applyTemplate = async function(mealType){
+  var tpl=_templates.find(function(t){ return t.id===_activeTplId; });
+  if(!tpl) return;
+  closeApplyModal();
+  var items=tpl.items||[];
+  var added=0;
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var entry={name:item.name,cal:item.cal||0,protein:item.protein||0,carbs:item.carbs||0,fat:item.fat||0};
+    if(IS_LOGGED_IN){
+      try{
+        var res2=await fetch('/api/tracker/food',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({date:TODAY,meal_type:mealType,name:entry.name,cal:entry.cal,protein:entry.protein,carbs:entry.carbs,fat:entry.fat})});
+        var d2=await res2.json(); entry.id=d2.id;
+      }catch(e){}
+    }
+    if(!foodLog[mealType]) foodLog[mealType]=[];
+    foodLog[mealType].push(entry);
+    added++;
+  }
+  if(!IS_LOGGED_IN) saveFoodLog();
+  renderTracker();
+  showTab('tracker');
+  setSyncStatus('Applied "'+tpl.name+'" to '+mealType+' ✓');
+};
+
+// ─── SAVE MEAL AS TEMPLATE (in food modal) ───────────────
+window.openSaveTemplate = function(){
+  $id('save-tpl-form').classList.remove('hidden');
+  $id('save-tpl-row').querySelector('button').classList.add('hidden');
+  setTimeout(function(){ var inp=$id('tpl-name-input'); if(inp) inp.focus(); },100);
+};
+window.closeSaveTemplateForm = function(){
+  $id('save-tpl-form').classList.add('hidden');
+  $id('save-tpl-row').querySelector('button').classList.remove('hidden');
+  $id('tpl-name-input').value='';
+};
+window.saveCurrentMealAsTemplate = async function(){
+  var name=($id('tpl-name-input').value||'').trim();
+  if(!name) return;
+  var items=foodLog[currentMeal]||[];
+  if(!items.length){ closeSaveTemplateForm(); return; }
+  if(!IS_LOGGED_IN){ closeSaveTemplateForm(); return; }
+  try{
+    await fetch('/api/tracker/templates',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:name,meal_type:currentMeal,items:items})});
+    closeSaveTemplateForm();
+    setSyncStatus('Saved "'+name+'" as template ✓');
+  }catch(e){ setSyncStatus('Save failed'); }
+};
+
 // ─── KEYBOARD & INIT ─────────────────────────────────────
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){ closeFoodModal(); closeWorkoutModal(); hideSettings(); }
+  if(e.key==='Escape'){ closeFoodModal(); closeWorkoutModal(); hideSettings(); closeApplyModal(); }
 });
 
 // Date label

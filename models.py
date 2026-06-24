@@ -121,3 +121,41 @@ class TdeeSnapshot(db.Model):
     created_at     = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', back_populates='tdee_snapshots')
+
+
+class MealTemplate(db.Model):
+    """User-saved meal combos for one-click re-use."""
+    __tablename__ = 'meal_templates'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    name          = db.Column(db.String(100), nullable=False)
+    meal_type     = db.Column(db.String(20), default='any')  # breakfast/lunch/dinner/snacks/any
+    items         = db.Column(db.Text, nullable=False)        # JSON array of {name,cal,protein,carbs,fat}
+    total_cal     = db.Column(db.Integer, default=0)
+    total_protein = db.Column(db.Float,   default=0)
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('meal_templates', cascade='all, delete-orphan', lazy=True))
+
+
+class WorkoutProgression(db.Model):
+    """Structured strength-session history — one row per logged strength set."""
+    __tablename__ = 'workout_progression'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    log_date      = db.Column(db.Date, nullable=False)
+    exercise_name = db.Column(db.String(255), nullable=False)
+    sets          = db.Column(db.Integer, default=0)
+    reps_per_set  = db.Column(db.Integer, default=0)
+    weight_kg     = db.Column(db.Float, default=0)
+    total_volume  = db.Column(db.Float, default=0)  # sets × reps × weight
+    one_rm_est    = db.Column(db.Float, default=0)  # Epley: weight × (1 + reps/30)
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('workout_progressions', cascade='all, delete-orphan', lazy=True))
+
+    __table_args__ = (
+        db.Index('idx_prog_user_exercise', 'user_id', 'exercise_name'),
+    )

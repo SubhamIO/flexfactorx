@@ -1,8 +1,9 @@
+import json
 from datetime import date, timedelta, datetime
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from sqlalchemy import func
-from models import db, UserSettings, FoodLog, WorkoutLog, WeightHistory, TdeeSnapshot
+from models import db, UserSettings, FoodLog, WorkoutLog, WeightHistory, TdeeSnapshot, MealTemplate, WorkoutProgression
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -373,3 +374,270 @@ def migrate_local():
 
     db.session.commit()
     return jsonify({'ok': True, 'imported_food_days': len(food_days), 'imported_workout_days': len(workout_days)})
+
+
+# ── STREAK ────────────────────────────────────────────────────────────────────
+
+@api_bp.route('/analytics/streak', methods=['GET'])
+def get_streak():
+    err = _auth_required()
+    if err:
+        return err
+    today = date.today()
+
+    # Current consecutive streak counting back from today
+    current_streak = 0
+    check = today
+    while current_streak < 1000:
+        if not FoodLog.query.filter_by(user_id=current_user.id, log_date=check).first():
+            break
+        current_streak += 1
+        check = check - timedelta(days=1)
+
+    # Total unique days tracked
+    total_days = (db.session.query(func.count(func.distinct(FoodLog.log_date)))
+                  .filter(FoodLog.user_id == current_user.id).scalar() or 0)
+
+    # Longest streak — walk all logged dates in order
+    all_dates = sorted(
+        r[0] for r in db.session.query(func.distinct(FoodLog.log_date))
+                                 .filter(FoodLog.user_id == current_user.id).all()
+    )
+    longest = cur = 0
+    for i, d in enumerate(all_dates):
+        cur = (cur + 1) if (i > 0 and (d - all_dates[i - 1]).days == 1) else 1
+        longest = max(longest, cur)
+
+    return jsonify({
+        'current_streak':   current_streak,
+        'longest_streak':   max(longest, current_streak),
+        'total_days_tracked': total_days,
+        'logged_today':     current_streak > 0,
+    })
+
+
+# ── ADAPTIVE TDEE ─────────────────────────────────────────────────────────────
+
+@api_bp.route('/analytics/adaptive-tdee', methods=['GET'])
+def adaptive_tdee():
+    err = _auth_required()
+    if err:
+        return err
+    today      = date.today()
+    cutoff     = today - timedelta(days=28)
+
+    # Average daily calories over last 28 days
+    cal_rows = (db.session.query(FoodLog.log_date, func.sum(FoodLog.calories).label('cal'))
+                .filter(FoodLog.user_id == current_user.id, FoodLog.log_date >= cutoff)
+                .group_by(FoodLog.log_date).all())
+    days_of_data = len(cal_rows)
+
+    if days_of_data < 7:
+        return jsonify({'status': 'insufficient_data', 'days_of_data': days_of_data, 'required': 7})
+
+    avg_daily_cal = sum(r.cal for r in cal_rows) / days_of_data
+
+    # Weight trend
+    wh_entries = (WeightHistory.query
+                  .filter(WeightHistory.user_id == current_user.id,
+                          WeightHistory.recorded_date >= cutoff)
+                  .order_by(WeightHistory.recorded_date.asc()).all())
+
+    if len(wh_entries) < 2:
+        return jsonify({
+            'status':       'insufficient_weight_data',
+            'days_of_data': days_of_data,
+            'avg_calories': round(avg_daily_cal),
+        })
+
+    first_w      = wh_entries[0].weight_kg
+    last_w       = wh_entries[-1].weight_kg
+    span_days    = max((wh_entries[-1].recorded_date - wh_entries[0].recorded_date).days, 1)
+    weekly_delta = (last_w - first_w) / span_days * 7   # kg/week
+
+    # Adaptive TDEE:  avg_cal − (weekly_Δ × 7700 / 7)
+    daily_cal_eq  = (weekly_delta * 7700) / 7
+    adaptive_tdee_val = round(avg_daily_cal - daily_cal_eq)
+
+    latest_snap = (TdeeSnapshot.query.filter_by(user_id=current_user.id)
+                   .order_by(TdeeSnapshot.created_at.desc()).first())
+    formula_tdee = latest_snap.tdee if latest_snap else None
+
+    confidence = ('high' if days_of_data >= 21 and len(wh_entries) >= 4
+                  else 'medium' if days_of_data >= 14 and len(wh_entries) >= 2
+                  else 'low')
+
+    gap = (adaptive_tdee_val - formula_tdee) if formula_tdee else 0
+    if abs(gap) < 50:
+        rec = 'Your formula TDEE closely matches your real metabolism. The calculator is accurate for you.'
+    elif gap > 0:
+        rec = (f'Your real metabolism burns {abs(gap)} cal/day MORE than the formula predicted. '
+               f'You can eat up to {abs(gap)} cal more and still hit your goal.')
+    else:
+        rec = (f'Your real metabolism burns {abs(gap)} cal/day LESS than the formula predicted. '
+               f'Tighten calories by {abs(gap)} cal to match your actual rate.')
+
+    return jsonify({
+        'status':                 'ok',
+        'adaptive_tdee':          adaptive_tdee_val,
+        'formula_tdee':           formula_tdee,
+        'avg_calories':           round(avg_daily_cal),
+        'weekly_weight_change_kg': round(weekly_delta, 3),
+        'days_of_data':           days_of_data,
+        'weight_entries':         len(wh_entries),
+        'confidence':             confidence,
+        'gap':                    gap,
+        'recommendation':         rec,
+        'first_weight':           first_w,
+        'last_weight':            last_w,
+    })
+
+
+# ── WORKOUT PROGRESSION ───────────────────────────────────────────────────────
+
+@api_bp.route('/analytics/progression', methods=['GET'])
+def get_progression():
+    err = _auth_required()
+    if err:
+        return err
+    exercise = request.args.get('exercise', '').strip()
+    limit    = min(int(request.args.get('limit', 20)), 50)
+
+    if not exercise:
+        # Return distinct exercise names the user has progression data for
+        names = (db.session.query(func.distinct(WorkoutProgression.exercise_name))
+                 .filter(WorkoutProgression.user_id == current_user.id).all())
+        return jsonify({'exercises': [n[0] for n in names]})
+
+    entries = (WorkoutProgression.query
+               .filter_by(user_id=current_user.id, exercise_name=exercise)
+               .order_by(WorkoutProgression.log_date.desc())
+               .limit(limit).all())
+    return jsonify([{
+        'date':         e.log_date.isoformat(),
+        'sets':         e.sets,
+        'reps_per_set': e.reps_per_set,
+        'weight_kg':    e.weight_kg,
+        'total_volume': e.total_volume,
+        'one_rm_est':   e.one_rm_est,
+    } for e in entries])
+
+
+@api_bp.route('/analytics/progression', methods=['POST'])
+def save_progression():
+    err = _auth_required()
+    if err:
+        return err
+    data     = request.get_json() or {}
+    exercise = data.get('exercise_name', '').strip()
+    sets     = int(data.get('sets', 0))
+    reps     = int(data.get('reps', 0))
+    weight   = float(data.get('weight_kg', 0))
+    if not exercise or not sets or not reps:
+        return jsonify({'error': 'exercise_name, sets, reps required'}), 400
+
+    volume  = sets * reps * weight
+    one_rm  = round(weight * (1 + reps / 30), 1) if weight > 0 else 0
+
+    entry = WorkoutProgression(
+        user_id=current_user.id, log_date=date.today(),
+        exercise_name=exercise, sets=sets, reps_per_set=reps,
+        weight_kg=weight, total_volume=volume, one_rm_est=one_rm,
+    )
+    db.session.add(entry)
+    db.session.commit()
+    return jsonify({'id': entry.id, 'one_rm_est': one_rm})
+
+
+# ── COPY PREVIOUS DAY ─────────────────────────────────────────────────────────
+
+@api_bp.route('/tracker/copy-day', methods=['POST'])
+def copy_previous_day():
+    err = _auth_required()
+    if err:
+        return err
+    data      = request.get_json() or {}
+    to_date   = _parse_date(data.get('to_date'))
+    from_date = to_date - timedelta(days=1)
+
+    prev = FoodLog.query.filter_by(user_id=current_user.id, log_date=from_date).all()
+    if not prev:
+        return jsonify({'ok': False, 'message': 'Nothing logged yesterday', 'copied': 0})
+
+    today_names = {(e.meal_type, e.food_name)
+                   for e in FoodLog.query.filter_by(user_id=current_user.id, log_date=to_date).all()}
+    copied = 0
+    for e in prev:
+        if (e.meal_type, e.food_name) in today_names:
+            continue
+        db.session.add(FoodLog(
+            user_id=current_user.id, log_date=to_date, meal_type=e.meal_type,
+            food_name=e.food_name, calories=e.calories,
+            protein_g=e.protein_g, carb_g=e.carb_g, fat_g=e.fat_g,
+        ))
+        copied += 1
+    db.session.commit()
+
+    # Return the full updated day so the frontend can refresh state
+    all_today   = FoodLog.query.filter_by(user_id=current_user.id, log_date=to_date).all()
+    food_log    = {'breakfast': [], 'lunch': [], 'dinner': [], 'snacks': []}
+    for e in all_today:
+        food_log[e.meal_type].append({'id': e.id, 'name': e.food_name,
+                                      'cal': e.calories, 'protein': e.protein_g,
+                                      'carbs': e.carb_g, 'fat': e.fat_g})
+    return jsonify({'ok': True, 'copied': copied, 'food_log': food_log})
+
+
+# ── MEAL TEMPLATES ────────────────────────────────────────────────────────────
+
+@api_bp.route('/tracker/templates', methods=['GET'])
+def list_templates():
+    err = _auth_required()
+    if err:
+        return err
+    templates = (MealTemplate.query.filter_by(user_id=current_user.id)
+                 .order_by(MealTemplate.created_at.desc()).all())
+    return jsonify([{
+        'id':            t.id,
+        'name':          t.name,
+        'meal_type':     t.meal_type,
+        'items':         json.loads(t.items or '[]'),
+        'total_cal':     t.total_cal,
+        'total_protein': t.total_protein,
+    } for t in templates])
+
+
+@api_bp.route('/tracker/templates', methods=['POST'])
+def create_template():
+    err = _auth_required()
+    if err:
+        return err
+    data  = request.get_json() or {}
+    name  = data.get('name', '').strip()
+    items = data.get('items', [])
+    if not name or not items:
+        return jsonify({'error': 'name and items required'}), 400
+
+    t = MealTemplate(
+        user_id      = current_user.id,
+        name         = name,
+        meal_type    = data.get('meal_type', 'any'),
+        items        = json.dumps(items),
+        total_cal    = int(sum(i.get('cal', 0) for i in items)),
+        total_protein= float(sum(i.get('protein', 0) for i in items)),
+    )
+    db.session.add(t)
+    db.session.commit()
+    return jsonify({'id': t.id, 'ok': True})
+
+
+@api_bp.route('/tracker/templates/<int:template_id>', methods=['DELETE'])
+def delete_template(template_id):
+    err = _auth_required()
+    if err:
+        return err
+    t = MealTemplate.query.filter_by(id=template_id, user_id=current_user.id).first()
+    if t:
+        db.session.delete(t)
+        db.session.commit()
+    return jsonify({'ok': True})
