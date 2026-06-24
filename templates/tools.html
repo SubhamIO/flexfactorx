@@ -967,19 +967,102 @@
           <label class="block text-xs tracking-widest uppercase text-white/40 mb-2">Exercise</label>
           <select id="wk-str-ex" title="Select exercise" onchange="fetchLastSession()"
                   class="w-full bg-[#111] border border-[#1a1a1a] text-white px-4 py-3 text-sm focus:outline-none focus:border-green-500/50">
-            {% for name, met in [
-              ('Push-ups',5),('Pull-ups / Chin-ups',6),('Bodyweight Squats',5),
-              ('Burpees',8),('Mountain Climbers',8),('Plank',4),
-              ('Bench Press',5),('Deadlift',6),('Barbell Squat',5),
-              ('Shoulder Press (OHP)',5),('Bent-over Rows',5),
-              ('Lat Pulldown / Cable Rows',5),('Leg Press',5),
-              ('Bicep Curls',4),('Tricep Pushdowns / Dips',4),
-              ('Lunges',5),('Romanian Deadlift (RDL)',5),
-              ('Dumbbell Flyes',4),('Face Pulls / Rear Delts',4),
-              ('Circuit Training',8),('Calisthenics (general)',6),
-            ] %}
-            <option value="{{ met }}">{{ name }}</option>
-            {% endfor %}
+            <optgroup label="── Chest ──">
+              <option value="5">Bench Press (Barbell)</option>
+              <option value="5">Dumbbell Chest Press (Flat)</option>
+              <option value="5">Incline Bench Press (Barbell)</option>
+              <option value="5">Incline Dumbbell Press</option>
+              <option value="5">Decline Bench Press</option>
+              <option value="5">Push-ups</option>
+              <option value="5">Close-grip Bench Press</option>
+              <option value="4">Dumbbell Flyes (Flat)</option>
+              <option value="4">Incline Dumbbell Flyes</option>
+              <option value="4">Cable Flyes / Pec Deck</option>
+            </optgroup>
+            <optgroup label="── Back ──">
+              <option value="6">Conventional Deadlift</option>
+              <option value="6">Sumo Deadlift</option>
+              <option value="6">Rack Pull</option>
+              <option value="5">Romanian Deadlift (RDL)</option>
+              <option value="5">Barbell Bent-over Row</option>
+              <option value="5">Dumbbell Single-arm Row</option>
+              <option value="5">T-bar Row</option>
+              <option value="5">Seated Cable Row</option>
+              <option value="5">Lat Pulldown</option>
+              <option value="6">Pull-ups / Chin-ups</option>
+              <option value="5">Inverted Rows</option>
+              <option value="4">Face Pulls</option>
+              <option value="4">Good Mornings</option>
+            </optgroup>
+            <optgroup label="── Shoulders ──">
+              <option value="5">Barbell Overhead Press (OHP)</option>
+              <option value="5">Dumbbell Shoulder Press</option>
+              <option value="5">Arnold Press</option>
+              <option value="3">Lateral Raises</option>
+              <option value="3">Cable Lateral Raises</option>
+              <option value="3">Front Raises</option>
+              <option value="3">Rear Delt Flyes</option>
+              <option value="4">Upright Row</option>
+              <option value="3">Barbell / Dumbbell Shrugs</option>
+            </optgroup>
+            <optgroup label="── Legs ──">
+              <option value="5">Barbell Back Squat</option>
+              <option value="5">Front Squat</option>
+              <option value="5">Hack Squat</option>
+              <option value="6">Bulgarian Split Squat</option>
+              <option value="5">Bodyweight Squats</option>
+              <option value="5">Leg Press</option>
+              <option value="4">Hip Thrust / Glute Bridge</option>
+              <option value="5">Barbell Hip Thrust</option>
+              <option value="5">Lunges (Barbell / Dumbbell)</option>
+              <option value="5">Walking Lunges</option>
+              <option value="5">Step-ups</option>
+              <option value="4">Leg Curl (Machine)</option>
+              <option value="4">Leg Extension (Machine)</option>
+              <option value="3">Calf Raises (Standing / Seated)</option>
+              <option value="3">Wall Sit</option>
+            </optgroup>
+            <optgroup label="── Biceps ──">
+              <option value="4">Barbell Bicep Curl</option>
+              <option value="4">Dumbbell Bicep Curl</option>
+              <option value="4">Hammer Curls</option>
+              <option value="4">Preacher Curls</option>
+              <option value="4">Cable Curls</option>
+              <option value="4">Concentration Curls</option>
+              <option value="4">Incline Dumbbell Curls</option>
+            </optgroup>
+            <optgroup label="── Triceps ──">
+              <option value="4">Skull Crushers (EZ-bar)</option>
+              <option value="4">Overhead Tricep Extension</option>
+              <option value="4">Tricep Pushdown (Cable)</option>
+              <option value="5">Tricep Dips</option>
+              <option value="3">Tricep Kickbacks</option>
+              <option value="5">Close-grip Bench Press</option>
+            </optgroup>
+            <optgroup label="── Core ──">
+              <option value="4">Plank</option>
+              <option value="3">Side Plank</option>
+              <option value="4">Crunches</option>
+              <option value="4">Decline Crunches / Sit-ups</option>
+              <option value="4">Leg Raises (Lying)</option>
+              <option value="5">Hanging Leg Raises</option>
+              <option value="4">Cable Crunches</option>
+              <option value="5">Russian Twists</option>
+              <option value="5">Ab Rollouts</option>
+              <option value="3">Dead Bug</option>
+              <option value="3">Pallof Press</option>
+            </optgroup>
+            <optgroup label="── Bodyweight & HIIT ──">
+              <option value="5">Dips</option>
+              <option value="5">Pike Push-ups</option>
+              <option value="5">Diamond Push-ups</option>
+              <option value="8">Burpees</option>
+              <option value="8">Mountain Climbers</option>
+              <option value="7">Jump Squats</option>
+              <option value="7">Box Jumps</option>
+              <option value="6">Calisthenics (general)</option>
+              <option value="8">Circuit Training</option>
+            </optgroup>
           </select>
         </div>
         {# Last session banner — populated by JS #}
