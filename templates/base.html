@@ -63,13 +63,15 @@
           </div>
           {% endif %}
           <span class="text-white/50 text-xs max-w-[80px] truncate">{{ current_user.name.split()[0] if current_user.name else 'You' }}</span>
-          {# Dropdown on hover #}
-          <div class="absolute right-0 top-full mt-2 w-40 bg-[#0d0d0d] border border-[#1a1a1a] shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
-            <form action="{{ url_for('auth.logout') }}" method="POST">
-              <button type="submit" class="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-white/40 hover:text-red-400 hover:bg-white/[0.02] transition-colors">
-                Sign Out
-              </button>
-            </form>
+          {# Dropdown on hover — pt-2 bridges the gap so mouse stays in group #}
+          <div class="absolute right-0 top-full pt-2 w-40 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
+            <div class="bg-[#0d0d0d] border border-[#1a1a1a] shadow-xl">
+              <form action="{{ url_for('auth.logout') }}" method="POST">
+                <button type="submit" class="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-white/40 hover:text-red-400 hover:bg-white/[0.02] transition-colors">
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </div>
         </div>
         {% else %}
