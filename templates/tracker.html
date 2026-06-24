@@ -1,0 +1,668 @@
+{% extends "base.html" %}
+
+{% block title %}Calorie Tracker — Indian Food Database | FlexFactorX{% endblock %}
+{% block description %}Track daily calories and macros with 60+ Indian foods pre-loaded. Visual calorie ring, macro breakdown, weekly pattern chart. No login required.{% endblock %}
+
+{% block content %}
+
+{# ── Header ───────────────────────────────────────────── #}
+<section class="pt-28 pb-8 border-b border-[#1a1a1a]">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-4 mb-2">
+          <a href="/tdee" class="text-xs tracking-[0.15em] uppercase text-white/30 hover:text-accent transition-colors">← TDEE Calculator</a>
+        </div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-2">Daily Logger</p>
+        <h1 class="font-heading text-4xl md:text-5xl" id="page-date">CALORIE TRACKER.</h1>
+      </div>
+      <button onclick="showSettings()"
+              class="text-xs tracking-[0.15em] uppercase text-white/40 hover:text-accent transition-colors border border-[#1a1a1a] hover:border-accent/40 px-4 py-2">
+        ⚙ Settings
+      </button>
+    </div>
+  </div>
+</section>
+
+{# ── Dashboard: Ring + Macros ─────────────────────────── #}
+<section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+  <div class="max-w-4xl mx-auto px-6 py-10">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+
+      {# Calorie Ring #}
+      <div class="flex flex-col items-center">
+        <div class="relative">
+          <svg width="220" height="220" viewBox="0 0 220 220" class="rotate-[-90deg]">
+            <circle cx="110" cy="110" r="90" fill="none" stroke="#1a1a1a" stroke-width="14"/>
+            <circle id="cal-ring" cx="110" cy="110" r="90" fill="none"
+                    stroke="#FF4D00" stroke-width="14" stroke-linecap="round"
+                    stroke-dasharray="0 565" stroke-dashoffset="0"
+                    class="transition-all duration-700"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <p id="ring-eaten" class="font-heading text-4xl text-white leading-none">0</p>
+            <p class="text-white/30 text-[0.6rem] tracking-widest uppercase mt-1">eaten</p>
+            <div class="w-8 h-px bg-[#2a2a2a] my-2"></div>
+            <p id="ring-goal" class="font-heading text-xl text-white/50 leading-none">—</p>
+            <p class="text-white/20 text-[0.6rem] tracking-widest uppercase mt-1">goal</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-4 text-center w-full max-w-xs">
+          <div>
+            <p id="stat-burned" class="font-heading text-2xl text-white">0</p>
+            <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-0.5">Eaten</p>
+          </div>
+          <div class="border-x border-[#1a1a1a]">
+            <p id="stat-remaining" class="font-heading text-2xl text-accent">—</p>
+            <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-0.5">Left</p>
+          </div>
+          <div>
+            <p id="stat-goal" class="font-heading text-2xl text-white/60">—</p>
+            <p class="text-white/25 text-[0.6rem] uppercase tracking-widest mt-0.5">Goal</p>
+          </div>
+        </div>
+      </div>
+
+      {# Macros + Insight #}
+      <div>
+        <div class="space-y-5 mb-6">
+          {% for mid, mlabel in [('protein','Protein'),('carbs','Carbs'),('fat','Fat')] %}
+          <div>
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-white/40 tracking-widest uppercase">{{ mlabel }}</span>
+              <span class="text-white/60">
+                <span id="mac-{{ mid }}-eaten">0</span>g
+                <span class="text-white/20"> / </span>
+                <span id="mac-{{ mid }}-goal">—</span>g
+              </span>
+            </div>
+            <div class="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+              <div id="mac-{{ mid }}-bar"
+                   class="h-full transition-all duration-500 {{ 'bg-accent' if mid == 'protein' else ('bg-white/40' if mid == 'carbs' else 'bg-white/20') }}"
+                   style="width:0%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {# Smart insight #}
+        <div class="border border-[#1a1a1a] bg-[#080808] p-4">
+          <p class="text-accent text-[0.6rem] tracking-[0.25em] uppercase mb-2">Today's Insight</p>
+          <p id="daily-insight" class="text-white/60 text-sm leading-relaxed">
+            Log your first meal to see personalised insights here.
+          </p>
+        </div>
+
+        {# Streak #}
+        <div class="flex items-center gap-3 mt-4">
+          <div class="w-6 h-px bg-accent"></div>
+          <p id="streak-msg" class="text-white/25 text-xs tracking-widest uppercase">—</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ── Meal Log ─────────────────────────────────────────── #}
+<section class="max-w-4xl mx-auto px-6 py-10">
+  {% for meal_id, meal_name in [('breakfast','Breakfast'),('lunch','Lunch'),('dinner','Dinner'),('snacks','Snacks')] %}
+  <div class="mb-6 border border-[#1a1a1a]">
+    <div class="flex items-center justify-between px-5 py-3 bg-[#0d0d0d] border-b border-[#1a1a1a]">
+      <div class="flex items-center gap-3">
+        <p class="text-xs tracking-[0.15em] uppercase text-white/50">{{ meal_name }}</p>
+        <span id="{{ meal_id }}-badge" class="text-[0.6rem] tracking-wider text-white/25 border border-[#1a1a1a] px-2 py-0.5">0 cal</span>
+      </div>
+      <button onclick="openAddFood('{{ meal_id }}')"
+              class="text-[0.65rem] tracking-[0.15em] uppercase text-accent border border-accent/30 px-3 py-1.5 hover:bg-accent hover:text-white transition-all">
+        + Add
+      </button>
+    </div>
+    <div id="{{ meal_id }}-list" class="min-h-[48px]">
+      <p class="text-white/20 text-xs text-center py-5 empty-msg">Nothing logged yet</p>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+{# ── Weekly Summary ───────────────────────────────────── #}
+<section class="bg-[#0d0d0d] border-y border-[#1a1a1a]">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="flex items-end justify-between mb-8">
+      <div>
+        <p class="text-accent text-xs tracking-[0.3em] uppercase mb-2">History</p>
+        <h2 class="font-heading text-4xl">LAST 7 DAYS.</h2>
+      </div>
+      <div class="text-right">
+        <p id="weekly-avg" class="font-heading text-3xl text-white">—</p>
+        <p class="text-white/25 text-[0.6rem] uppercase tracking-widest">avg cal / day</p>
+      </div>
+    </div>
+    <div id="weekly-chart" class="flex items-end gap-2 h-28 mb-4"></div>
+    <div id="weekly-insight" class="border border-[#1a1a1a] bg-[#080808] p-4">
+      <p class="text-white/30 text-sm">Track at least 3 days to see weekly patterns.</p>
+    </div>
+  </div>
+</section>
+
+{# ── Settings Modal ───────────────────────────────────── #}
+<div id="settings-modal" class="fixed inset-0 z-50 hidden" role="dialog">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="hideSettings()"></div>
+  <div class="relative z-10 flex items-center justify-center h-full px-6">
+    <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-8 w-full max-w-md">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="font-heading text-2xl">SETTINGS</h2>
+        <button onclick="hideSettings()" class="text-white/40 hover:text-white text-lg leading-none">✕</button>
+      </div>
+      <div class="space-y-5">
+        <div>
+          <label class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Daily Calorie Goal</label>
+          <input id="set-cal" type="number" placeholder="e.g. 2000"
+                 class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+          <p class="text-white/20 text-xs mt-1"><a href="/tdee" class="hover:text-accent transition-colors">Use TDEE calculator to find your number →</a></p>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Protein (g)</label>
+            <input id="set-protein" type="number" placeholder="150"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Carbs (g)</label>
+            <input id="set-carbs" type="number" placeholder="200"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Fat (g)</label>
+            <input id="set-fat" type="number" placeholder="65"
+                   class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2.5 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-8">
+        <button onclick="saveSettings()" class="flex-1 bg-accent text-white text-xs tracking-[0.15em] uppercase py-3 hover:brightness-90 transition-all">Save</button>
+        <button onclick="confirmClear()" class="flex-1 border border-[#2a2a2a] text-white/30 text-xs tracking-[0.15em] uppercase py-3 hover:border-red-500/40 hover:text-red-400 transition-all">Clear Today</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Add Food Modal ───────────────────────────────────── #}
+<div id="food-modal" class="fixed inset-0 z-50 hidden" role="dialog">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="closeAddFood()"></div>
+  <div class="relative z-10 flex items-start justify-center h-full px-4 pt-20 pb-8 overflow-y-auto">
+    <div class="bg-[#0d0d0d] border border-[#1a1a1a] w-full max-w-lg">
+
+      <div class="flex items-center justify-between p-5 border-b border-[#1a1a1a]">
+        <p id="modal-meal-label" class="text-xs tracking-[0.15em] uppercase text-white/50">Add to Breakfast</p>
+        <button onclick="closeAddFood()" class="text-white/30 hover:text-white text-lg leading-none">✕</button>
+      </div>
+
+      {# Custom quick-add #}
+      <div class="p-5 border-b border-[#1a1a1a]">
+        <p class="text-[0.6rem] tracking-widest uppercase text-white/25 mb-3">Quick Custom Add</p>
+        <div class="flex gap-2 mb-2">
+          <input id="cust-name"    type="text"   placeholder="Food name" class="flex-1 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <input id="cust-cal"     type="number" placeholder="Cal"       class="w-16 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <input id="cust-protein" type="number" placeholder="P(g)"      class="w-16 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-3 py-2 text-xs focus:outline-none focus:border-accent/50">
+          <button onclick="addCustomFood()" class="bg-accent text-white text-xs uppercase tracking-wider px-3 hover:brightness-90 transition-all">Add</button>
+        </div>
+        <p class="text-white/20 text-[0.6rem]">Carbs & fat are optional for custom entries</p>
+      </div>
+
+      {# Search #}
+      <div class="p-5 border-b border-[#1a1a1a]">
+        <input id="food-search" type="search" placeholder="Search Indian foods — roti, dal, chicken, paneer..."
+               oninput="filterFoods(this.value)"
+               class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50">
+      </div>
+
+      {# Food list #}
+      <div id="food-list" class="overflow-y-auto max-h-80 divide-y divide-[#111]"></div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Indian Food Database ─────────────────────────────
+  // { name, cal, protein, carbs, fat, unit }  per 1 serving
+  var FOODS = [
+    // Grains & Staples
+    { name:'Roti / Chapati (1 medium, 30g)',    cal:80,  protein:3,  carbs:15, fat:1,   unit:'1 roti' },
+    { name:'Plain Paratha (1, 60g)',             cal:180, protein:4,  carbs:25, fat:7,   unit:'1 paratha' },
+    { name:'Aloo Paratha (1)',                   cal:260, protein:5,  carbs:35, fat:11,  unit:'1 paratha' },
+    { name:'White Rice cooked (1 cup, 200g)',    cal:260, protein:5,  carbs:57, fat:0.4, unit:'1 cup' },
+    { name:'Brown Rice cooked (1 cup, 200g)',    cal:218, protein:5,  carbs:45, fat:1.6, unit:'1 cup' },
+    { name:'Dosa (1 regular)',                   cal:130, protein:3,  carbs:20, fat:4,   unit:'1 dosa' },
+    { name:'Idli (1)',                           cal:40,  protein:2,  carbs:8,  fat:0.1, unit:'1 idli' },
+    { name:'Poha cooked (1 cup, 100g)',          cal:130, protein:2,  carbs:28, fat:0.5, unit:'1 cup' },
+    { name:'Upma (1 cup, 150g)',                 cal:200, protein:5,  carbs:35, fat:4,   unit:'1 cup' },
+    { name:'White Bread (1 slice)',              cal:65,  protein:2,  carbs:12, fat:0.8, unit:'1 slice' },
+    { name:'Oats cooked (1 cup, 250g)',          cal:150, protein:5,  carbs:27, fat:3,   unit:'1 cup' },
+    { name:'Puri (1 small)',                     cal:90,  protein:2,  carbs:12, fat:4,   unit:'1 puri' },
+    // Proteins — Animal
+    { name:'Chicken Breast cooked (100g)',       cal:165, protein:31, carbs:0,  fat:3.6, unit:'100g' },
+    { name:'Chicken Thigh cooked (100g)',        cal:209, protein:26, carbs:0,  fat:11,  unit:'100g' },
+    { name:'Egg (1 whole)',                      cal:70,  protein:6,  carbs:0.5,fat:5,   unit:'1 egg' },
+    { name:'Egg White (1)',                      cal:17,  protein:3.6,carbs:0.2,fat:0,   unit:'1 white' },
+    { name:'Scrambled Eggs 2 eggs + milk',       cal:180, protein:13, carbs:2,  fat:13,  unit:'1 serving' },
+    { name:'Fish (any white fish, 100g)',        cal:140, protein:26, carbs:0,  fat:3,   unit:'100g' },
+    { name:'Salmon (100g)',                      cal:208, protein:20, carbs:0,  fat:13,  unit:'100g' },
+    // Proteins — Plant
+    { name:'Paneer (100g)',                      cal:265, protein:18, carbs:3,  fat:21,  unit:'100g' },
+    { name:'Tofu firm (100g)',                   cal:76,  protein:8,  carbs:2,  fat:4,   unit:'100g' },
+    { name:'Soya Chunks (30g dry)',              cal:100, protein:15, carbs:9,  fat:0.5, unit:'30g dry' },
+    { name:'Dal Moong cooked (1 cup)',           cal:147, protein:10, carbs:26, fat:0.8, unit:'1 cup' },
+    { name:'Dal Masoor cooked (1 cup)',          cal:162, protein:12, carbs:29, fat:0.5, unit:'1 cup' },
+    { name:'Dal Toor / Arhar cooked (1 cup)',    cal:182, protein:11, carbs:32, fat:0.5, unit:'1 cup' },
+    { name:'Rajma cooked (1 cup)',               cal:220, protein:14, carbs:40, fat:0.5, unit:'1 cup' },
+    { name:'Chole / Chickpea cooked (1 cup)',    cal:270, protein:15, carbs:45, fat:4,   unit:'1 cup' },
+    { name:'Black Chana cooked (1 cup)',         cal:210, protein:14, carbs:38, fat:1.5, unit:'1 cup' },
+    // Dairy
+    { name:'Milk Full Fat (1 cup, 240ml)',       cal:150, protein:8,  carbs:12, fat:8,   unit:'1 cup' },
+    { name:'Milk Toned (1 cup, 240ml)',          cal:120, protein:8,  carbs:12, fat:4.5, unit:'1 cup' },
+    { name:'Dahi / Curd (1 cup, 200g)',          cal:120, protein:8,  carbs:10, fat:4,   unit:'1 cup' },
+    { name:'Greek Yogurt (100g)',                cal:80,  protein:10, carbs:3,  fat:2,   unit:'100g' },
+    { name:'Paneer Bhurji (100g)',               cal:180, protein:12, carbs:3,  fat:13,  unit:'100g' },
+    { name:'Whey Protein 1 scoop (30g)',         cal:120, protein:24, carbs:3,  fat:2,   unit:'1 scoop' },
+    { name:'Casein Protein 1 scoop (30g)',       cal:110, protein:22, carbs:4,  fat:1,   unit:'1 scoop' },
+    // Vegetables & Curries
+    { name:'Palak Paneer (1 cup)',               cal:280, protein:14, carbs:10, fat:20,  unit:'1 cup' },
+    { name:'Aloo Gobi (1 cup)',                  cal:150, protein:4,  carbs:20, fat:6,   unit:'1 cup' },
+    { name:'Bhindi Masala (100g)',               cal:80,  protein:2,  carbs:10, fat:3.5, unit:'100g' },
+    { name:'Mixed Sabzi (100g)',                 cal:80,  protein:2,  carbs:12, fat:3,   unit:'100g' },
+    { name:'Spinach (1 cup raw)',                cal:7,   protein:1,  carbs:1,  fat:0,   unit:'1 cup' },
+    { name:'Broccoli (1 cup)',                   cal:55,  protein:4,  carbs:11, fat:0.5, unit:'1 cup' },
+    { name:'Rajma Masala (1 cup)',               cal:250, protein:13, carbs:42, fat:5,   unit:'1 cup' },
+    // Fruits
+    { name:'Banana (1 medium)',                  cal:90,  protein:1,  carbs:23, fat:0.3, unit:'1 banana' },
+    { name:'Apple (1 medium)',                   cal:80,  protein:0.4,carbs:21, fat:0.2, unit:'1 apple' },
+    { name:'Orange (1 medium)',                  cal:60,  protein:1,  carbs:15, fat:0.1, unit:'1 orange' },
+    { name:'Mango (1 cup sliced)',               cal:100, protein:1,  carbs:25, fat:0.6, unit:'1 cup' },
+    { name:'Papaya (1 cup)',                     cal:55,  protein:0.6,carbs:14, fat:0.1, unit:'1 cup' },
+    { name:'Pomegranate (1 cup arils)',          cal:83,  protein:1.5,carbs:19, fat:1.2, unit:'1 cup' },
+    // Snacks & Nuts
+    { name:'Peanuts (30g)',                      cal:170, protein:7,  carbs:5,  fat:14,  unit:'30g' },
+    { name:'Almonds (20g, ~14 nuts)',            cal:115, protein:4,  carbs:4,  fat:10,  unit:'20g' },
+    { name:'Peanut Butter (1 tbsp, 16g)',        cal:95,  protein:4,  carbs:3,  fat:8,   unit:'1 tbsp' },
+    { name:'Samosa (1 medium)',                  cal:200, protein:3,  carbs:26, fat:10,  unit:'1 samosa' },
+    { name:'Biscuits / Parle-G (3 biscuits)',   cal:60,  protein:1,  carbs:11, fat:1.5, unit:'3 biscuits' },
+    { name:'Protein Bar (generic)',              cal:200, protein:20, carbs:20, fat:7,   unit:'1 bar' },
+    // Beverages
+    { name:'Chai with milk & sugar (1 cup)',     cal:60,  protein:2,  carbs:9,  fat:2,   unit:'1 cup' },
+    { name:'Black Coffee / Green Tea',           cal:5,   protein:0,  carbs:1,  fat:0,   unit:'1 cup' },
+    { name:'Lassi sweet (1 glass, 300ml)',       cal:180, protein:6,  carbs:30, fat:5,   unit:'1 glass' },
+    { name:'Coconut Water (1 glass, 240ml)',     cal:46,  protein:0.5,carbs:9,  fat:0.5, unit:'1 glass' },
+    { name:'Protein Shake (1 scoop + water)',    cal:120, protein:24, carbs:3,  fat:2,   unit:'1 shake' },
+    // Rice dishes
+    { name:'Biryani Veg (1 plate, 300g)',        cal:420, protein:10, carbs:65, fat:14,  unit:'1 plate' },
+    { name:'Biryani Chicken (1 plate, 350g)',    cal:500, protein:28, carbs:60, fat:16,  unit:'1 plate' },
+    { name:'Khichdi (1 cup)',                    cal:200, protein:8,  carbs:35, fat:4,   unit:'1 cup' },
+  ];
+
+  // ── State ────────────────────────────────────────────
+  var TODAY = todayKey();
+  var settings = loadSettings();
+  var log      = loadLog(TODAY);
+  var currentMeal = 'breakfast';
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function loadSettings() {
+    try {
+      var s = JSON.parse(localStorage.getItem('ffx_settings') || 'null');
+      if (s) return s;
+      // Try to import from TDEE calculator
+      var cal = parseInt(localStorage.getItem('ffx_goal_cal')) || 2000;
+      var pro = parseInt(localStorage.getItem('ffx_protein_g')) || 150;
+      var crb = parseInt(localStorage.getItem('ffx_carb_g'))    || 200;
+      var fat = parseInt(localStorage.getItem('ffx_fat_g'))     || 65;
+      return { cal: cal, protein: pro, carbs: crb, fat: fat };
+    } catch(e) { return { cal:2000, protein:150, carbs:200, fat:65 }; }
+  }
+
+  function saveSettingsData() {
+    try { localStorage.setItem('ffx_settings', JSON.stringify(settings)); } catch(e) {}
+  }
+
+  function loadLog(key) {
+    try {
+      return JSON.parse(localStorage.getItem('ffx_log_' + key) || 'null') ||
+             { breakfast:[], lunch:[], dinner:[], snacks:[] };
+    } catch(e) { return { breakfast:[], lunch:[], dinner:[], snacks:[] }; }
+  }
+
+  function saveLog() {
+    try { localStorage.setItem('ffx_log_' + TODAY, JSON.stringify(log)); } catch(e) {}
+  }
+
+  // ── Totals ───────────────────────────────────────────
+  function totals() {
+    var t = { cal:0, protein:0, carbs:0, fat:0 };
+    ['breakfast','lunch','dinner','snacks'].forEach(function (m) {
+      (log[m] || []).forEach(function (e) {
+        t.cal     += e.cal     || 0;
+        t.protein += e.protein || 0;
+        t.carbs   += e.carbs   || 0;
+        t.fat     += e.fat     || 0;
+      });
+    });
+    return t;
+  }
+
+  function mealTotals(meal) {
+    var c = 0;
+    (log[meal] || []).forEach(function (e) { c += e.cal || 0; });
+    return c;
+  }
+
+  // ── Render ───────────────────────────────────────────
+  function render() {
+    var t = totals();
+    var goal = settings.cal || 2000;
+    var CIRC = 2 * Math.PI * 90; // ≈ 565
+
+    // Ring
+    var pct = Math.min(1, t.cal / goal);
+    var arc = pct * CIRC;
+    var ring = document.getElementById('cal-ring');
+    ring.setAttribute('stroke-dasharray', arc.toFixed(1) + ' ' + CIRC.toFixed(1));
+    ring.setAttribute('stroke', pct > 1 ? '#ef4444' : '#FF4D00');
+
+    setText('ring-eaten',      t.cal);
+    setText('ring-goal',       goal);
+    setText('stat-burned',     t.cal);
+    var rem = goal - t.cal;
+    setText('stat-remaining',  rem >= 0 ? rem : '−' + Math.abs(rem));
+    document.getElementById('stat-remaining').style.color = rem < 0 ? '#ef4444' : '#FF4D00';
+    setText('stat-goal',       goal);
+
+    // Macro bars
+    renderMacro('protein', t.protein, settings.protein || 150);
+    renderMacro('carbs',   t.carbs,   settings.carbs   || 200);
+    renderMacro('fat',     t.fat,     settings.fat     || 65);
+
+    // Meal badges
+    ['breakfast','lunch','dinner','snacks'].forEach(function (m) {
+      setText(m + '-badge', mealTotals(m) + ' cal');
+    });
+
+    // Meal lists
+    ['breakfast','lunch','dinner','snacks'].forEach(renderMealList);
+
+    // Insight
+    renderInsight(t, goal, rem);
+
+    // Streak
+    renderStreak();
+
+    // Weekly
+    renderWeekly();
+  }
+
+  function renderMacro(name, eaten, goal) {
+    setText('mac-' + name + '-eaten', Math.round(eaten));
+    setText('mac-' + name + '-goal',  goal);
+    var pct = goal > 0 ? Math.min(100, (eaten / goal) * 100) : 0;
+    var bar = document.getElementById('mac-' + name + '-bar');
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.style.backgroundColor = pct > 110 ? '#ef4444' : '';
+    }
+  }
+
+  function renderMealList(meal) {
+    var list = document.getElementById(meal + '-list');
+    var entries = log[meal] || [];
+    if (!entries.length) {
+      list.innerHTML = '<p class="text-white/20 text-xs text-center py-5 empty-msg">Nothing logged yet</p>';
+      return;
+    }
+    list.innerHTML = entries.map(function (e, i) {
+      return '<div class="flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors group">' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-white/70 text-sm truncate">' + e.name + '</p>' +
+          '<p class="text-white/30 text-xs mt-0.5">' +
+            e.cal + ' cal' +
+            (e.protein ? '  ·  ' + Math.round(e.protein) + 'g P' : '') +
+            (e.carbs   ? '  ·  ' + Math.round(e.carbs)   + 'g C' : '') +
+            (e.fat     ? '  ·  ' + Math.round(e.fat)     + 'g F' : '') +
+          '</p>' +
+        '</div>' +
+        '<button onclick="removeEntry(\'' + meal + '\',' + i + ')" ' +
+                'class="text-white/15 hover:text-red-400 transition-colors ml-4 text-sm opacity-0 group-hover:opacity-100">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderInsight(t, goal, rem) {
+    var msg = '';
+    if (t.cal === 0) {
+      msg = 'Log your first meal to see personalised insights here.';
+    } else if (rem > 600) {
+      var equiv = Math.round(rem / 80) + ' rotis worth of calories remain.';
+      msg = 'You have ' + rem + ' cal left today — ' + equiv + ' Keep going, there\'s still plenty of room to hit your target.';
+    } else if (rem > 200 && rem <= 600) {
+      msg = rem + ' cal remaining. A ' + Math.round(rem/80) + '-roti snack or protein shake would close the gap nicely.';
+    } else if (rem >= 0 && rem <= 200) {
+      msg = 'Almost at goal — ' + rem + ' cal left. A banana or cup of dahi would do it perfectly. Nice work.';
+    } else if (rem < 0 && rem > -200) {
+      msg = 'Just ' + Math.abs(rem) + ' cal over for today. Negligible — one-off small overshoots don\'t derail progress. Consistency is what matters.';
+    } else if (rem <= -200) {
+      msg = 'You\'re ' + Math.abs(rem) + ' cal over your goal today. If this is a pattern, audit your lunch or dinner — those are typically where the excess hides.';
+    }
+
+    // Protein check
+    var proTarget = settings.protein || 150;
+    if (t.cal > 500 && t.protein < proTarget * 0.4) {
+      msg += ' Protein is low — prioritise a protein source in your next meal (eggs, chicken, dal, paneer).';
+    }
+
+    setText('daily-insight', msg);
+  }
+
+  function renderStreak() {
+    var streak = 0;
+    for (var i = 1; i <= 30; i++) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var k = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+      var l = loadLog(k);
+      var hasMeals = ['breakfast','lunch','dinner','snacks'].some(function(m){ return (l[m]||[]).length > 0; });
+      if (hasMeals) streak++; else break;
+    }
+    // Also count today if logged
+    var todayHas = ['breakfast','lunch','dinner','snacks'].some(function(m){ return (log[m]||[]).length > 0; });
+    if (todayHas) streak++;
+
+    var msgs = ['Start your first day of tracking', 'Day ' + streak + ' tracking streak — keep going', 'Day ' + streak + ' streak — building the habit', 'Day ' + streak + ' streak — consistency is everything', 'Day ' + streak + ' streak — you\'re in the top tier of consistency'];
+    var idx = streak === 0 ? 0 : Math.min(4, Math.floor(streak / 3) + 1);
+    setText('streak-msg', streak === 0 ? msgs[0] : msgs[idx]);
+  }
+
+  function renderWeekly() {
+    var days = [];
+    var totalCal = 0;
+    var trackedDays = 0;
+
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var k = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+      var l = k === TODAY ? log : loadLog(k);
+      var dayCal = 0;
+      ['breakfast','lunch','dinner','snacks'].forEach(function(m){ (l[m]||[]).forEach(function(e){ dayCal += e.cal||0; }); });
+      var dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      days.push({ label: dayLabels[d.getDay()], cal: dayCal, isToday: i === 0 });
+      if (dayCal > 0) { totalCal += dayCal; trackedDays++; }
+    }
+
+    var avg = trackedDays > 0 ? Math.round(totalCal / trackedDays) : 0;
+    setText('weekly-avg', avg || '—');
+
+    var maxCal = Math.max(settings.cal * 1.3, ...days.map(function(d){ return d.cal; }), 1);
+    var chart = document.getElementById('weekly-chart');
+    chart.innerHTML = days.map(function (d) {
+      var h = d.cal > 0 ? Math.max(8, Math.round((d.cal / maxCal) * 100)) : 4;
+      var over = d.cal > settings.cal;
+      var color = d.cal === 0 ? 'bg-[#1a1a1a]' : (over ? 'bg-red-500/50' : (d.isToday ? 'bg-accent' : 'bg-accent/40'));
+      return '<div class="flex-1 flex flex-col items-center gap-1">' +
+        '<span class="text-[0.55rem] text-white/30">' + (d.cal > 0 ? d.cal : '') + '</span>' +
+        '<div class="w-full ' + color + ' rounded-t-sm transition-all duration-700" style="height:' + h + '%"></div>' +
+        '<span class="text-[0.6rem] tracking-widest uppercase text-white/30 ' + (d.isToday ? 'text-accent' : '') + '">' + d.label + '</span>' +
+      '</div>';
+    }).join('');
+
+    // Weekly insight
+    var wEl = document.getElementById('weekly-insight');
+    if (trackedDays < 2) {
+      wEl.innerHTML = '<p class="text-white/30 text-sm">Track at least 2 days to see weekly patterns.</p>';
+    } else {
+      var delta = avg - settings.cal;
+      var weeklyChange = ((delta * 7) / 7700).toFixed(2);
+      var direction = delta < 0 ? 'losing ~' + Math.abs(weeklyChange) + ' kg/week' : (delta > 0 ? 'gaining ~' + weeklyChange + ' kg/week' : 'in maintenance');
+      wEl.innerHTML = '<p class="text-accent text-[0.6rem] tracking-widest uppercase mb-2">Weekly Pattern</p>' +
+        '<p class="text-white/60 text-sm leading-relaxed">Your ' + trackedDays + '-day average is ' + avg + ' cal/day — ' +
+        (delta < 0 ? delta : '+' + delta) + ' cal vs your goal. At this pace you\'re trending toward ' + direction + '.</p>';
+    }
+  }
+
+  // ── UI helpers ───────────────────────────────────────
+  function setText(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+
+  // ── Add / Remove entries ─────────────────────────────
+  window.removeEntry = function (meal, idx) {
+    log[meal].splice(idx, 1);
+    saveLog();
+    render();
+  };
+
+  function addEntry(food, servings) {
+    servings = servings || 1;
+    log[currentMeal].push({
+      name:    food.name,
+      cal:     Math.round(food.cal     * servings),
+      protein: Math.round(food.protein * servings * 10) / 10,
+      carbs:   Math.round(food.carbs   * servings * 10) / 10,
+      fat:     Math.round(food.fat     * servings * 10) / 10,
+    });
+    saveLog();
+    render();
+    closeAddFood();
+  }
+
+  // ── Custom food ──────────────────────────────────────
+  window.addCustomFood = function () {
+    var name    = document.getElementById('cust-name').value.trim();
+    var cal     = parseInt(document.getElementById('cust-cal').value)     || 0;
+    var protein = parseFloat(document.getElementById('cust-protein').value) || 0;
+    if (!name || !cal) return;
+    addEntry({ name:name, cal:cal, protein:protein, carbs:0, fat:0 });
+    document.getElementById('cust-name').value    = '';
+    document.getElementById('cust-cal').value     = '';
+    document.getElementById('cust-protein').value = '';
+  };
+
+  // ── Food modal ───────────────────────────────────────
+  window.openAddFood = function (meal) {
+    currentMeal = meal;
+    var labels = { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner', snacks:'Snacks' };
+    setText('modal-meal-label', 'Add to ' + labels[meal]);
+    document.getElementById('food-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('food-search').value = '';
+    filterFoods('');
+    document.getElementById('food-search').focus();
+  };
+
+  window.closeAddFood = function () {
+    document.getElementById('food-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+
+  window.filterFoods = function (q) {
+    var results = q.trim().length > 0
+      ? FOODS.filter(function (f) { return f.name.toLowerCase().indexOf(q.toLowerCase()) > -1; })
+      : FOODS;
+
+    var list = document.getElementById('food-list');
+    if (!results.length) {
+      list.innerHTML = '<p class="text-white/25 text-sm text-center py-8">No matches — try the custom add above.</p>';
+      return;
+    }
+    list.innerHTML = results.map(function (f, i) {
+      var realIdx = FOODS.indexOf(f);
+      return '<div class="flex items-center justify-between px-5 py-3 hover:bg-white/[0.03] transition-colors cursor-pointer group" onclick="addFoodFromList(' + realIdx + ')">' +
+        '<div class="flex-1 min-w-0">' +
+          '<p class="text-white/70 text-sm truncate">' + f.name + '</p>' +
+          '<p class="text-white/30 text-xs mt-0.5">' + f.cal + ' cal  ·  ' + f.protein + 'g P  ·  ' + f.carbs + 'g C  ·  ' + f.fat + 'g F  <span class="text-white/20">per ' + f.unit + '</span></p>' +
+        '</div>' +
+        '<span class="text-accent text-xs ml-4 opacity-0 group-hover:opacity-100 transition-opacity">+ Add</span>' +
+      '</div>';
+    }).join('');
+  };
+
+  window.addFoodFromList = function (idx) {
+    addEntry(FOODS[idx], 1);
+  };
+
+  // ── Settings modal ───────────────────────────────────
+  window.showSettings = function () {
+    document.getElementById('set-cal').value     = settings.cal     || '';
+    document.getElementById('set-protein').value = settings.protein || '';
+    document.getElementById('set-carbs').value   = settings.carbs   || '';
+    document.getElementById('set-fat').value     = settings.fat     || '';
+    document.getElementById('settings-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.hideSettings = function () {
+    document.getElementById('settings-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+
+  window.saveSettings = function () {
+    settings.cal     = parseInt(document.getElementById('set-cal').value)     || settings.cal;
+    settings.protein = parseInt(document.getElementById('set-protein').value) || settings.protein;
+    settings.carbs   = parseInt(document.getElementById('set-carbs').value)   || settings.carbs;
+    settings.fat     = parseInt(document.getElementById('set-fat').value)     || settings.fat;
+    saveSettingsData();
+    hideSettings();
+    render();
+  };
+
+  window.confirmClear = function () {
+    if (confirm('Clear all food entries for today?')) {
+      log = { breakfast:[], lunch:[], dinner:[], snacks:[] };
+      saveLog();
+      render();
+      hideSettings();
+    }
+  };
+
+  // Keyboard
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeAddFood(); hideSettings(); }
+  });
+
+  // ── Init ─────────────────────────────────────────────
+  var d = new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  setText('page-date', d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear());
+
+  render();
+
+  // Show settings prompt if no goal set
+  if (!localStorage.getItem('ffx_settings') && !localStorage.getItem('ffx_goal_cal')) {
+    setTimeout(showSettings, 600);
+  }
+
+}());
+</script>
+
+{% endblock %}

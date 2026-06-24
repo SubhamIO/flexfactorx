@@ -39,6 +39,7 @@ def inject_globals():
             ('/about', 'About', 'about'),
             ('/programs', 'Programs', 'programs'),
             ('/shop', 'Shop', 'shop'),
+            ('/tdee', 'Tools', 'tdee'),
             ('/collabs', 'Collabs', 'collabs'),
             ('/contact', 'Contact', 'contact'),
         ],
@@ -72,6 +73,16 @@ def shop():
 def programs_page():
     return render_template('programs.html', programs=programs,
                            category_labels=PROGRAM_CATEGORY_LABELS)
+
+
+@app.route('/tdee')
+def tdee():
+    return render_template('tdee.html')
+
+
+@app.route('/tracker')
+def tracker():
+    return render_template('tracker.html')
 
 
 @app.route('/collabs')

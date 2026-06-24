@@ -1,0 +1,673 @@
+{% extends "base.html" %}
+
+{% block title %}Free TDEE & Macro Calculator — With Indian Food Insights | FlexFactorX{% endblock %}
+{% block description %}Calculate your TDEE, BMR, and precise macro targets. Get a realistic goal timeline, macros in real Indian food terms, and 6 insights most calculators hide.{% endblock %}
+
+{% block content %}
+
+{# ── Header ───────────────────────────────────────────── #}
+<section class="pt-36 pb-16 border-b border-[#1a1a1a]">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex items-center gap-4 mb-4">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase">Free Tool</p>
+      <span class="text-white/20">·</span>
+      <a href="/tracker" class="text-xs tracking-[0.15em] uppercase text-white/30 hover:text-accent transition-colors">Calorie Tracker →</a>
+    </div>
+    <h1 class="page-title font-heading leading-[0.88] mb-6">TDEE CALCULATOR.</h1>
+    <p class="text-white/50 text-lg max-w-2xl leading-relaxed">
+      Most calculators give you one number and stop. This one gives you macro targets, a realistic timeline,
+      what your numbers mean in actual rotis and rice, and insights most fitness apps charge for.
+    </p>
+  </div>
+</section>
+
+{# ── Input Form ───────────────────────────────────────── #}
+<section class="max-w-6xl mx-auto px-6 py-16">
+  <div class="max-w-3xl">
+
+    <div class="grid sm:grid-cols-2 gap-6 mb-8">
+      <div>
+        <label for="age" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Age</label>
+        <input id="age" type="number" min="15" max="80" placeholder="e.g. 24"
+               class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+      </div>
+      <div>
+        <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Gender</p>
+        <div class="grid grid-cols-2 gap-2">
+          <label>
+            <input type="radio" name="gender" value="male" class="sr-only" checked>
+            <div class="gender-opt cursor-pointer border border-accent bg-accent/10 text-white text-xs tracking-[0.12em] uppercase text-center py-3 transition-all">Male</div>
+          </label>
+          <label>
+            <input type="radio" name="gender" value="female" class="sr-only">
+            <div class="gender-opt cursor-pointer border border-[#1a1a1a] text-white/40 text-xs tracking-[0.12em] uppercase text-center py-3 transition-all">Female</div>
+          </label>
+        </div>
+      </div>
+      <div>
+        <label for="height" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Height (cm)</label>
+        <input id="height" type="number" min="100" max="250" placeholder="e.g. 175"
+               class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+      </div>
+      <div>
+        <label for="weight" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">Weight (kg)</label>
+        <input id="weight" type="number" min="30" max="300" placeholder="e.g. 75"
+               class="w-full bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+      </div>
+    </div>
+
+    {# Activity Level #}
+    <div class="mb-8">
+      <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-3">Activity Level</p>
+      <div class="space-y-2">
+        {% for val, label, desc, mult in [
+          ('sedentary', 'Sedentary',        'Desk job, no planned exercise — mostly sitting',       '×1.2'),
+          ('light',     'Lightly Active',   'Light exercise 1–3 days/week, otherwise sedentary',    '×1.375'),
+          ('moderate',  'Moderately Active','Exercise 3–5 days/week, on your feet part of the day', '×1.55'),
+          ('very',      'Very Active',      'Hard training 6–7 days/week or physical job',          '×1.725'),
+          ('extra',     'Extra Active',     'Physical job + daily training, or two-a-day sessions', '×1.9'),
+        ] %}
+        <label class="activity-label flex items-center gap-4 p-4 border cursor-pointer transition-all
+                       {{ 'border-accent/40 bg-accent/5' if val == 'moderate' else 'border-[#1a1a1a] hover:border-[#2a2a2a]' }}">
+          <input type="radio" name="activity" value="{{ val }}" class="sr-only" {{ 'checked' if val == 'moderate' }}>
+          <div class="activity-dot w-3 h-3 rounded-full border-2 flex-shrink-0 transition-all
+                       {{ 'border-accent bg-accent' if val == 'moderate' else 'border-[#444]' }}"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-white text-sm font-medium">{{ label }}</p>
+            <p class="text-white/40 text-xs mt-0.5">{{ desc }}</p>
+          </div>
+          <span class="text-accent text-xs font-mono tracking-wider flex-shrink-0">{{ mult }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Goal #}
+    <div class="mb-8">
+      <p class="text-xs tracking-[0.15em] uppercase text-white/40 mb-3">Primary Goal</p>
+      <div class="grid grid-cols-5 gap-2">
+        {% for val, label, adj in [
+          ('aggressive_cut', 'Aggressive Cut', '−500'),
+          ('cut',            'Cut',            '−300'),
+          ('maintain',       'Maintain',       '±0'),
+          ('lean_bulk',      'Lean Bulk',      '+200'),
+          ('bulk',           'Bulk',           '+500'),
+        ] %}
+        <label class="goal-label cursor-pointer">
+          <input type="radio" name="goal" value="{{ val }}" class="sr-only" {{ 'checked' if val == 'cut' }}>
+          <div class="goal-opt border text-center py-3 px-1 transition-all
+                       {{ 'border-accent/40 bg-accent/5' if val == 'cut' else 'border-[#1a1a1a] hover:border-[#2a2a2a]' }}">
+            <p class="text-white text-[0.65rem] font-medium leading-tight">{{ label }}</p>
+            <p class="text-accent text-[0.6rem] tracking-wider mt-1">{{ adj }}</p>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Target Weight (optional) #}
+    <div class="mb-10">
+      <label for="target-weight" class="block text-xs tracking-[0.15em] uppercase text-white/40 mb-2">
+        Target Weight (kg)
+        <span class="normal-case tracking-normal text-white/20 text-[0.65rem] ml-2">— optional, for goal timeline</span>
+      </label>
+      <input id="target-weight" type="number" min="30" max="300" placeholder="e.g. 70"
+             class="w-full sm:w-56 bg-[#111] border border-[#1a1a1a] text-white placeholder-white/20 px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-colors">
+    </div>
+
+    <button onclick="calculate()"
+            class="bg-accent text-white text-xs tracking-[0.2em] uppercase px-12 py-4 hover:brightness-90 transition-all">
+      Calculate My TDEE →
+    </button>
+    <p id="form-error" class="hidden mt-4 text-red-400 text-sm">Please fill in age, height, and weight to continue.</p>
+  </div>
+</section>
+
+{# ── Results ──────────────────────────────────────────── #}
+<div id="results" class="hidden">
+
+  <div class="h-px bg-accent"></div>
+
+  {# 1 · Core Numbers #}
+  <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-16">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Your Metabolic Profile</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-10">YOUR NUMBERS.</h2>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-8">
+        <div class="p-8 border border-[#1a1a1a] bg-[#080808]">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">BMR — Basal Metabolic Rate</p>
+          <p id="res-bmr" class="font-heading text-5xl md:text-6xl text-white mb-1">—</p>
+          <p class="text-white/30 text-xs mb-4">cal / day at absolute rest</p>
+          <p class="text-white/40 text-xs leading-relaxed">What you'd burn in bed for 24 hours doing nothing. Your body's non-negotiable energy floor.</p>
+        </div>
+        <div class="p-8 border border-accent/40 bg-accent/5 relative overflow-hidden">
+          <span class="absolute top-0 right-0 text-[0.5rem] tracking-[0.2em] uppercase text-accent bg-accent/10 border-l border-b border-accent/20 px-3 py-1">Maintenance</span>
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">TDEE — Total Daily Expenditure</p>
+          <p id="res-tdee" class="font-heading text-5xl md:text-6xl text-accent mb-1">—</p>
+          <p class="text-white/30 text-xs mb-4">cal / day including all activity</p>
+          <p class="text-white/40 text-xs leading-relaxed">Your actual daily burn. Eat exactly this to stay where you are. Everything else is a strategy.</p>
+        </div>
+        <div class="p-8 border border-[#1a1a1a] bg-[#080808]">
+          <p id="res-goal-label" class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">Goal Calories</p>
+          <p id="res-goal-cal" class="font-heading text-5xl md:text-6xl text-white mb-1">—</p>
+          <p id="res-adj-label" class="text-white/30 text-xs mb-4">cal / day for your goal</p>
+          <p class="text-white/40 text-xs leading-relaxed">Your daily target. Consistency over 80% of days beats perfection 60% of the time.</p>
+        </div>
+      </div>
+
+      {# Breakdown bar #}
+      <div class="border border-[#1a1a1a] p-6 bg-[#080808]">
+        <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-4">Where Your Calories Go Each Day</p>
+        <div class="flex h-10 overflow-hidden mb-3 rounded-sm">
+          <div id="bar-bmr" class="bg-accent flex items-center justify-center text-[0.6rem] tracking-widest uppercase text-white transition-all duration-1000 overflow-hidden" style="width:65%">BMR</div>
+          <div id="bar-neat" class="bg-white/25 flex items-center justify-center text-[0.6rem] tracking-widest uppercase text-white/70 transition-all duration-1000 overflow-hidden" style="width:20%">NEAT</div>
+          <div id="bar-ex" class="bg-white/10 flex items-center justify-center text-[0.6rem] tracking-widest uppercase text-white/40 transition-all duration-1000 overflow-hidden" style="width:15%">EX</div>
+        </div>
+        <div class="flex flex-wrap gap-6 text-xs text-white/40">
+          <span><span id="bar-bmr-pct" class="text-white/70 font-medium">—</span> BMR — organs, brain, body heat</span>
+          <span><span id="bar-neat-pct" class="text-white/70 font-medium">—</span> NEAT — daily movement & steps</span>
+          <span><span id="bar-ex-pct" class="text-white/70 font-medium">—</span> Exercise — formal training</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# 2 · Macro Blueprint #}
+  <section class="max-w-6xl mx-auto px-6 py-16 border-b border-[#1a1a1a]">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Evidence-Based Targets</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-10">MACRO BLUEPRINT.</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      {# Protein #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/40">Protein</p>
+          <span class="text-[0.6rem] tracking-widest text-accent border border-accent/20 px-2 py-0.5">Priority #1</span>
+        </div>
+        <p id="res-protein-g" class="font-heading text-4xl text-white mb-0.5">—g</p>
+        <p id="res-protein-cal" class="text-white/30 text-xs mb-3">— cal · 4 cal/g</p>
+        <div class="h-1 bg-[#1a1a1a] mb-3"><div id="res-protein-bar" class="h-full bg-accent transition-all duration-700" style="width:0%"></div></div>
+        <p id="res-protein-pct" class="text-white/40 text-xs mb-4">— % of goal calories</p>
+        <div class="border-t border-[#1a1a1a] pt-4">
+          <p class="text-white/25 text-[0.65rem] uppercase tracking-widest mb-2">In real food</p>
+          <p id="res-protein-food" class="text-white/50 text-xs leading-relaxed">—</p>
+        </div>
+      </div>
+      {# Carbs #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/40">Carbohydrates</p>
+          <span class="text-[0.6rem] tracking-widest text-white/30 border border-white/10 px-2 py-0.5">Fuel</span>
+        </div>
+        <p id="res-carb-g" class="font-heading text-4xl text-white mb-0.5">—g</p>
+        <p id="res-carb-cal" class="text-white/30 text-xs mb-3">— cal · 4 cal/g</p>
+        <div class="h-1 bg-[#1a1a1a] mb-3"><div id="res-carb-bar" class="h-full bg-white/30 transition-all duration-700" style="width:0%"></div></div>
+        <p id="res-carb-pct" class="text-white/40 text-xs mb-4">— % of goal calories</p>
+        <div class="border-t border-[#1a1a1a] pt-4">
+          <p class="text-white/25 text-[0.65rem] uppercase tracking-widest mb-2">In real food</p>
+          <p id="res-carb-food" class="text-white/50 text-xs leading-relaxed">—</p>
+        </div>
+      </div>
+      {# Fat #}
+      <div class="border border-[#1a1a1a] bg-[#0d0d0d] p-6">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/40">Dietary Fat</p>
+          <span class="text-[0.6rem] tracking-widests text-white/30 border border-white/10 px-2 py-0.5">Hormones</span>
+        </div>
+        <p id="res-fat-g" class="font-heading text-4xl text-white mb-0.5">—g</p>
+        <p id="res-fat-cal" class="text-white/30 text-xs mb-3">— cal · 9 cal/g</p>
+        <div class="h-1 bg-[#1a1a1a] mb-3"><div id="res-fat-bar" class="h-full bg-white/20 transition-all duration-700" style="width:0%"></div></div>
+        <p id="res-fat-pct" class="text-white/40 text-xs mb-4">— % of goal calories</p>
+        <div class="border-t border-[#1a1a1a] pt-4">
+          <p class="text-white/25 text-[0.65rem] uppercase tracking-widest mb-2">In real food</p>
+          <p id="res-fat-food" class="text-white/50 text-xs leading-relaxed">—</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="border border-[#1a1a1a] bg-[#080808] p-5">
+      <p class="text-white/25 text-xs tracking-widest uppercase mb-2">Why protein is set first</p>
+      <p class="text-white/50 text-sm leading-relaxed max-w-3xl">Protein is the only macro that directly preserves muscle during a deficit. We set protein first (by bodyweight), then fat for hormonal health, and fill the rest with carbs for training performance. If your carbs come out low, eat fewer processed carbs — not less protein or fat.</p>
+    </div>
+  </section>
+
+  {# 3 · Timeline #}
+  <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-16">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">Reality Check</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-10">YOUR TIMELINE.</h2>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">Daily Deficit / Surplus</p>
+          <p id="res-daily-delta" class="font-heading text-4xl text-white mb-1">—</p>
+          <p class="text-white/30 text-xs">calories per day</p>
+        </div>
+        <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">Rate of Change</p>
+          <p id="res-weekly-change" class="font-heading text-4xl text-white mb-1">—</p>
+          <p class="text-white/30 text-xs">kg per week</p>
+        </div>
+        <div class="p-6 border border-[#1a1a1a] bg-[#080808]">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30 mb-3">In 12 Weeks</p>
+          <p id="res-12week" class="font-heading text-4xl text-white mb-1">—</p>
+          <p class="text-white/30 text-xs">projected weight (kg)</p>
+        </div>
+      </div>
+
+      <div id="timeline-goal-block" class="hidden border border-[#1a1a1a] bg-[#080808] p-6 mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-xs tracking-[0.15em] uppercase text-white/30">Progress to Goal Weight</p>
+          <p id="res-weeks-label" class="text-accent text-sm font-medium">—</p>
+        </div>
+        <div class="h-2 bg-[#1a1a1a] mb-2">
+          <div id="res-timeline-bar" class="h-full bg-accent transition-all duration-1000" style="width:5%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-white/30 mt-1">
+          <span id="tl-current-label">Now</span>
+          <span id="tl-goal-label">Goal</span>
+        </div>
+      </div>
+
+      <div id="timeline-warning" class="hidden border border-yellow-500/30 bg-yellow-500/5 p-5">
+        <p class="text-yellow-400 text-[0.65rem] tracking-widest uppercase mb-2">Pace Warning</p>
+        <p id="timeline-warning-msg" class="text-white/60 text-sm leading-relaxed">—</p>
+      </div>
+    </div>
+  </section>
+
+  {# 4 · Deep Insights #}
+  <section class="max-w-6xl mx-auto px-6 py-16 border-b border-[#1a1a1a]">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">What Other Calculators Skip</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-10">DEEP INSIGHTS.</h2>
+    <div id="insights-grid" class="grid md:grid-cols-2 gap-4"></div>
+  </section>
+
+  {# 5 · Indian Food Equivalents #}
+  <section class="bg-[#0d0d0d] border-b border-[#1a1a1a]">
+    <div class="max-w-6xl mx-auto px-6 py-16">
+      <p class="text-accent text-xs tracking-[0.3em] uppercase mb-3">India-Specific</p>
+      <h2 class="font-heading text-5xl md:text-6xl mb-4">IN REAL FOOD.</h2>
+      <p class="text-white/50 mb-10 max-w-xl">Your goal calories translated into a realistic Indian meal day — so the number actually means something.</p>
+      <div id="food-equiv-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
+      <div class="border border-[#1a1a1a] bg-[#080808] p-5">
+        <p id="food-equiv-note" class="text-white/40 text-sm leading-relaxed">—</p>
+      </div>
+    </div>
+  </section>
+
+  {# CTA → Tracker #}
+  <section class="max-w-6xl mx-auto px-6 py-20 text-center">
+    <p class="text-accent text-xs tracking-[0.3em] uppercase mb-4">Next Step</p>
+    <h2 class="font-heading text-5xl md:text-6xl mb-5">TRACK YOUR CALORIES.<br><span class="text-accent">STAY ON TARGET.</span></h2>
+    <p class="text-white/50 max-w-sm mx-auto mb-10 leading-relaxed">Now that you know your numbers, use the tracker to log meals — full Indian food database included, no login required.</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="/tracker" class="bg-accent text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:brightness-90 transition-all">Open Calorie Tracker →</a>
+      <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+              class="border border-white/20 text-white text-xs tracking-[0.15em] uppercase px-10 py-4 hover:border-white/50 transition-colors">
+        Recalculate
+      </button>
+    </div>
+  </section>
+
+</div>{# /results #}
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Radio UI helpers ─────────────────────────────────
+  function wireRadio(name, activeClass, inactiveClass, selector) {
+    document.querySelectorAll('input[name="' + name + '"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        document.querySelectorAll(selector).forEach(function (el) {
+          el.className = el.className.replace(activeClass, inactiveClass);
+        });
+        var target = this.closest('label').querySelector(selector.replace('document ', ''));
+        if (target) target.className = target.className.replace(inactiveClass, activeClass);
+      });
+    });
+  }
+
+  // Gender
+  document.querySelectorAll('input[name="gender"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.gender-opt').forEach(function (d) {
+        d.classList.remove('border-accent', 'bg-accent/10', 'text-white');
+        d.classList.add('border-[#1a1a1a]', 'text-white/40');
+      });
+      var opt = this.closest('label').querySelector('.gender-opt');
+      opt.classList.remove('border-[#1a1a1a]', 'text-white/40');
+      opt.classList.add('border-accent', 'bg-accent/10', 'text-white');
+    });
+  });
+
+  // Activity
+  document.querySelectorAll('input[name="activity"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.activity-label').forEach(function (lbl) {
+        lbl.classList.remove('border-accent/40', 'bg-accent/5');
+        lbl.classList.add('border-[#1a1a1a]');
+        var dot = lbl.querySelector('.activity-dot');
+        dot.classList.remove('border-accent', 'bg-accent');
+        dot.classList.add('border-[#444]');
+      });
+      var lbl = this.closest('.activity-label');
+      lbl.classList.add('border-accent/40', 'bg-accent/5');
+      lbl.classList.remove('border-[#1a1a1a]');
+      var dot = lbl.querySelector('.activity-dot');
+      dot.classList.add('border-accent', 'bg-accent');
+      dot.classList.remove('border-[#444]');
+    });
+  });
+
+  // Goal
+  document.querySelectorAll('input[name="goal"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.goal-opt').forEach(function (d) {
+        d.classList.remove('border-accent/40', 'bg-accent/5');
+        d.classList.add('border-[#1a1a1a]');
+      });
+      var opt = this.closest('.goal-label').querySelector('.goal-opt');
+      opt.classList.remove('border-[#1a1a1a]');
+      opt.classList.add('border-accent/40', 'bg-accent/5');
+    });
+  });
+
+  // ── Constants ────────────────────────────────────────
+  var MULT = { sedentary:1.2, light:1.375, moderate:1.55, very:1.725, extra:1.9 };
+  var ADJ  = { aggressive_cut:-500, cut:-300, maintain:0, lean_bulk:200, bulk:500 };
+  var PROT_PER_KG = { aggressive_cut:2.4, cut:2.2, maintain:1.8, lean_bulk:2.0, bulk:2.0 };
+  var FAT_PCT     = { aggressive_cut:0.22, cut:0.25, maintain:0.28, lean_bulk:0.25, bulk:0.25 };
+  var BREAKDOWN   = {
+    sedentary: [83, 17, 0],
+    light:     [73, 17, 10],
+    moderate:  [65, 15, 20],
+    very:      [58, 15, 27],
+    extra:     [53, 15, 32],
+  };
+  var GOAL_LABELS = {
+    aggressive_cut: 'Aggressive Cut  (−500 cal/day)',
+    cut:            'Cut  (−300 cal/day)',
+    maintain:       'Maintenance',
+    lean_bulk:      'Lean Bulk  (+200 cal/day)',
+    bulk:           'Bulk  (+500 cal/day)',
+  };
+
+  // ── Helpers ──────────────────────────────────────────
+  function $id(id) { return document.getElementById(id); }
+  function setText(id, v) { var e = $id(id); if (e) e.textContent = v; }
+  function setWidth(id, pct) { var e = $id(id); if (e) e.style.width = Math.min(100, Math.max(0, pct)) + '%'; }
+
+  // ── Main calculate ───────────────────────────────────
+  window.calculate = function () {
+    var age      = parseInt($id('age').value)    || 0;
+    var height   = parseFloat($id('height').value) || 0;
+    var weight   = parseFloat($id('weight').value) || 0;
+    var gender   = document.querySelector('input[name="gender"]:checked').value;
+    var activity = document.querySelector('input[name="activity"]:checked').value;
+    var goal     = document.querySelector('input[name="goal"]:checked').value;
+    var targetWt = parseFloat($id('target-weight').value) || null;
+
+    if (!age || !height || !weight) { $id('form-error').classList.remove('hidden'); return; }
+    $id('form-error').classList.add('hidden');
+
+    // BMR — Mifflin-St Jeor
+    var bmr = Math.round(10 * weight + 6.25 * height - 5 * age + (gender === 'male' ? 5 : -161));
+    var tdee    = Math.round(bmr * MULT[activity]);
+    var goalCal = tdee + ADJ[goal];
+
+    // Macros
+    var proteinG = Math.round(weight * PROT_PER_KG[goal]);
+    var fatG     = Math.round((goalCal * FAT_PCT[goal]) / 9);
+    var proteinCal = proteinG * 4;
+    var fatCal     = fatG * 9;
+    var carbCal  = Math.max(0, goalCal - proteinCal - fatCal);
+    var carbG    = Math.round(carbCal / 4);
+
+    // Timeline
+    var delta     = goalCal - tdee;
+    var weeklyKg  = (delta * 7) / 7700;
+    var proj12    = Math.round((weight + weeklyKg * 12) * 10) / 10;
+
+    // ── Numbers ─────────────────────────────────────────
+    setText('res-bmr',        bmr.toLocaleString());
+    setText('res-tdee',       tdee.toLocaleString());
+    setText('res-goal-cal',   goalCal.toLocaleString());
+    setText('res-goal-label', GOAL_LABELS[goal]);
+    setText('res-adj-label',  delta === 0 ? 'at maintenance' :
+      (delta > 0 ? '+' + delta + ' cal surplus / day' : delta + ' cal deficit / day'));
+
+    // Breakdown bar
+    var bd = BREAKDOWN[activity];
+    $id('bar-bmr').style.width  = bd[0] + '%';
+    $id('bar-neat').style.width = bd[1] + '%';
+    $id('bar-ex').style.width   = bd[2] + '%';
+    setText('bar-bmr-pct',  bd[0] + '%');
+    setText('bar-neat-pct', bd[1] + '%');
+    setText('bar-ex-pct',   bd[2] + '%');
+
+    // ── Macros ───────────────────────────────────────────
+    setText('res-protein-g',   proteinG + 'g');
+    setText('res-protein-cal', proteinCal + ' cal');
+    setText('res-protein-pct', Math.round(proteinCal / goalCal * 100) + '% of goal calories');
+    setWidth('res-protein-bar', proteinCal / goalCal * 100);
+    setText('res-protein-food', proteinFoodEq(proteinG));
+
+    setText('res-carb-g',   carbG + 'g');
+    setText('res-carb-cal', carbCal + ' cal');
+    setText('res-carb-pct', Math.round(carbCal / goalCal * 100) + '% of goal calories');
+    setWidth('res-carb-bar', carbCal / goalCal * 100);
+    setText('res-carb-food', carbFoodEq(carbG));
+
+    setText('res-fat-g',   fatG + 'g');
+    setText('res-fat-cal', fatCal + ' cal');
+    setText('res-fat-pct', Math.round(fatCal / goalCal * 100) + '% of goal calories');
+    setWidth('res-fat-bar', fatCal / goalCal * 100);
+    setText('res-fat-food', fatFoodEq(fatG));
+
+    // ── Timeline ─────────────────────────────────────────
+    setText('res-daily-delta',   (delta > 0 ? '+' : '') + delta + ' cal');
+    setText('res-weekly-change', (weeklyKg > 0 ? '+' : '') + weeklyKg.toFixed(2) + ' kg');
+    setText('res-12week',        proj12 + ' kg');
+
+    if (targetWt) {
+      var diff = targetWt - weight;
+      var weeks = weeklyKg !== 0 ? Math.ceil(Math.abs(diff / weeklyKg)) : null;
+      $id('timeline-goal-block').classList.remove('hidden');
+      setText('res-weeks-label', weeks ? weeks + ' weeks to goal' : 'At maintenance — adjust goal');
+      setText('tl-current-label', weight + ' kg');
+      setText('tl-goal-label',   targetWt + ' kg');
+    } else {
+      $id('timeline-goal-block').classList.add('hidden');
+    }
+
+    // Pace warning
+    var warn = $id('timeline-warning');
+    var safeRate = weight * 0.01;
+    var warnMsg = '';
+    if ((goal === 'cut' || goal === 'aggressive_cut') && Math.abs(weeklyKg) > safeRate) {
+      warnMsg = 'Your cut pace (' + Math.abs(weeklyKg).toFixed(2) + ' kg/week) exceeds the safe maximum of ~1% bodyweight/week (' + safeRate.toFixed(2) + ' kg). At this speed you risk significant muscle loss alongside fat. A moderate cut (−300 cal) is more effective long-term.';
+    } else if ((goal === 'bulk' || goal === 'lean_bulk') && weeklyKg > 0.5) {
+      warnMsg = 'Gaining ' + weeklyKg.toFixed(2) + ' kg/week puts you above the natural muscle-building ceiling (~0.25–0.5 kg/week). The extra surplus will predominantly be stored as fat. A lean bulk (+200 cal) is the smarter play.';
+    }
+    if (warnMsg) {
+      warn.classList.remove('hidden');
+      setText('timeline-warning-msg', warnMsg);
+    } else {
+      warn.classList.add('hidden');
+    }
+
+    // ── Insights ─────────────────────────────────────────
+    buildInsights(gender, age, weight, bmr, tdee, goalCal, delta, proteinG, weeklyKg, goal, activity);
+
+    // ── Indian Food Equivalents ───────────────────────────
+    buildFoodEquiv(goalCal);
+
+    // ── Save for Tracker ─────────────────────────────────
+    try {
+      localStorage.setItem('ffx_goal_cal',  goalCal);
+      localStorage.setItem('ffx_protein_g', proteinG);
+      localStorage.setItem('ffx_carb_g',    carbG);
+      localStorage.setItem('ffx_fat_g',     fatG);
+    } catch(e) {}
+
+    // Show
+    var res = $id('results');
+    res.classList.remove('hidden');
+    setTimeout(function () { res.scrollIntoView({ behavior: 'smooth' }); }, 80);
+  };
+
+  // ── Food equivalents ─────────────────────────────────
+  function proteinFoodEq(g) {
+    return Math.round(g / 6) + ' eggs  |  ' +
+           Math.round(g / 0.31) + 'g chicken breast  |  ' +
+           Math.round(g / 10) + ' cups dal  |  ' +
+           Math.round(g / 24) + ' scoops whey';
+  }
+  function carbFoodEq(g) {
+    return Math.round(g / 15) + ' rotis  |  ' +
+           (g / 57).toFixed(1) + ' cups cooked rice  |  ' +
+           Math.round(g / 23) + ' bananas';
+  }
+  function fatFoodEq(g) {
+    return Math.round(g / 14) + ' × 30g peanuts  |  ' +
+           Math.round(g / 5)  + ' whole eggs  |  ' +
+           Math.round(g / 4)  + 'g ghee';
+  }
+
+  // ── Insights builder ─────────────────────────────────
+  function buildInsights(gender, age, weight, bmr, tdee, goalCal, delta, proteinG, weeklyKg, goal, activity) {
+    var safeFloor = gender === 'male' ? 1500 : 1200;
+    var ins = [];
+
+    // 1. Metabolic floor
+    ins.push({
+      label: 'Your Metabolic Floor',
+      body: 'Your BMR of ' + bmr.toLocaleString() + ' cal means your body burns ' +
+            Math.round(bmr / 24) + ' cal every hour just staying alive — before any movement. ' +
+            'Eating below your BMR (' + safeFloor + ' cal safe floor) forces your body to break down muscle tissue to survive, not just burn fat. Your goal calories are ' +
+            (goalCal < safeFloor ? 'BELOW this — reconsider.' : 'above this — you\'re in a safe zone.'),
+      warn: goalCal < safeFloor,
+    });
+
+    // 2. Protein reality
+    ins.push({
+      label: 'The Protein Priority',
+      body: 'Protein is the only macro that directly preserves muscle in a deficit. Your target of ' +
+            proteinG + 'g/day = ' + Math.round(proteinG / 6) + ' eggs OR ' +
+            Math.round(proteinG / 0.31) + 'g chicken breast. ' +
+            'Hit protein first every meal, then fill the rest with carbs and fat. If you only track one macro, track this one.',
+      positive: true,
+    });
+
+    // 3. Adaptation warning (for cuts only)
+    if (goal === 'cut' || goal === 'aggressive_cut') {
+      ins.push({
+        label: 'The Adaptation Warning',
+        body: 'After 8–12 weeks of continuous cutting, your metabolism adapts downward by 5–15% — meaning your actual TDEE falls below the calculated ' +
+              tdee.toLocaleString() + ' cal. If fat loss stalls for 2+ weeks despite hitting calories, ' +
+              'do NOT cut further. Take a 2-week diet break at ' + tdee.toLocaleString() + ' cal, then resume. This resets leptin and avoids metabolic crash.',
+      });
+    }
+
+    // 4. Natural muscle ceiling (for bulks)
+    if (goal === 'lean_bulk' || goal === 'bulk') {
+      var monthMax = gender === 'male'
+        ? Math.max(0.5, Math.min(1.5, 1.5 - (age - 20) * 0.04)).toFixed(1)
+        : Math.max(0.3, Math.min(0.75, 0.75 - (age - 20) * 0.02)).toFixed(1);
+      ins.push({
+        label: 'Your Natural Muscle Ceiling',
+        body: 'At your age, you can realistically build ~' + monthMax + ' kg of actual muscle per month — naturally. ' +
+              'Everything beyond that caloric ceiling becomes fat storage. Your +' + (delta) + ' cal surplus is' +
+              (delta <= 300 ? ' well calibrated for lean gains.' : ' on the aggressive side — consider a leaner approach to minimise fat gain.'),
+        warn: delta > 400,
+        positive: delta <= 300,
+      });
+    }
+
+    // 5. Cardio trap
+    ins.push({
+      label: 'The Cardio Trap',
+      body: '30 minutes of moderate cardio burns ~' + Math.round(weight * 3.5) + ' cal — about ' +
+            Math.round(weight * 3.5 / 80) + ' rotis\' worth. A single samosa (200 cal) cancels 17 minutes of running. ' +
+            'Cardio improves health, recovery, and cardiovascular fitness. Your diet drives weight change. You cannot out-train a bad diet.',
+    });
+
+    // 6. Sleep & fat loss
+    ins.push({
+      label: 'Sleep Is a Training Variable',
+      body: 'Sleeping <6 hours vs 8 hours causes 55% less of your weight loss to come from fat — ' +
+            'and proportionally more from muscle (Nedeltcheva et al., 2010). Same calories, same training, wrong tissue. ' +
+            '7–9 hours is not a lifestyle luxury — it\'s part of the program.',
+    });
+
+    // 7. NEAT — the hidden multiplier
+    ins.push({
+      label: 'NEAT: The Calorie Multiplier You Control',
+      body: 'Non-Exercise Activity Thermogenesis — steps, fidgeting, standing — accounts for ' + BREAKDOWN[activity][1] + '% of your burn. ' +
+            'Getting 8,000–10,000 steps/day can add 300–500 cal to your TDEE without a single gym session. ' +
+            'This is the most underrated fat loss tool: move more between workouts.',
+    });
+
+    var grid = $id('insights-grid');
+    grid.innerHTML = '';
+    ins.forEach(function (i) {
+      var border = i.warn ? 'border-yellow-500/30' : (i.positive ? 'border-green-500/20' : 'border-[#1a1a1a]');
+      var bg     = i.warn ? 'bg-yellow-500/5'      : (i.positive ? 'bg-green-500/5'      : 'bg-[#0d0d0d]');
+      var lc     = i.warn ? 'text-yellow-400'       : (i.positive ? 'text-green-400'       : 'text-accent');
+      grid.innerHTML += '<div class="p-6 border ' + border + ' ' + bg + '">' +
+        '<p class="text-xs tracking-[0.15em] uppercase ' + lc + ' mb-3">' + i.label + '</p>' +
+        '<p class="text-white/60 text-sm leading-relaxed">' + i.body + '</p>' +
+        '</div>';
+    });
+  }
+
+  // ── Indian food equivalents day ──────────────────────
+  function buildFoodEquiv(goalCal) {
+    var meals = [
+      {
+        name: 'Breakfast',
+        desc: Math.max(2, Math.round(goalCal * 0.22 / 75)) + ' eggs + 2 rotis + chai',
+        cal:  Math.round(goalCal * 0.22),
+      },
+      {
+        name: 'Lunch',
+        desc: '2 rotis + ' + Math.max(0.5, (goalCal * 0.30 / 260)).toFixed(1) + ' cup rice + dal + sabzi',
+        cal:  Math.round(goalCal * 0.30),
+      },
+      {
+        name: 'Pre/Post Workout',
+        desc: '1 banana + 1 scoop whey + ' + (goalCal > 2000 ? '30g peanuts' : 'black coffee'),
+        cal:  Math.round(goalCal * 0.12),
+      },
+      {
+        name: 'Dinner',
+        desc: Math.max(2, Math.round(goalCal * 0.36 / 140)) + ' rotis + 150g chicken/paneer + dal',
+        cal:  Math.round(goalCal * 0.36),
+      },
+    ];
+
+    var grid = $id('food-equiv-grid');
+    grid.innerHTML = '';
+    var total = 0;
+    meals.forEach(function (m) {
+      total += m.cal;
+      grid.innerHTML += '<div class="border border-[#1a1a1a] bg-[#080808] p-5">' +
+        '<p class="text-xs tracking-[0.15em] uppercase text-accent mb-2">' + m.name + '</p>' +
+        '<p class="text-white/70 text-sm leading-relaxed mb-3">' + m.desc + '</p>' +
+        '<p class="text-white/30 text-xs">~' + m.cal + ' cal</p>' +
+        '</div>';
+    });
+
+    setText('food-equiv-note',
+      'Sample day total: ~' + total.toLocaleString() + ' cal (target: ' + goalCal.toLocaleString() + ' cal). ' +
+      'This is illustrative — your numbers matter more than the exact foods. ' +
+      'Track them in the Calorie Tracker with the full Indian food database.');
+  }
+
+}());
+</script>
+
+{% endblock %}
