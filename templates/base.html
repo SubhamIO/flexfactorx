@@ -50,6 +50,34 @@
            class="text-xs tracking-[0.15em] uppercase bg-accent text-white px-4 py-2 hover:brightness-90 transition-all">
           Follow
         </a>
+
+        {# User avatar / login pill #}
+        {% if current_user.is_authenticated %}
+        <div class="flex items-center gap-2 group relative">
+          {% if current_user.picture %}
+          <img src="{{ current_user.picture }}" alt="{{ current_user.name }}"
+               class="w-7 h-7 rounded-full border border-[#2a2a2a] object-cover">
+          {% else %}
+          <div class="w-7 h-7 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center text-accent text-[0.6rem] font-bold">
+            {{ current_user.name[0].upper() if current_user.name else 'U' }}
+          </div>
+          {% endif %}
+          <span class="text-white/50 text-xs max-w-[80px] truncate">{{ current_user.name.split()[0] if current_user.name else 'You' }}</span>
+          {# Dropdown on hover #}
+          <div class="absolute right-0 top-full mt-2 w-40 bg-[#0d0d0d] border border-[#1a1a1a] shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
+            <form action="{{ url_for('auth.logout') }}" method="POST">
+              <button type="submit" class="w-full text-left px-4 py-3 text-xs tracking-widest uppercase text-white/40 hover:text-red-400 hover:bg-white/[0.02] transition-colors">
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}"
+           class="text-xs tracking-[0.15em] uppercase border border-[#2a2a2a] text-white/50 px-4 py-2 hover:border-accent/40 hover:text-white transition-all">
+          Sign In
+        </a>
+        {% endif %}
       </nav>
 
       <!-- Mobile toggle -->
@@ -73,6 +101,18 @@
          class="text-xs tracking-[0.15em] uppercase bg-accent text-white px-4 py-3 text-center hover:brightness-90 transition-all">
         Follow on Instagram
       </a>
+      {% if current_user.is_authenticated %}
+      <form action="{{ url_for('auth.logout') }}" method="POST">
+        <button type="submit" class="w-full text-left text-xs tracking-[0.15em] uppercase text-white/30 hover:text-red-400 transition-colors py-1">
+          Sign Out ({{ current_user.name.split()[0] if current_user.name else 'Account' }})
+        </button>
+      </form>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}"
+         class="text-xs tracking-[0.15em] uppercase border border-[#2a2a2a] text-white/50 px-4 py-3 text-center hover:border-accent/40 hover:text-white transition-all">
+        Sign In
+      </a>
+      {% endif %}
     </nav>
   </header>
 

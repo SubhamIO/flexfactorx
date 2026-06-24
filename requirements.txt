@@ -2,3 +2,8 @@ flask
 gunicorn
 python-dotenv
 razorpay
+flask-sqlalchemy
+flask-migrate
+flask-login
+authlib
+psycopg2-binary
