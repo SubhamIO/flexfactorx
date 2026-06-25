@@ -107,6 +107,7 @@ def inject_globals():
             ('/tools',    'Tools',    'tools'),
             ('/shop',     'Shop',     'shop'),
             ('/collabs',  'Collabs',  'collabs'),
+            ('/support',  'Support',  'support'),
             ('/about',    'About',    'about'),
             ('/contact',  'Contact',  'contact'),
         ],
@@ -177,6 +178,11 @@ def tracker():
 @app.route('/collabs')
 def collabs():
     return render_template('collabs.html')
+
+
+@app.route('/support')
+def support():
+    return render_template('support.html')
 
 
 # ── SEO ───────────────────────────────────────────────────────────────────────
