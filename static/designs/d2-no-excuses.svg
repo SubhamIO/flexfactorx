@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;display=swap');
+    </style>
+
+    <!-- Chalk / rough-edge text effect -->
+    <filter id="chalk" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="turbulence" baseFrequency="0.042" numOctaves="5" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"
+                         xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feMorphology operator="erode" radius="0.35" in="displaced"/>
+    </filter>
+
+    <!-- Subtle background grain -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.88" numOctaves="4"
+                    stitchTiles="stitch" result="grainOut"/>
+      <feColorMatrix type="saturate" values="0" in="grainOut" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <!-- ── Background ─────────────────────────────────────── -->
+  <rect width="800" height="1000" fill="#080808"/>
+  <!-- grain overlay -->
+  <rect width="800" height="1000" fill="#303030" filter="url(#grain)" opacity="0.12"/>
+
+  <!-- ── Corner bracket accents ─────────────────────────── -->
+  <!-- top-left -->
+  <polyline points="58,112 58,58 112,58"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <!-- top-right -->
+  <polyline points="688,58 742,58 742,112"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <!-- bottom-left -->
+  <polyline points="58,888 58,942 112,942"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <!-- bottom-right -->
+  <polyline points="688,942 742,942 742,888"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+
+  <!-- ── Top label ──────────────────────────────────────── -->
+  <text x="400" y="170"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="20" fill="#FF4D00" text-anchor="middle" letter-spacing="16" opacity="0.75">
+    FLEXFACTORX ORIGINAL
+  </text>
+  <line x1="115" y1="185" x2="685" y2="185" stroke="#FF4D00" stroke-width="0.75" opacity="0.35"/>
+
+  <!-- ── NO EXCUSES. ─────────────────────────────────────── -->
+  <text x="400" y="420"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="155" fill="#FFFFFF" text-anchor="middle" letter-spacing="3"
+        textLength="680" lengthAdjust="spacingAndGlyphs"
+        filter="url(#chalk)">NO EXCUSES.</text>
+
+  <!-- ── Separator: lines + rotated square ─────────────── -->
+  <line x1="80" y1="455" x2="350" y2="455" stroke="#FF4D00" stroke-width="1.8" opacity="0.8"/>
+  <rect x="390" y="447" width="20" height="20" fill="#FF4D00"
+        transform="rotate(45 400 457)"/>
+  <line x1="450" y1="455" x2="720" y2="455" stroke="#FF4D00" stroke-width="1.8" opacity="0.8"/>
+
+  <!-- ── JUST REPS. ──────────────────────────────────────── -->
+  <text x="400" y="597"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="142" fill="#FF4D00" text-anchor="middle" letter-spacing="8"
+        textLength="620" lengthAdjust="spacingAndGlyphs"
+        filter="url(#chalk)">JUST REPS.</text>
+
+  <!-- ── Tick-mark details left & right ────────────────── -->
+  <g opacity="0.22">
+    <line x1="80"  y1="680" x2="80"  y2="714" stroke="#FFFFFF" stroke-width="2.2"/>
+    <line x1="95"  y1="674" x2="95"  y2="720" stroke="#FFFFFF" stroke-width="2.2"/>
+    <line x1="110" y1="680" x2="110" y2="714" stroke="#FFFFFF" stroke-width="2.2"/>
+  </g>
+  <g opacity="0.22">
+    <line x1="720" y1="680" x2="720" y2="714" stroke="#FFFFFF" stroke-width="2.2"/>
+    <line x1="705" y1="674" x2="705" y2="720" stroke="#FFFFFF" stroke-width="2.2"/>
+    <line x1="690" y1="680" x2="690" y2="714" stroke="#FFFFFF" stroke-width="2.2"/>
+  </g>
+
+  <!-- ── Brand stamp ─────────────────────────────────────── -->
+  <line x1="230" y1="818" x2="570" y2="818" stroke="#FFFFFF" stroke-width="0.6" opacity="0.18"/>
+  <text x="400" y="855"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="35" fill="#FFFFFF" text-anchor="middle" letter-spacing="18" opacity="0.42">
+    FLEXFACTORX
+  </text>
+  <line x1="230" y1="872" x2="570" y2="872" stroke="#FFFFFF" stroke-width="0.6" opacity="0.18"/>
+</svg>

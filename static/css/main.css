@@ -2,7 +2,7 @@ html { scroll-behavior: smooth; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #111111; }
-::-webkit-scrollbar-thumb { background: #FF4D00; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 2px; }
 
 /* Fluid type — can't express clamp() in Tailwind CDN classes */
 .hero-title  { font-size: clamp(4rem, 10vw, 11rem); }
@@ -11,7 +11,7 @@ html { scroll-behavior: smooth; }
 /* Hero photo gradients — blend photo into #080808 background */
 .hero-photo-fade-x { background: linear-gradient(to right, #080808 0%, transparent 45%); }
 .hero-photo-fade-y { background: linear-gradient(to top,  #080808 0%, transparent 30%); }
-.hero-glow         { background: radial-gradient(ellipse 60% 30% at 30% 100%, rgba(255,77,0,0.10), transparent); }
+.hero-glow         { background: radial-gradient(ellipse 60% 30% at 30% 100%, rgba(212,175,55,0.12), transparent); }
 
 /* Hero image wrapper — full bleed on mobile, right column on desktop */
 .hero-img-wrap { position: absolute; inset: 0; }

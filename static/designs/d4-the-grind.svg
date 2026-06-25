@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;display=swap');
+    </style>
+
+    <!-- Chalk rough-edge effect on text -->
+    <filter id="chalk" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="turbulence" baseFrequency="0.038" numOctaves="5" seed="12" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.8"
+                         xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feMorphology operator="erode" radius="0.4" in="displaced"/>
+    </filter>
+
+    <!-- Background grain -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.80" numOctaves="4"
+                    stitchTiles="stitch" result="grainOut"/>
+      <feColorMatrix type="saturate" values="0" in="grainOut" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+
+    <!-- Edge burn / vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%"   stop-color="#0a0a0a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.65"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ── Background ─────────────────────────────────────── -->
+  <rect width="800" height="800" fill="#0a0a0a"/>
+  <rect width="800" height="800" fill="#282828" filter="url(#grain)" opacity="0.14"/>
+  <rect width="800" height="800" fill="url(#vignette)"/>
+
+  <!-- ── Corner bracket accents ─────────────────────────── -->
+  <polyline points="52,104 52,52 104,52"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <polyline points="696,52 748,52 748,104"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <polyline points="52,696 52,748 104,748"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+  <polyline points="696,748 748,748 748,696"
+            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+
+  <!-- ── THE — faded prefix ─────────────────────────────── -->
+  <text x="400" y="168"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="56" fill="#FFFFFF" text-anchor="middle" letter-spacing="42" opacity="0.28">
+    THE
+  </text>
+
+  <!-- ── GRIND — dominant white ─────────────────────────── -->
+  <text x="400" y="368"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="218" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1"
+        textLength="700" lengthAdjust="spacingAndGlyphs"
+        filter="url(#chalk)">GRIND</text>
+
+  <!-- ── Worn dashed rule ───────────────────────────────── -->
+  <line x1="80" y1="397" x2="720" y2="397"
+        stroke="#FF4D00" stroke-width="2" stroke-dasharray="6 3" opacity="0.65"/>
+
+  <!-- ── IS FREE. — orange punch ────────────────────────── -->
+  <text x="400" y="558"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="175" fill="#FF4D00" text-anchor="middle" letter-spacing="5"
+        textLength="640" lengthAdjust="spacingAndGlyphs"
+        filter="url(#chalk)">IS FREE.</text>
+
+  <!-- ── Separator line + brand ────────────────────────── -->
+  <line x1="190" y1="618" x2="610" y2="618" stroke="#FFFFFF" stroke-width="0.6" opacity="0.18"/>
+
+  <text x="400" y="652"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="31" fill="#FFFFFF" text-anchor="middle" letter-spacing="16" opacity="0.40">
+    — FLEXFACTORX —
+  </text>
+
+  <!-- ── Tagline ─────────────────────────────────────────── -->
+  <text x="400" y="686"
+        font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+        font-size="15" fill="#FF4D00" text-anchor="middle" letter-spacing="6" opacity="0.48">
+    FREE PROGRAMS · FREE ARTICLES · FREE TOOLS
+  </text>
+</svg>
