@@ -19,7 +19,7 @@
 
 ### TRAIN. BUILD. DOMINATE.
 
-[![Live](https://img.shields.io/badge/LIVE-flexfactorx.onrender.com-FF4D00?style=for-the-badge&logoColor=white)](https://flexfactorx.onrender.com)
+[![Live](https://img.shields.io/badge/LIVE-flexfactorx.onrender.com-E6B422?style=for-the-badge&logoColor=white)](https://flexfactorx.onrender.com)
 &nbsp;
 [![Instagram](https://img.shields.io/badge/INSTAGRAM-@flexfactorx-E1306C?style=for-the-badge&logo=instagram&logoColor=white)](https://instagram.com/flexfactorx)
 &nbsp;

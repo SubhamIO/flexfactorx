@@ -35,7 +35,7 @@
           <svg width="220" height="220" viewBox="0 0 220 220" class="rotate-[-90deg]">
             <circle cx="110" cy="110" r="90" fill="none" stroke="#1a1a1a" stroke-width="14"/>
             <circle id="cal-ring" cx="110" cy="110" r="90" fill="none"
-                    stroke="#FF4D00" stroke-width="14" stroke-linecap="round"
+                    stroke="#E6B422" stroke-width="14" stroke-linecap="round"
                     stroke-dasharray="0 565" stroke-dashoffset="0"
                     class="transition-all duration-700"/>
           </svg>
@@ -374,14 +374,14 @@
     var arc = pct * CIRC;
     var ring = document.getElementById('cal-ring');
     ring.setAttribute('stroke-dasharray', arc.toFixed(1) + ' ' + CIRC.toFixed(1));
-    ring.setAttribute('stroke', pct > 1 ? '#ef4444' : '#FF4D00');
+    ring.setAttribute('stroke', pct > 1 ? '#ef4444' : '#E6B422');
 
     setText('ring-eaten',      t.cal);
     setText('ring-goal',       goal);
     setText('stat-burned',     t.cal);
     var rem = goal - t.cal;
     setText('stat-remaining',  rem >= 0 ? rem : '−' + Math.abs(rem));
-    document.getElementById('stat-remaining').style.color = rem < 0 ? '#ef4444' : '#FF4D00';
+    document.getElementById('stat-remaining').style.color = rem < 0 ? '#ef4444' : '#E6B422';
     setText('stat-goal',       goal);
 
     // Macro bars

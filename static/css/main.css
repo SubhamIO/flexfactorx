@@ -2,7 +2,33 @@ html { scroll-behavior: smooth; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #111111; }
-::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: #E6B422; border-radius: 2px; }
+
+/* Sparkly metallic gold shimmer — for logo & headline accents */
+.gold-shine {
+  background: linear-gradient(
+    100deg,
+    #8a6d1d 0%,
+    #d4af37 18%,
+    #fdf3b0 34%,
+    #fffbe6 44%,
+    #f7d765 50%,
+    #fffbe6 56%,
+    #fdf3b0 66%,
+    #d4af37 82%,
+    #8a6d1d 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 1px 6px rgba(230, 180, 34, 0.28));
+  animation: gold-sweep 5s linear infinite;
+}
+@keyframes gold-sweep {
+  to { background-position: 200% center; }
+}
 
 /* Fluid type — can't express clamp() in Tailwind CDN classes */
 .hero-title  { font-size: clamp(4rem, 10vw, 11rem); }
@@ -11,7 +37,7 @@ html { scroll-behavior: smooth; }
 /* Hero photo gradients — blend photo into #080808 background */
 .hero-photo-fade-x { background: linear-gradient(to right, #080808 0%, transparent 45%); }
 .hero-photo-fade-y { background: linear-gradient(to top,  #080808 0%, transparent 30%); }
-.hero-glow         { background: radial-gradient(ellipse 60% 30% at 30% 100%, rgba(212,175,55,0.12), transparent); }
+.hero-glow         { background: radial-gradient(ellipse 60% 30% at 30% 100%, rgba(230,180,34,0.14), transparent); }
 
 /* Hero image wrapper — full bleed on mobile, right column on desktop */
 .hero-img-wrap { position: absolute; inset: 0; }

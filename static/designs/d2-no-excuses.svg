@@ -29,24 +29,24 @@
   <!-- ── Corner bracket accents ─────────────────────────── -->
   <!-- top-left -->
   <polyline points="58,112 58,58 112,58"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <!-- top-right -->
   <polyline points="688,58 742,58 742,112"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <!-- bottom-left -->
   <polyline points="58,888 58,942 112,942"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <!-- bottom-right -->
   <polyline points="688,942 742,942 742,888"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
 
   <!-- ── Top label ──────────────────────────────────────── -->
   <text x="400" y="170"
         font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
-        font-size="20" fill="#FF4D00" text-anchor="middle" letter-spacing="16" opacity="0.75">
+        font-size="20" fill="#E6B422" text-anchor="middle" letter-spacing="16" opacity="0.75">
     FLEXFACTORX ORIGINAL
   </text>
-  <line x1="115" y1="185" x2="685" y2="185" stroke="#FF4D00" stroke-width="0.75" opacity="0.35"/>
+  <line x1="115" y1="185" x2="685" y2="185" stroke="#E6B422" stroke-width="0.75" opacity="0.35"/>
 
   <!-- ── NO EXCUSES. ─────────────────────────────────────── -->
   <text x="400" y="420"
@@ -56,15 +56,15 @@
         filter="url(#chalk)">NO EXCUSES.</text>
 
   <!-- ── Separator: lines + rotated square ─────────────── -->
-  <line x1="80" y1="455" x2="350" y2="455" stroke="#FF4D00" stroke-width="1.8" opacity="0.8"/>
-  <rect x="390" y="447" width="20" height="20" fill="#FF4D00"
+  <line x1="80" y1="455" x2="350" y2="455" stroke="#E6B422" stroke-width="1.8" opacity="0.8"/>
+  <rect x="390" y="447" width="20" height="20" fill="#E6B422"
         transform="rotate(45 400 457)"/>
-  <line x1="450" y1="455" x2="720" y2="455" stroke="#FF4D00" stroke-width="1.8" opacity="0.8"/>
+  <line x1="450" y1="455" x2="720" y2="455" stroke="#E6B422" stroke-width="1.8" opacity="0.8"/>
 
   <!-- ── JUST REPS. ──────────────────────────────────────── -->
   <text x="400" y="597"
         font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
-        font-size="142" fill="#FF4D00" text-anchor="middle" letter-spacing="8"
+        font-size="142" fill="#E6B422" text-anchor="middle" letter-spacing="8"
         textLength="620" lengthAdjust="spacingAndGlyphs"
         filter="url(#chalk)">JUST REPS.</text>
 

@@ -20,7 +20,7 @@ LOGO    = os.path.join(BASE, 'flexfactorx_logo.PNG')
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 BG      = colors.HexColor('#080808')
-ACCENT  = colors.HexColor('#FF4D00')
+ACCENT  = colors.HexColor('#E6B422')
 WHITE   = colors.white
 DIM     = colors.HexColor('#888888')
 FAINT   = colors.HexColor('#444444')

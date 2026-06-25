@@ -34,13 +34,13 @@
 
   <!-- ── Corner bracket accents ─────────────────────────── -->
   <polyline points="52,104 52,52 104,52"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <polyline points="696,52 748,52 748,104"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <polyline points="52,696 52,748 104,748"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
   <polyline points="696,748 748,748 748,696"
-            fill="none" stroke="#FF4D00" stroke-width="3.5" stroke-linecap="square"/>
+            fill="none" stroke="#E6B422" stroke-width="3.5" stroke-linecap="square"/>
 
   <!-- ── THE — faded prefix ─────────────────────────────── -->
   <text x="400" y="168"
@@ -58,12 +58,12 @@
 
   <!-- ── Worn dashed rule ───────────────────────────────── -->
   <line x1="80" y1="397" x2="720" y2="397"
-        stroke="#FF4D00" stroke-width="2" stroke-dasharray="6 3" opacity="0.65"/>
+        stroke="#E6B422" stroke-width="2" stroke-dasharray="6 3" opacity="0.65"/>
 
   <!-- ── IS FREE. — orange punch ────────────────────────── -->
   <text x="400" y="558"
         font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
-        font-size="175" fill="#FF4D00" text-anchor="middle" letter-spacing="5"
+        font-size="175" fill="#E6B422" text-anchor="middle" letter-spacing="5"
         textLength="640" lengthAdjust="spacingAndGlyphs"
         filter="url(#chalk)">IS FREE.</text>
 
@@ -79,7 +79,7 @@
   <!-- ── Tagline ─────────────────────────────────────────── -->
   <text x="400" y="686"
         font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
-        font-size="15" fill="#FF4D00" text-anchor="middle" letter-spacing="6" opacity="0.48">
+        font-size="15" fill="#E6B422" text-anchor="middle" letter-spacing="6" opacity="0.48">
     FREE PROGRAMS · FREE ARTICLES · FREE TOOLS
   </text>
 </svg>

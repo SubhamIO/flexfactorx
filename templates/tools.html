@@ -1819,11 +1819,11 @@ function renderTracker(){
   setText('tr-burned',  wBurn.toLocaleString());
   setText('tr-net-rem', rem >= 0 ? rem.toLocaleString() : '−'+Math.abs(rem).toLocaleString());
   var netRemEl = $id('tr-net-rem');
-  if(netRemEl) netRemEl.style.color = rem < 0 ? '#ef4444' : '#FF4D00';
+  if(netRemEl) netRemEl.style.color = rem < 0 ? '#ef4444' : '#E6B422';
 
   setText('tr-goal-label-sm', 'Goal: '+goal+' cal');
   setWidth('tr-prog', Math.min(100, (net/goal)*100));
-  var prog=$id('tr-prog'); if(prog) prog.style.backgroundColor=net>goal?'#ef4444':'#FF4D00';
+  var prog=$id('tr-prog'); if(prog) prog.style.backgroundColor=net>goal?'#ef4444':'#E6B422';
 
   // Macros
   renderMacroBar('protein', ft.protein, settings.protein||150);
@@ -2050,8 +2050,8 @@ function renderCalChart(data){
   var goal=settings.cal||2000;
   var gy=yf(goal);
   var goalLine=(gy>=padT&&gy<=VH-padB)?
-    '<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#FF4D00" stroke-width="1" stroke-dasharray="5 4" opacity="0.35"/>'+
-    '<text x="'+(VW-padR-2)+'" y="'+(gy-4).toFixed(1)+'" text-anchor="end" fill="#FF4D00" font-size="8" opacity="0.45">GOAL</text>':'';
+    '<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#E6B422" stroke-width="1" stroke-dasharray="5 4" opacity="0.35"/>'+
+    '<text x="'+(VW-padR-2)+'" y="'+(gy-4).toFixed(1)+'" text-anchor="end" fill="#E6B422" font-size="8" opacity="0.45">GOAL</text>':'';
 
   // Zero line when chart goes negative
   var zeroLine=minVal<0?'<line x1="'+padL+'" y1="'+yf(0).toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+yf(0).toFixed(1)+'" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>':'';
@@ -2067,14 +2067,14 @@ function renderCalChart(data){
   var step=n>60?14:n>30?7:n>14?3:n>7?2:1;
   var xLabels=data.map(function(d,i){
     if(i%step!==0&&i!==n-1) return '';
-    return '<text x="'+xf(i).toFixed(1)+'" y="'+(VH-6)+'" text-anchor="middle" fill="'+(d.is_today?'#FF4D00':'#ffffff')+'" font-size="9" opacity="'+(d.is_today?'0.7':'0.2')+'">'+d.label+'</text>';
+    return '<text x="'+xf(i).toFixed(1)+'" y="'+(VH-6)+'" text-anchor="middle" fill="'+(d.is_today?'#E6B422':'#ffffff')+'" font-size="9" opacity="'+(d.is_today?'0.7':'0.2')+'">'+d.label+'</text>';
   }).join('');
 
   // Hover hit areas + dots
   var dotW=Math.max(6, cW/n-1);
   var dotZone=data.map(function(d,i){
     return '<rect class="ch-hover-zone" x="'+(xf(i)-dotW/2).toFixed(1)+'" y="'+padT+'" width="'+dotW.toFixed(1)+'" height="'+cH+'" fill="transparent" data-i="'+i+'"/>'+
-      '<circle class="chd-f" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.food_cal).toFixed(1)+'" r="3" fill="#FF4D00" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>'+
+      '<circle class="chd-f" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.food_cal).toFixed(1)+'" r="3" fill="#E6B422" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>'+
       '<circle class="chd-b" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.workout_cal).toFixed(1)+'" r="3" fill="#4ade80" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>'+
       '<circle class="chd-n" cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.net).toFixed(1)+'" r="3" fill="#ffffff" stroke="#080808" stroke-width="1.5" data-i="'+i+'" opacity="0" style="pointer-events:none"/>';
   }).join('');
@@ -2087,7 +2087,7 @@ function renderCalChart(data){
     '<line x1="'+padL+'" y1="'+(padT+cH/2).toFixed(1)+'" x2="'+(VW-padR)+'" y2="'+(padT+cH/2).toFixed(1)+'" stroke="#ffffff07" stroke-width="1" stroke-dasharray="3 4"/>'+
     zeroLine+goalLine+
     // Data lines
-    makePath(data.map(function(d){ return d.food_cal; }),    '#FF4D00')+
+    makePath(data.map(function(d){ return d.food_cal; }),    '#E6B422')+
     makePath(data.map(function(d){ return d.workout_cal; }), '#4ade80')+
     makePath(data.map(function(d){ return d.net; }),         '#ffffff', 0.45)+
     yLabels+xLabels+dotZone;
@@ -2201,7 +2201,7 @@ window.setFoodFilter = function(pref){
     btn.classList.toggle('border-accent',   active);
     btn.classList.toggle('text-white',      active);
     btn.classList.toggle('border-b-accent', active);
-    btn.style.borderBottomColor = active ? '#FF4D00' : 'transparent';
+    btn.style.borderBottomColor = active ? '#E6B422' : 'transparent';
     btn.classList.toggle('text-white/40',   !active);
   });
   filterFoods($id('food-search')?($id('food-search').value||''):'');
